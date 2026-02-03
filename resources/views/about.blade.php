@@ -3,34 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - MRK Hotel Management System</title>
+    <title>About Us - MRK Hotel & Resort</title>
     <link rel="icon" type="image/png" href="{{ asset('images/header.png') }}">
-    <meta name="description" content="Learn about MRK Hotel Management System - the leading cloud-based hotel management software trusted by hotels across East Africa.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="description" content="Discover the story of MRK Hotel & Resort - a premier destination offering luxury accommodations, exceptional service, and unforgettable experiences.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#005eb8',
-                        secondary: '#000000',
+                        primary: '#1a365d',
+                        'primary-light': '#2c5282',
+                        secondary: '#744210',
+                        accent: '#c69c6d',
+                        dark: '#1a202c',
                     },
                     fontFamily: {
+                        serif: ['Playfair Display', 'Georgia', 'serif'],
                         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
                     },
-                    fontSize: {
-                        'xs': '0.65rem',
-                        'sm': '0.75rem',
-                        'base': '0.8125rem',
-                        'lg': '0.9375rem',
-                        'xl': '1.0625rem',
-                        '2xl': '1.25rem',
-                        '3xl': '1.5rem',
-                        '4xl': '1.875rem',
-                        '5xl': '2.25rem',
-                        '6xl': '2.75rem',
-                    }
                 },
             }
         };
@@ -43,50 +35,53 @@
 <!-- Main Content -->
 <main class="overflow-hidden">
     <!-- Hero Section -->
-    <section class="relative py-20 md:py-28 bg-gradient-to-br from-blue-50 via-white to-blue-50">
-        <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <section class="relative py-24 md:py-32">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1600&h=900&fit=crop" 
+                 alt="MRK Hotel Exterior" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-dark/80 via-dark/60 to-dark/40"></div>
+        </div>
         <div class="container mx-auto px-6 lg:px-8 relative z-10">
-            <div class="text-center max-w-4xl mx-auto">
-                <span class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-6 border border-primary/20">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM5.172 9.172a4 4 0 115.656 5.656 4 4 0 01-5.656-5.656z" clip-rule="evenodd"/></svg>
-                    About MRK Hotels
-                </span>
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-secondary leading-tight mb-6">
-                    Transforming Hospitality<br/>
-                    <span class="bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent">Across East Africa</span>
+            <div class="max-w-3xl">
+                <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">Our Story</p>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight mb-6">
+                    A Legacy of<br/>Exceptional Hospitality
                 </h1>
-                <p class="text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-                    We're on a mission to empower hotels with cutting-edge technology that simplifies operations, enhances guest experiences, and drives growth.
+                <p class="text-lg md:text-xl text-gray-200 leading-relaxed">
+                    For over two decades, MRK Hotel & Resort has been a beacon of luxury and comfort, 
+                    offering guests an unforgettable experience rooted in tradition and refined elegance.
                 </p>
             </div>
         </div>
     </section>
 
-    <!-- Our Story Section -->
+    <!-- Our Heritage Section -->
     <section class="py-20 bg-white">
         <div class="container mx-auto px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-16 items-center">
                 <div>
-                    <span class="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-4">
-                        Our Story
-                    </span>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-secondary mb-6">
-                        Built by Hoteliers, for Hoteliers
+                    <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">Our Heritage</p>
+                    <h2 class="text-3xl md:text-4xl font-serif font-bold text-dark mb-6">
+                        A Tradition of Excellence Since 2001
                     </h2>
                     <p class="text-gray-600 leading-relaxed mb-6">
-                        MRK Hotel Management System was born from a simple observation: hotels across East Africa were struggling with outdated, fragmented systems that didn't meet their unique needs. Our founders, having spent decades in the hospitality industry, set out to change that.
+                        Founded with a vision to create a sanctuary of comfort and sophistication, MRK Hotel & Resort 
+                        has grown from a boutique establishment to one of the region's most distinguished hospitality destinations.
                     </p>
                     <p class="text-gray-600 leading-relaxed mb-6">
-                        Today, we serve over 500 hotels across Tanzania, Kenya, Uganda, Rwanda, and beyond. Our cloud-based platform handles millions of reservations annually, processes payments in local currencies, and provides real-time insights that help hotel managers make better decisions.
+                        Our commitment to personalized service, attention to detail, and genuine warmth has earned us 
+                        the trust of discerning travelers from around the world. Every guest who walks through our doors 
+                        becomes part of the MRK family.
                     </p>
                     <p class="text-gray-600 leading-relaxed">
-                        We're not just a software company – we're partners invested in your success. Our local support team understands the challenges you face and is always ready to help.
+                        Whether you're here for business or leisure, celebrating a milestone or seeking respite, 
+                        we dedicate ourselves to making every moment memorable.
                     </p>
                 </div>
                 <div class="relative">
-                    <div class="absolute -inset-4 bg-gradient-to-tr from-primary/20 via-blue-600/10 to-transparent rounded-3xl blur-2xl"></div>
-                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop" 
-                         alt="MRK Hotels Team" 
+                    <div class="absolute -inset-4 bg-gradient-to-tr from-accent/20 via-primary/10 to-transparent rounded-3xl blur-2xl"></div>
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=600&fit=crop" 
+                         alt="MRK Hotel Lobby" 
                          class="relative rounded-2xl shadow-2xl w-full h-auto object-cover ring-1 ring-gray-200">
                 </div>
             </div>
@@ -94,111 +89,114 @@
     </section>
 
     <!-- Mission & Vision -->
-    <section class="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section class="py-20 bg-gray-50">
         <div class="container mx-auto px-6 lg:px-8">
             <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white rounded-2xl p-10 shadow-lg border border-gray-200">
-                    <div class="bg-gradient-to-br from-primary to-blue-600 h-16 w-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <div class="bg-white rounded-2xl p-10 shadow-lg border border-gray-100">
+                    <div class="bg-primary h-16 w-16 rounded-2xl flex items-center justify-center mb-6">
                         <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4">Our Mission</h3>
+                    <h3 class="text-2xl font-serif font-bold text-dark mb-4">Our Mission</h3>
                     <p class="text-gray-600 leading-relaxed">
-                        To empower hospitality businesses across Africa with innovative, affordable, and locally-relevant technology solutions that streamline operations, enhance guest experiences, and drive sustainable growth.
+                        To provide an extraordinary hospitality experience that exceeds expectations, 
+                        where every guest feels valued, every detail is perfected, and every stay 
+                        creates lasting memories of comfort, elegance, and genuine care.
                     </p>
                 </div>
-                <div class="bg-white rounded-2xl p-10 shadow-lg border border-gray-200">
-                    <div class="bg-gradient-to-br from-primary to-blue-600 h-16 w-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <div class="bg-white rounded-2xl p-10 shadow-lg border border-gray-100">
+                    <div class="bg-primary h-16 w-16 rounded-2xl flex items-center justify-center mb-6">
                         <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-secondary mb-4">Our Vision</h3>
+                    <h3 class="text-2xl font-serif font-bold text-dark mb-4">Our Vision</h3>
                     <p class="text-gray-600 leading-relaxed">
-                        To become Africa's leading hotel technology provider, setting the standard for hospitality software that combines world-class features with deep local market understanding and exceptional customer support.
+                        To be recognized as the premier destination for travelers seeking authentic 
+                        luxury and heartfelt hospitality, setting the standard for excellence in 
+                        service, sustainability, and creating meaningful connections with our guests.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Stats Section -->
+    <!-- Hotel Highlights -->
     <section class="py-20 bg-white">
         <div class="container mx-auto px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-secondary mb-6">
-                    Our Impact in Numbers
+                <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">At a Glance</p>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-dark mb-6">
+                    The MRK Experience
                 </h2>
                 <p class="text-lg text-gray-600 leading-relaxed">
-                    Real results from real hotels using MRK Hotel Management System
+                    Discover what makes our hotel a preferred choice for travelers worldwide
                 </p>
             </div>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200">
-                    <div class="text-4xl md:text-5xl font-extrabold text-primary mb-2">500+</div>
-                    <div class="text-gray-600 font-medium">Hotels Worldwide</div>
+                <div class="text-center p-8 bg-gray-50 rounded-2xl">
+                    <div class="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">150+</div>
+                    <div class="text-gray-600 font-medium">Elegant Rooms</div>
                 </div>
-                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200">
-                    <div class="text-4xl md:text-5xl font-extrabold text-primary mb-2">2M+</div>
-                    <div class="text-gray-600 font-medium">Reservations Processed</div>
+                <div class="text-center p-8 bg-gray-50 rounded-2xl">
+                    <div class="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">22</div>
+                    <div class="text-gray-600 font-medium">Years of Service</div>
                 </div>
-                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200">
-                    <div class="text-4xl md:text-5xl font-extrabold text-primary mb-2">99.9%</div>
-                    <div class="text-gray-600 font-medium">System Uptime</div>
+                <div class="text-center p-8 bg-gray-50 rounded-2xl">
+                    <div class="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">4.8</div>
+                    <div class="text-gray-600 font-medium">Guest Rating</div>
                 </div>
-                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200">
-                    <div class="text-4xl md:text-5xl font-extrabold text-primary mb-2">24/7</div>
-                    <div class="text-gray-600 font-medium">Customer Support</div>
+                <div class="text-center p-8 bg-gray-50 rounded-2xl">
+                    <div class="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">50K+</div>
+                    <div class="text-gray-600 font-medium">Happy Guests</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Team Section -->
-    <section class="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <!-- Leadership Section -->
+    <section class="py-20 bg-gray-50">
         <div class="container mx-auto px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <span class="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-4">
-                    Our Leadership
-                </span>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-secondary mb-6">
-                    Meet the Team Behind MRK Hotels
+                <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">Our Leadership</p>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-dark mb-6">
+                    The Team Behind Your Experience
                 </h2>
                 <p class="text-lg text-gray-600 leading-relaxed">
-                    Industry veterans passionate about transforming hospitality in Africa
+                    Dedicated professionals committed to making your stay exceptional
                 </p>
             </div>
             <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
                     <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop" 
-                         alt="CEO" 
+                         alt="General Manager" 
                          class="w-full h-64 object-cover">
                     <div class="p-6 text-center">
-                        <h3 class="text-xl font-bold text-secondary">Michael Karanja</h3>
-                        <p class="text-primary font-medium mb-3">CEO & Co-Founder</p>
-                        <p class="text-gray-600 text-sm">20+ years in hospitality technology. Former CTO at East African Hotels Group.</p>
+                        <h3 class="text-xl font-serif font-bold text-dark">Michael Karanja</h3>
+                        <p class="text-accent font-medium mb-3">General Manager</p>
+                        <p class="text-gray-600 text-sm">25+ years in luxury hospitality management across international destinations.</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
                     <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop" 
-                         alt="CTO" 
+                         alt="Director of Operations" 
                          class="w-full h-64 object-cover">
                     <div class="p-6 text-center">
-                        <h3 class="text-xl font-bold text-secondary">Rose Mwangi</h3>
-                        <p class="text-primary font-medium mb-3">CTO & Co-Founder</p>
-                        <p class="text-gray-600 text-sm">Software architect with 15+ years building enterprise solutions for hospitality.</p>
+                        <h3 class="text-xl font-serif font-bold text-dark">Rose Mwangi</h3>
+                        <p class="text-accent font-medium mb-3">Director of Operations</p>
+                        <p class="text-gray-600 text-sm">Expert in guest services with a passion for creating memorable experiences.</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop" 
-                         alt="COO" 
-                         class="w-full h-64 object-cover">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1583394293214-28ez24e6cdca?w=400&h=400&fit=crop" 
+                         alt="Executive Chef" 
+                         class="w-full h-64 object-cover"
+                         onerror="this.src='https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&h=400&fit=crop'">
                     <div class="p-6 text-center">
-                        <h3 class="text-xl font-bold text-secondary">David Odhiambo</h3>
-                        <p class="text-primary font-medium mb-3">COO</p>
-                        <p class="text-gray-600 text-sm">Former General Manager at Serena Hotels. Expert in hotel operations optimization.</p>
+                        <h3 class="text-xl font-serif font-bold text-dark">Chef David Odhiambo</h3>
+                        <p class="text-accent font-medium mb-3">Executive Chef</p>
+                        <p class="text-gray-600 text-sm">Award-winning culinary artist blending local flavors with international cuisines.</p>
                     </div>
                 </div>
             </div>
@@ -209,73 +207,72 @@
     <section class="py-20 bg-white">
         <div class="container mx-auto px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <span class="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-4">
-                    Our Values
-                </span>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-secondary mb-6">
-                    What Drives Us Every Day
+                <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">Our Values</p>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-dark mb-6">
+                    The Principles That Guide Us
                 </h2>
             </div>
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="text-center">
-                    <div class="bg-gradient-to-br from-primary to-blue-600 h-16 w-16 rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-lg">
+                    <div class="bg-primary h-16 w-16 rounded-full flex items-center justify-center mb-5 mx-auto">
                         <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-lg font-bold text-secondary mb-2">Trust</h3>
-                    <p class="text-gray-600 text-sm">We protect your data like it's our own and deliver on every promise we make.</p>
+                    <h3 class="text-lg font-serif font-bold text-dark mb-2">Warmth</h3>
+                    <p class="text-gray-600 text-sm">Every guest is welcomed as family with genuine care and attention.</p>
                 </div>
                 <div class="text-center">
-                    <div class="bg-gradient-to-br from-primary to-blue-600 h-16 w-16 rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-lg">
+                    <div class="bg-primary h-16 w-16 rounded-full flex items-center justify-center mb-5 mx-auto">
                         <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                         </svg>
                     </div>
-                    <h3 class="text-lg font-bold text-secondary mb-2">Innovation</h3>
-                    <p class="text-gray-600 text-sm">We continuously improve our platform based on customer feedback and industry trends.</p>
+                    <h3 class="text-lg font-serif font-bold text-dark mb-2">Excellence</h3>
+                    <p class="text-gray-600 text-sm">We strive for perfection in every detail of your stay.</p>
                 </div>
                 <div class="text-center">
-                    <div class="bg-gradient-to-br from-primary to-blue-600 h-16 w-16 rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-lg">
-                        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-secondary mb-2">Partnership</h3>
-                    <p class="text-gray-600 text-sm">Your success is our success. We work alongside you to achieve your goals.</p>
-                </div>
-                <div class="text-center">
-                    <div class="bg-gradient-to-br from-primary to-blue-600 h-16 w-16 rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-lg">
+                    <div class="bg-primary h-16 w-16 rounded-full flex items-center justify-center mb-5 mx-auto">
                         <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-lg font-bold text-secondary mb-2">Local Focus</h3>
-                    <p class="text-gray-600 text-sm">Built for African markets with local payment methods, languages, and support.</p>
+                    <h3 class="text-lg font-serif font-bold text-dark mb-2">Sustainability</h3>
+                    <p class="text-gray-600 text-sm">Committed to eco-friendly practices and community support.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-primary h-16 w-16 rounded-full flex items-center justify-center mb-5 mx-auto">
+                        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-serif font-bold text-dark mb-2">Integrity</h3>
+                    <p class="text-gray-600 text-sm">Honest, transparent service that builds lasting trust.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CTA Section -->
-    <section class="py-20 bg-gradient-to-br from-primary via-blue-600 to-primary">
+    <section class="py-20 bg-primary">
         <div class="container mx-auto px-6 lg:px-8 text-center">
             <div class="max-w-4xl mx-auto">
-                <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-6">
-                    Ready to Join the MRK Family?
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-white mb-6">
+                    Experience MRK Hospitality
                 </h2>
-                <p class="text-xl text-white/90 mb-10 leading-relaxed">
-                    Start your free 30-day trial and experience the difference a truly integrated hotel management system can make.
+                <p class="text-xl text-gray-300 mb-10 leading-relaxed">
+                    We invite you to be our guest and discover why MRK Hotel & Resort 
+                    has been the choice of discerning travelers for over two decades.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-white text-primary shadow-lg">
-                        Start Free Trial
+                    <a href="{{ url('/rooms') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-lg bg-accent hover:bg-accent/90 text-white transition-colors">
+                        View Our Rooms
                         <svg class="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                     </a>
-                    <a href="{{ url('/contact') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl border-2 border-white text-white">
-                        Contact Sales
+                    <a href="{{ url('/contact') }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-lg border-2 border-white text-white hover:bg-white hover:text-primary transition-colors">
+                        Contact Us
                     </a>
                 </div>
             </div>

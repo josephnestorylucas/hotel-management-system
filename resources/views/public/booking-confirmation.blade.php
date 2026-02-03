@@ -7,21 +7,18 @@
     <title>Booking Confirmed - MRK Hotel & Resort</title>
     <link rel="icon" type="image/png" href="{{ asset('images/header.png') }}">
     <meta name="description" content="Your reservation at MRK Hotel & Resort has been confirmed.">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#1a365d',
-                        'primary-light': '#2c5282',
-                        secondary: '#744210',
-                        accent: '#c69c6d',
+                        primary: '#005eb8',
+                        secondary: '#000000',
                         dark: '#1a202c',
                     },
                     fontFamily: {
-                        serif: ['Playfair Display', 'Georgia', 'serif'],
                         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
                     },
                 }
@@ -43,15 +40,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                 </div>
-                <h1 class="text-4xl font-serif font-bold text-dark mb-4">Reservation Confirmed!</h1>
+                <h1 class="text-4xl font-extrabold text-secondary mb-4">Reservation Confirmed!</h1>
                 <p class="text-xl text-gray-600">Thank you for choosing MRK Hotel & Resort</p>
             </div>
 
             <!-- Confirmation Card -->
             <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-8">
                 <!-- Header -->
-                <div class="bg-primary p-6 text-center">
-                    <p class="text-accent font-medium tracking-widest uppercase text-sm mb-1">Confirmation Number</p>
+                <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-center">
+                    <p class="text-white/80 font-medium tracking-widest uppercase text-sm mb-1">Confirmation Number</p>
                     <h2 class="text-3xl font-bold text-white tracking-wider">MRK-{{ str_pad($reservation->id, 6, '0', STR_PAD_LEFT) }}</h2>
                 </div>
 
@@ -147,7 +144,7 @@
                 </div>
 
                 <!-- Status Badge -->
-                <div class="bg-accent/10 px-8 py-4 border-t border-gray-200">
+                <div class="bg-primary/10 px-8 py-4 border-t border-gray-200">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
@@ -160,17 +157,17 @@
 
             <!-- Actions -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ url('/booking') }}" class="px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg transition-colors text-center">
+                <a href="{{ url('/booking') }}" class="px-6 py-3 bg-gradient-to-r from-primary to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-shadow text-center">
                     Make Another Reservation
                 </a>
-                <a href="{{ url('/') }}" class="px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-primary hover:text-primary font-semibold rounded-lg transition-colors text-center">
+                <a href="{{ url('/') }}" class="px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-primary hover:text-primary font-semibold rounded-xl transition-colors text-center">
                     Return to Home
                 </a>
             </div>
 
             <!-- Important Information -->
             <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
-                <h3 class="text-xl font-serif font-bold text-dark mb-6">Important Information</h3>
+                <h3 class="text-xl font-bold text-secondary mb-6">Important Information</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <h4 class="font-semibold text-dark mb-2">Check-in Policy</h4>

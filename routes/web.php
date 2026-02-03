@@ -13,12 +13,13 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 
+// Public welcome page (accessible to everyone)
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
 // Guest Routes
 Route::middleware('guest')->group(function () {
-    Route::get('/', function () {
-        return redirect()->route('login');
-    });
-    
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
     

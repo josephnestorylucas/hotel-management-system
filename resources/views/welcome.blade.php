@@ -50,27 +50,27 @@
                     </p>
                     
                     <!-- Quick Booking Form -->
-                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 max-w-3xl">
-                        <form class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="min-w-0">
+                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 max-w-2xl">
+                        <form class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 basis-[180px] min-w-[160px]">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Check In</label>
-                                <input type="date" class="w-full min-w-0 px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                <input type="date" class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                             </div>
-                            <div class="min-w-0">
+                            <div class="flex-1 basis-[180px] min-w-[160px]">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Check Out</label>
-                                <input type="date" class="w-full min-w-0 px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                <input type="date" class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                             </div>
-                            <div class="min-w-0">
+                            <div class="flex-1 basis-[160px] min-w-[140px]">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Guests</label>
-                                <select class="w-full min-w-0 px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                <select class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                                     <option value="1">1 Guest</option>
                                     <option value="2" selected>2 Guests</option>
                                     <option value="3">3 Guests</option>
                                     <option value="4">4+ Guests</option>
                                 </select>
                             </div>
-                            <div class="flex items-end sm:col-span-2 lg:col-span-1">
-                                <a href="{{ url('/booking') }}" class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
+                            <div class="flex-none w-full sm:w-auto">
+                                <a href="{{ url('/booking') }}" class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
                                     Check Availability
                                 </a>
                             </div>

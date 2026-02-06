@@ -5,7 +5,7 @@
 @section('page-title', 'Reservations')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
+<div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
@@ -19,7 +19,7 @@
         </div>
 
         <!-- Form -->
-        <form method="POST" action="{{ route('reservations.update', $reservation) }}" class="p-6">
+        <form method="POST" action="{{ route('reservations.update', $reservation) }}" class="p-6" x-data="reservationForm()">
             @csrf
             @method('PUT')
 
@@ -34,72 +34,229 @@
                         </div>
                         Guest Information
                     </h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Guest Name -->
+
+                    <!-- Current Guest Display -->
+                    @if($reservation->guest)
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-lg overflow-hidden
+                                {{ $reservation->guest->photo ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
+                                @if($reservation->guest->photo)
+                                    <img src="{{ $reservation->guest->photo_url }}" alt="{{ $reservation->guest->full_name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($reservation->guest->first_name, 0, 1) . substr($reservation->guest->last_name, 0, 1)) }}
+                                @endif
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-bold text-secondary">{{ $reservation->guest->full_name }}</p>
+                                <p class="text-sm text-gray-600">{{ $reservation->guest->phone_number }} • {{ $reservation->guest->email ?? 'No email' }}</p>
+                            </div>
+                            <a href="{{ route('guests.show', $reservation->guest) }}" target="_blank" class="text-sm text-primary hover:underline font-medium">
+                                View Profile →
+                            </a>
+                        </div>
+                    </div>
+                    @else
+                    <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            <div>
+                                <p class="font-bold text-yellow-800">Legacy Reservation</p>
+                                <p class="text-sm text-yellow-700">Guest: {{ $reservation->guest_name }} • {{ $reservation->guest_phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Change Guest Option -->
+                    <div class="flex gap-4 mb-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="change_guest" value="keep" x-model="changeGuest" class="text-primary focus:ring-primary">
+                            <span class="text-sm font-semibold text-secondary">Keep Current Guest</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="change_guest" value="select" x-model="changeGuest" class="text-primary focus:ring-primary">
+                            <span class="text-sm font-semibold text-secondary">Change Guest</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="change_guest" value="new" x-model="changeGuest" class="text-primary focus:ring-primary">
+                            <span class="text-sm font-semibold text-secondary">Create New Guest</span>
+                        </label>
+                    </div>
+
+                    <!-- Keep Current Guest -->
+                    <div x-show="changeGuest === 'keep'" x-transition>
+                        <input type="hidden" name="guest_id" value="{{ $reservation->guest_id }}">
+                        <input type="hidden" name="create_new_guest" value="0">
+                    </div>
+
+                    <!-- Select Different Guest -->
+                    <div x-show="changeGuest === 'select'" x-transition class="space-y-4">
+                        <input type="hidden" name="create_new_guest" value="0">
+                        
                         <div>
-                            <label for="guest_name" class="block text-sm font-semibold text-secondary mb-2">
-                                Guest Name <span class="text-red-500">*</span>
+                            <label for="guest_id" class="block text-sm font-semibold text-secondary mb-2">
+                                Select Guest <span class="text-red-500">*</span>
                             </label>
-                            <input 
-                                type="text" 
-                                name="guest_name" 
-                                id="guest_name"
-                                value="{{ old('guest_name', $reservation->guest_name) }}" 
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_name') border-red-500 @enderror"
-                                required>
-                            @error('guest_name')
-                                <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                    {{ $message }}
-                                </p>
-                            @enderror
+                            <select 
+                                name="guest_id" 
+                                id="guest_id"
+                                x-model="selectedGuestId"
+                                @change="updateSelectedGuest()"
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id') border-red-500 @enderror">
+                                <option value="">-- Select a guest --</option>
+                                @foreach($guests as $guest)
+                                <option value="{{ $guest->id }}" 
+                                    data-name="{{ $guest->full_name }}"
+                                    data-phone="{{ $guest->phone_number }}"
+                                    data-email="{{ $guest->email }}"
+                                    {{ $reservation->guest_id == $guest->id ? 'selected' : '' }}>
+                                    {{ $guest->full_name }} - {{ $guest->phone_number }}
+                                </option>
+                                @endforeach
+                            </select>
                         </div>
 
-                        <!-- Phone -->
-                        <div>
-                            <label for="guest_phone" class="block text-sm font-semibold text-secondary mb-2">
-                                Phone Number <span class="text-red-500">*</span>
-                            </label>
-                            <input 
-                                type="text" 
-                                name="guest_phone" 
-                                id="guest_phone"
-                                value="{{ old('guest_phone', $reservation->guest_phone) }}" 
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_phone') border-red-500 @enderror"
-                                required>
-                            @error('guest_phone')
-                                <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                    {{ $message }}
-                                </p>
-                            @enderror
+                        <!-- Selected Guest Preview -->
+                        <div x-show="selectedGuestId && changeGuest === 'select'" x-transition class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                                    <span x-text="getGuestInitials()"></span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-secondary" x-text="selectedGuestName"></p>
+                                    <p class="text-sm text-gray-600"><span x-text="selectedGuestPhone"></span> • <span x-text="selectedGuestEmail || 'No email'"></span></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Email -->
-                    <div class="mt-6">
-                        <label for="guest_email" class="block text-sm font-semibold text-secondary mb-2">
-                            Email Address <span class="text-gray-400 text-xs">(Optional)</span>
-                        </label>
-                        <input 
-                            type="email" 
-                            name="guest_email" 
-                            id="guest_email"
-                            value="{{ old('guest_email', $reservation->guest_email) }}" 
-                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_email') border-red-500 @enderror">
-                        @error('guest_email')
-                            <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <!-- Create New Guest -->
+                    <div x-show="changeGuest === 'new'" x-transition class="space-y-4">
+                        <input type="hidden" name="create_new_guest" value="1">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- First Name -->
+                            <div>
+                                <label for="guest_first_name" class="block text-sm font-semibold text-secondary mb-2">
+                                    First Name <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="guest_first_name" 
+                                    id="guest_first_name"
+                                    value="{{ old('guest_first_name') }}" 
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_first_name') border-red-500 @enderror"
+                                    placeholder="Enter first name"
+                                    x-bind:required="changeGuest === 'new'">
+                                @error('guest_first_name')
+                                    <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <!-- Last Name -->
+                            <div>
+                                <label for="guest_last_name" class="block text-sm font-semibold text-secondary mb-2">
+                                    Last Name <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="guest_last_name" 
+                                    id="guest_last_name"
+                                    value="{{ old('guest_last_name') }}" 
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_last_name') border-red-500 @enderror"
+                                    placeholder="Enter last name"
+                                    x-bind:required="changeGuest === 'new'">
+                                @error('guest_last_name')
+                                    <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <!-- Phone -->
+                            <div>
+                                <label for="guest_phone" class="block text-sm font-semibold text-secondary mb-2">
+                                    Phone Number <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="guest_phone" 
+                                    id="guest_phone"
+                                    value="{{ old('guest_phone') }}" 
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_phone') border-red-500 @enderror"
+                                    placeholder="+1 (555) 123-4567"
+                                    x-bind:required="changeGuest === 'new'">
+                                @error('guest_phone')
+                                    <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label for="guest_email" class="block text-sm font-semibold text-secondary mb-2">
+                                    Email Address <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                </label>
+                                <input 
+                                    type="email" 
+                                    name="guest_email" 
+                                    id="guest_email"
+                                    value="{{ old('guest_email') }}" 
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_email') border-red-500 @enderror"
+                                    placeholder="guest@example.com">
+                                @error('guest_email')
+                                    <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <!-- ID Number -->
+                            <div>
+                                <label for="guest_id_number" class="block text-sm font-semibold text-secondary mb-2">
+                                    ID/Passport Number <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="guest_id_number" 
+                                    id="guest_id_number"
+                                    value="{{ old('guest_id_number') }}" 
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id_number') border-red-500 @enderror"
+                                    placeholder="Enter ID number">
+                            </div>
+
+                            <!-- Nationality -->
+                            <div>
+                                <label for="guest_nationality" class="block text-sm font-semibold text-secondary mb-2">
+                                    Nationality <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="guest_nationality" 
+                                    id="guest_nationality"
+                                    value="{{ old('guest_nationality') }}" 
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_nationality') border-red-500 @enderror"
+                                    placeholder="e.g., American, British">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -317,4 +474,36 @@
         </form>
     </div>
 </div>
+
+<script>
+function reservationForm() {
+    return {
+        changeGuest: 'keep',
+        selectedGuestId: '{{ $reservation->guest_id ?? "" }}',
+        selectedGuestName: '{{ $reservation->guest ? $reservation->guest->full_name : "" }}',
+        selectedGuestPhone: '{{ $reservation->guest ? $reservation->guest->phone_number : "" }}',
+        selectedGuestEmail: '{{ $reservation->guest ? $reservation->guest->email : "" }}',
+        
+        updateSelectedGuest() {
+            const select = document.getElementById('guest_id');
+            const option = select.options[select.selectedIndex];
+            if (option && option.value) {
+                this.selectedGuestName = option.getAttribute('data-name') || '';
+                this.selectedGuestPhone = option.getAttribute('data-phone') || '';
+                this.selectedGuestEmail = option.getAttribute('data-email') || '';
+            } else {
+                this.selectedGuestName = '';
+                this.selectedGuestPhone = '';
+                this.selectedGuestEmail = '';
+            }
+        },
+        
+        getGuestInitials() {
+            if (!this.selectedGuestName) return '';
+            const names = this.selectedGuestName.split(' ');
+            return names.map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
+        }
+    }
+}
+</script>
 @endsection

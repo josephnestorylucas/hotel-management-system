@@ -12,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\GuestController;
 
 // Public welcome page (accessible to everyone)
 Route::get('/', function () {
@@ -171,4 +172,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('reservations/{reservation}/check-in', [ReservationController::class, 'checkIn'])->name('reservations.check-in');
     Route::post('reservations/{reservation}/check-out', [ReservationController::class, 'checkOut'])->name('reservations.check-out');
     Route::post('reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+
+    // Guest Management Routes
+    Route::resource('guests', GuestController::class);
+    Route::get('guests-search', [GuestController::class, 'search'])->name('guests.search');
 });

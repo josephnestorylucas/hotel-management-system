@@ -139,8 +139,15 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-semibold text-secondary">{{ $reservation->guest_name }}</div>
-                            <div class="text-xs text-gray-500">{{ $reservation->guest_phone }}</div>
+                            @if($reservation->guest)
+                                <a href="{{ route('guests.show', $reservation->guest) }}" class="group">
+                                    <div class="text-sm font-semibold text-secondary group-hover:text-primary transition-colors">{{ $reservation->guest_display_name }}</div>
+                                    <div class="text-xs text-gray-500">{{ $reservation->guest_display_phone }}</div>
+                                </a>
+                            @else
+                                <div class="text-sm font-semibold text-secondary">{{ $reservation->guest_display_name }}</div>
+                                <div class="text-xs text-gray-500">{{ $reservation->guest_display_phone }}</div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($reservation->room)

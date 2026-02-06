@@ -9,11 +9,11 @@
     <!-- Header Actions -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-gray-900">Room Types</h2>
+            <h2 class="text-2xl font-extrabold text-secondary">Room Types</h2>
             <p class="text-sm text-gray-500 mt-1">Manage room categories and pricing</p>
         </div>
         <a href="{{ route('room-types.create') }}" 
-           class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -24,15 +24,15 @@
     <!-- Room Types Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($roomTypes as $roomType)
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all overflow-hidden">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
+            <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
                 <div class="flex items-start justify-between mb-2">
                     <h3 class="text-xl font-bold">{{ $roomType->name }}</h3>
-                    <span class="text-xs font-semibold bg-white/20 px-2 py-1 rounded">{{ $roomType->code }}</span>
+                    <span class="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-lg">{{ $roomType->code }}</span>
                 </div>
-                <div class="text-3xl font-bold">${{ number_format($roomType->base_rate, 2) }}</div>
-                <div class="text-sm text-blue-100">per night</div>
+                <div class="text-3xl font-extrabold">${{ number_format($roomType->base_rate, 2) }}</div>
+                <div class="text-sm text-blue-100 font-medium">per night</div>
             </div>
 
             <!-- Body -->
@@ -50,7 +50,7 @@
                             </svg>
                             Max Occupancy
                         </span>
-                        <span class="font-semibold text-gray-900">{{ $roomType->max_occupancy }} guests</span>
+                        <span class="font-bold text-secondary">{{ $roomType->max_occupancy }} guests</span>
                     </div>
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-500 flex items-center gap-2">
@@ -59,14 +59,14 @@
                             </svg>
                             Total Rooms
                         </span>
-                        <span class="font-semibold text-gray-900">{{ $roomType->rooms->count() }}</span>
+                        <span class="font-bold text-secondary">{{ $roomType->rooms->count() }}</span>
                     </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex items-center gap-2">
                     <a href="{{ route('room-types.edit', $roomType) }}" 
-                       class="flex-1 text-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                       class="flex-1 text-center px-4 py-2.5 text-sm font-semibold text-primary bg-primary/10 rounded-xl hover:bg-primary/20 transition-all">
                         Edit
                     </a>
                     <form method="POST" action="{{ route('room-types.destroy', $roomType) }}" class="flex-1">
@@ -74,7 +74,7 @@
                         @method('DELETE')
                         <button type="submit" 
                                 onclick="return confirm('Are you sure you want to delete this room type?')"
-                                class="w-full px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                class="w-full px-4 py-2.5 text-sm font-semibold text-red-700 bg-red-50 rounded-xl hover:bg-red-100 transition-all">
                             Delete
                         </button>
                     </form>
@@ -83,15 +83,17 @@
         </div>
         @empty
         <div class="col-span-full">
-            <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No room types</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating a new room type.</p>
+            <div class="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-100">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary/10 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-secondary">No room types yet</h3>
+                <p class="mt-2 text-sm text-gray-500">Get started by creating your first room type.</p>
                 <div class="mt-6">
                     <a href="{{ route('room-types.create') }}" 
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+                       class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>

@@ -6,10 +6,10 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Create Floor</h2>
+        <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
+            <h2 class="text-xl font-extrabold text-secondary">Create Floor</h2>
             <p class="text-sm text-gray-500 mt-1">Add a new floor to a building</p>
         </div>
 
@@ -20,13 +20,13 @@
             <div class="space-y-6">
                 <!-- Building -->
                 <div>
-                    <label for="building_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="building_id" class="block text-sm font-semibold text-secondary mb-2">
                         Building <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="building_id" 
                         id="building_id"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('building_id') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('building_id') border-red-500 @enderror"
                         required>
                         <option value="">Select a building</option>
                         @foreach($buildings as $building)
@@ -47,7 +47,7 @@
 
                 <!-- Name -->
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="name" class="block text-sm font-semibold text-secondary mb-2">
                         Floor Name <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -55,7 +55,7 @@
                         name="name" 
                         id="name"
                         value="{{ old('name') }}" 
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('name') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('name') border-red-500 @enderror"
                         placeholder="e.g., Ground Floor, First Floor"
                         required>
                     @error('name')
@@ -70,7 +70,7 @@
 
                 <!-- Floor Number -->
                 <div>
-                    <label for="floor_number" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="floor_number" class="block text-sm font-semibold text-secondary mb-2">
                         Floor Number <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -79,7 +79,7 @@
                         id="floor_number"
                         value="{{ old('floor_number', 1) }}" 
                         min="0"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('floor_number') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('floor_number') border-red-500 @enderror"
                         placeholder="Enter floor number"
                         required>
                     @error('floor_number')
@@ -100,22 +100,22 @@
                         id="is_active"
                         value="1" 
                         {{ old('is_active', true) ? 'checked' : '' }}
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
-                    <label for="is_active" class="text-sm font-medium text-gray-700 cursor-pointer">
+                        class="w-5 h-5 text-primary border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    <label for="is_active" class="text-sm font-semibold text-secondary cursor-pointer">
                         Active
                     </label>
                 </div>
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
                 <a href="{{ route('floors.index') }}" 
-                   class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                   class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
                     Cancel
                 </a>
                 <button 
                     type="submit"
-                    class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
                     Create Floor
                 </button>
             </div>

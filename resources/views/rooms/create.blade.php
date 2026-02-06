@@ -6,10 +6,10 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Create Room</h2>
+        <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
+            <h2 class="text-xl font-extrabold text-secondary">Create Room</h2>
             <p class="text-sm text-gray-500 mt-1">Add a new room to your inventory</p>
         </div>
 
@@ -20,13 +20,13 @@
             <div class="space-y-6">
                 <!-- Floor -->
                 <div>
-                    <label for="floor_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="floor_id" class="block text-sm font-semibold text-secondary mb-2">
                         Floor <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="floor_id" 
                         id="floor_id"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('floor_id') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('floor_id') border-red-500 @enderror"
                         required>
                         <option value="">Select a floor</option>
                         @foreach($floors as $floor)
@@ -47,13 +47,13 @@
 
                 <!-- Room Type -->
                 <div>
-                    <label for="room_type_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="room_type_id" class="block text-sm font-semibold text-secondary mb-2">
                         Room Type <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="room_type_id" 
                         id="room_type_id"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('room_type_id') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_type_id') border-red-500 @enderror"
                         required>
                         <option value="">Select a room type</option>
                         @foreach($roomTypes as $roomType)
@@ -74,7 +74,7 @@
 
                 <!-- Room Number -->
                 <div>
-                    <label for="room_number" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="room_number" class="block text-sm font-semibold text-secondary mb-2">
                         Room Number <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -82,7 +82,7 @@
                         name="room_number" 
                         id="room_number"
                         value="{{ old('room_number') }}" 
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('room_number') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_number') border-red-500 @enderror"
                         placeholder="e.g., 101, 102, A-201"
                         required>
                     @error('room_number')
@@ -97,13 +97,13 @@
 
                 <!-- Status -->
                 <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="status" class="block text-sm font-semibold text-secondary mb-2">
                         Status <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="status" 
                         id="status"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('status') border-red-500 @enderror"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('status') border-red-500 @enderror"
                         required>
                         <option value="available" {{ old('status', 'available') == 'available' ? 'selected' : '' }}>Available</option>
                         <option value="occupied" {{ old('status') == 'occupied' ? 'selected' : '' }}>Occupied</option>
@@ -129,21 +129,23 @@
                         id="is_active"
                         value="1" 
                         {{ old('is_active', true) ? 'checked' : '' }}
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
-                    <label for="is_active" class="text-sm font-medium text-gray-700 cursor-pointer">
+                        class="w-5 h-5 text-primary border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    <label for="is_active" class="text-sm font-semibold text-secondary cursor-pointer">
                         Active
                     </label>
                 </div>
 
                 <!-- Info Box -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="bg-gradient-to-br from-primary/5 to-blue-50 border border-primary/20 rounded-xl p-4">
                     <div class="flex gap-3">
-                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        <div class="text-sm text-blue-800">
-                            <p class="font-medium mb-1">Room Numbering Tips:</p>
-                            <ul class="list-disc list-inside space-y-1 text-blue-700">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary/10 to-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm">
+                            <p class="font-bold text-secondary mb-1">Room Numbering Tips:</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600">
                                 <li>Use floor number as prefix (e.g., 101, 201)</li>
                                 <li>Keep numbering consistent across floors</li>
                                 <li>Consider building codes for multi-building properties</li>
@@ -154,14 +156,14 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
                 <a href="{{ route('rooms.index') }}" 
-                   class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                   class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
                     Cancel
                 </a>
                 <button 
                     type="submit"
-                    class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
                     Create Room
                 </button>
             </div>

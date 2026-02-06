@@ -8,13 +8,15 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder {
     public function run(): void {
-        $roles = Role::pluck('id', 'name');
+        $adminRole = Role::where('name', Role::ADMIN)->first();
+        $frontDeskRole = Role::where('name', Role::FRONT_DESK)->first();
+        $supervisorRole = Role::where('name', Role::SUPERVISOR)->first();
 
         User::create([
             'name' => 'System Administrator',
             'email' => 'admin@hotel.com',
             'password' => Hash::make('password'),
-            'role_id' => $roles['admin'],
+            'role_id' => $adminRole->id,
             'is_active' => true,
         ]);
 
@@ -22,7 +24,7 @@ class UserSeeder extends Seeder {
             'name' => 'Front Desk Officer',
             'email' => 'frontdesk@hotel.com',
             'password' => Hash::make('password'),
-            'role_id' => $roles['front_desk'],
+            'role_id' => $frontDeskRole->id,
             'is_active' => true,
         ]);
 
@@ -30,7 +32,7 @@ class UserSeeder extends Seeder {
             'name' => 'Operations Supervisor',
             'email' => 'supervisor@hotel.com',
             'password' => Hash::make('password'),
-            'role_id' => $roles['supervisor'],
+            'role_id' => $supervisorRole->id,
             'is_active' => true,
         ]);
     }

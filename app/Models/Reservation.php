@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reservation extends Model {
+    use HasUuid;
+
     protected $fillable = [
         'reservation_number', 'room_id', 'guest_name', 'guest_phone', 'guest_email',
         'check_in_date', 'check_out_date', 'number_of_guests', 'status', 'total_amount', 'created_by'

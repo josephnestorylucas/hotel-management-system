@@ -6,9 +6,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::create('reservations', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('reservation_number')->unique();
-            $table->foreignId('room_id')->nullable()->constrained()->nullOnDelete();
+            $table->uuid('room_id')->nullable();
+            $table->foreign('room_id')->references('id')->on('rooms')->nullOnDelete();
             $table->string('guest_name');
             $table->string('guest_phone');
             $table->string('guest_email')->nullable();
@@ -17,7 +18,8 @@ return new class extends Migration {
             $table->integer('number_of_guests');
             $table->enum('status', ['pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled', 'no_show'])->default('pending');
             $table->decimal('total_amount', 10, 2);
-            $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
+            $table->uuid('created_by');
+            $table->foreign('created_by')->references('id')->on('users')->restrictOnDelete();
             $table->timestamps();
         });
     }

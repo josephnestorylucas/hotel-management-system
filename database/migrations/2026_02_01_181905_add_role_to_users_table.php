@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->after('email')->constrained()->restrictOnDelete();
+            $table->uuid('role_id')->after('email');
+            $table->foreign('role_id')->references('id')->on('roles')->restrictOnDelete();
             $table->boolean('is_active')->default(true)->after('role_id');
         });
     }

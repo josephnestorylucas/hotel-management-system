@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -28,6 +29,8 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role_id' => Role::where('name', Role::FRONT_DESK)->first()?->id ?? Str::uuid(),
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }
@@ -39,6 +42,36 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Set the user as an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', Role::ADMIN)->first()?->id,
+        ]);
+    }
+
+    /**
+     * Set the user as a supervisor.
+     */
+    public function supervisor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', Role::SUPERVISOR)->first()?->id,
+        ]);
+    }
+
+    /**
+     * Set the user as front desk.
+     */
+    public function frontDesk(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', Role::FRONT_DESK)->first()?->id,
         ]);
     }
 }

@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
+    use HasUuid;
+
     protected $fillable = ['floor_id', 'room_type_id', 'room_number', 'status', 'is_active'];
     
     protected $casts = [

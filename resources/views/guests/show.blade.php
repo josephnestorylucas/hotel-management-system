@@ -13,9 +13,9 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg overflow-hidden
-                        {{ $guest->photo ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
-                        @if($guest->photo)
-                            <img src="{{ $guest->photo_url }}" alt="{{ $guest->full_name }}" class="w-full h-full object-cover">
+                        {{ $guest->hasPhoto() ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
+                        @if($guest->hasPhoto())
+                            <img src="{{ $guest->photo_medium_url ?? $guest->photo_url }}" alt="{{ $guest->full_name }}" class="w-full h-full object-cover">
                         @else
                             {{ strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)) }}
                         @endif
@@ -111,12 +111,30 @@
                             <span class="text-sm text-secondary font-medium">{{ $guest->id_number }}</span>
                         </div>
                         @endif
-                        @if($guest->id_document)
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-500">ID Document</span>
-                            <a href="{{ $guest->id_document_url }}" target="_blank" class="text-sm text-primary hover:underline font-medium">
-                                View Document
-                            </a>
+                        @if($guest->hasIdDocuments())
+                        <div class="mt-4">
+                            <span class="text-sm text-gray-500 block mb-2">ID Documents ({{ $guest->id_documents_count }})</span>
+                            <div class="space-y-2">
+                                @foreach($guest->id_documents as $document)
+                                <div class="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+                                    <div class="flex items-center gap-2">
+                                        @if(str_contains($document->mime_type, 'image'))
+                                            <img src="{{ $document->getUrl('thumb') }}" alt="Document" class="w-10 h-10 object-cover rounded">
+                                        @else
+                                            <div class="w-10 h-10 bg-red-100 rounded flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                        @endif
+                                        <span class="text-xs text-gray-600">{{ $document->file_name }}</span>
+                                    </div>
+                                    <a href="{{ $document->getUrl() }}" target="_blank" class="text-xs text-primary hover:underline font-medium">
+                                        View
+                                    </a>
+                                </div>
+                                @endforeach
+                            </div>
                         </div>
                         @endif
                     </div>

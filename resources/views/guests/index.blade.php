@@ -87,9 +87,9 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg overflow-hidden
-                                    {{ $guest->photo ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
-                                    @if($guest->photo)
-                                        <img src="{{ $guest->photo_url }}" alt="{{ $guest->full_name }}" class="w-full h-full object-cover">
+                                    {{ $guest->hasPhoto() ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
+                                    @if($guest->hasPhoto())
+                                        <img src="{{ $guest->photo_thumb_url }}" alt="{{ $guest->full_name }}" class="w-full h-full object-cover">
                                     @else
                                         {{ strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)) }}
                                     @endif

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Guest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class GuestController extends Controller
@@ -58,20 +57,29 @@ class GuestController extends Controller
             'nationality' => 'required|string|max:100',
             'date_of_birth' => 'nullable|date|before:today',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'id_document' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'id_documents' => 'nullable|array',
+            'id_documents.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
         ]);
 
-        // Handle photo upload
-        if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('guests/photos', 'public');
-        }
+        // Remove file fields from validated data (handled separately via Media Library)
+        unset($validated['photo'], $validated['id_documents']);
 
-        // Handle ID document upload
-        if ($request->hasFile('id_document')) {
-            $validated['id_document'] = $request->file('id_document')->store('guests/documents', 'public');
-        }
-
+        // Create the guest
         $guest = Guest::create($validated);
+
+        // Handle photo upload using Spatie Media Library
+        if ($request->hasFile('photo')) {
+            $guest->addMediaFromRequest('photo')
+                ->toMediaCollection('guest_photo');
+        }
+
+        // Handle multiple ID document uploads using Spatie Media Library
+        if ($request->hasFile('id_documents')) {
+            foreach ($request->file('id_documents') as $document) {
+                $guest->addMedia($document)
+                    ->toMediaCollection('id_documents');
+            }
+        }
 
         // Check if this was called from reservation create page
         if ($request->has('return_to_reservation')) {
@@ -88,7 +96,7 @@ class GuestController extends Controller
      */
     public function show(Guest $guest)
     {
-        $guest->load(['reservations.room.roomType']);
+        $guest->load(['reservations.room.roomType', 'media']);
         return view('guests.show', compact('guest'));
     }
 
@@ -97,6 +105,7 @@ class GuestController extends Controller
      */
     public function edit(Guest $guest)
     {
+        $guest->load('media');
         return view('guests.edit', compact('guest'));
     }
 
@@ -120,28 +129,48 @@ class GuestController extends Controller
             'nationality' => 'required|string|max:100',
             'date_of_birth' => 'nullable|date|before:today',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'id_document' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'id_documents' => 'nullable|array',
+            'id_documents.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'remove_photo' => 'nullable|boolean',
+            'remove_documents' => 'nullable|array',
+            'remove_documents.*' => 'integer',
         ]);
 
-        // Handle photo upload
-        if ($request->hasFile('photo')) {
-            // Delete old photo
-            if ($guest->photo) {
-                Storage::disk('public')->delete($guest->photo);
-            }
-            $validated['photo'] = $request->file('photo')->store('guests/photos', 'public');
-        }
+        // Remove file and removal fields from validated data
+        unset($validated['photo'], $validated['id_documents'], $validated['remove_photo'], $validated['remove_documents']);
 
-        // Handle ID document upload
-        if ($request->hasFile('id_document')) {
-            // Delete old document
-            if ($guest->id_document) {
-                Storage::disk('public')->delete($guest->id_document);
-            }
-            $validated['id_document'] = $request->file('id_document')->store('guests/documents', 'public');
-        }
-
+        // Update guest data
         $guest->update($validated);
+
+        // Handle photo removal
+        if ($request->boolean('remove_photo')) {
+            $guest->clearMediaCollection('guest_photo');
+        }
+
+        // Handle photo upload/replacement using Spatie Media Library
+        // Note: singleFile() in registerMediaCollections() handles automatic replacement
+        if ($request->hasFile('photo')) {
+            $guest->addMediaFromRequest('photo')
+                ->toMediaCollection('guest_photo');
+        }
+
+        // Handle document removal
+        if ($request->has('remove_documents') && is_array($request->remove_documents)) {
+            foreach ($request->remove_documents as $mediaId) {
+                $media = $guest->media()->find($mediaId);
+                if ($media) {
+                    $media->delete();
+                }
+            }
+        }
+
+        // Handle new ID document uploads
+        if ($request->hasFile('id_documents')) {
+            foreach ($request->file('id_documents') as $document) {
+                $guest->addMedia($document)
+                    ->toMediaCollection('id_documents');
+            }
+        }
 
         return redirect()->route('guests.index')
             ->with('success', 'Guest updated successfully.');
@@ -157,18 +186,27 @@ class GuestController extends Controller
             return back()->with('error', 'Cannot delete guest with existing reservations.');
         }
 
-        // Delete files
-        if ($guest->photo) {
-            Storage::disk('public')->delete($guest->photo);
-        }
-        if ($guest->id_document) {
-            Storage::disk('public')->delete($guest->id_document);
-        }
-
+        // Media files are automatically deleted by Spatie Media Library
         $guest->delete();
 
         return redirect()->route('guests.index')
             ->with('success', 'Guest deleted successfully.');
+    }
+
+    /**
+     * Remove a specific media item from a guest.
+     */
+    public function removeMedia(Guest $guest, $mediaId)
+    {
+        $media = $guest->media()->find($mediaId);
+        
+        if (!$media) {
+            return back()->with('error', 'Media not found.');
+        }
+
+        $media->delete();
+
+        return back()->with('success', 'Document removed successfully.');
     }
 
     /**

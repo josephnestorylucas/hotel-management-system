@@ -55,6 +55,7 @@ class ReservationController extends Controller
                 'guest_phone' => 'required|string|max:20',
                 'guest_id_number' => 'required|string|max:50',
                 'guest_nationality' => 'required|string|max:100',
+                'guest_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
             // Create new guest
@@ -66,6 +67,12 @@ class ReservationController extends Controller
                 'id_number' => $guestData['guest_id_number'],
                 'nationality' => $guestData['guest_nationality'],
             ]);
+
+            // Handle photo upload using Spatie Media Library
+            if ($request->hasFile('guest_photo')) {
+                $guest->addMediaFromRequest('guest_photo')
+                    ->toMediaCollection('guest_photo');
+            }
 
             $guestId = $guest->id;
         }
@@ -142,6 +149,7 @@ class ReservationController extends Controller
                 'guest_phone' => 'required|string|max:20',
                 'guest_id_number' => 'required|string|max:50',
                 'guest_nationality' => 'required|string|max:100',
+                'guest_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
             // Create new guest
@@ -153,6 +161,12 @@ class ReservationController extends Controller
                 'id_number' => $guestData['guest_id_number'],
                 'nationality' => $guestData['guest_nationality'],
             ]);
+
+            // Handle photo upload using Spatie Media Library
+            if ($request->hasFile('guest_photo')) {
+                $guest->addMediaFromRequest('guest_photo')
+                    ->toMediaCollection('guest_photo');
+            }
 
             $guestId = $guest->id;
         }

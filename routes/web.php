@@ -176,4 +176,5 @@ Route::middleware(['auth'])->group(function () {
     // Guest Management Routes
     Route::resource('guests', GuestController::class);
     Route::get('guests-search', [GuestController::class, 'search'])->name('guests.search');
+    Route::delete('guests/{guest}/media/{media}', [GuestController::class, 'removeMedia'])->name('guests.media.destroy');
 });

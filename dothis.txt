@@ -1,0 +1,97 @@
+
+PS C:\Users\DADY\Desktop\projects\hotel-management-system> composer install --no-scripts
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Package operations: 6 installs, 2 updates, 21 removals
+  - Removing psr/cache (3.0.0)
+  - Removing openspout/openspout (v4.28.5)
+  - Removing masterminds/html5 (2.10.0)
+  - Removing livewire/livewire (v3.7.6)
+  - Removing league/csv (9.28.0)
+  - Removing kirschbaum-development/eloquent-power-joins (4.2.11)
+  - Removing filament/widgets (v3.3.47)
+  - Removing filament/tables (v3.3.47)
+  - Removing filament/support (v3.3.47)
+  - Removing filament/notifications (v3.3.47)
+  - Removing filament/infolists (v3.3.47)
+  - Removing filament/forms (v3.3.47)
+  - Removing filament/filament (v3.3.47)
+  - Removing filament/actions (v3.3.47)
+  - Removing doctrine/deprecations (1.1.5)
+  - Removing doctrine/dbal (4.4.1)
+  - Removing danharrin/livewire-rate-limiting (v2.1.0)
+  - Removing danharrin/date-format-converter (v0.3.1)
+  - Removing blade-ui-kit/blade-icons (1.8.1)
+  - Removing blade-ui-kit/blade-heroicons (2.6.0)
+  - Removing anourvalar/eloquent-serialize (1.3.5)
+  - Upgrading brick/math (0.14.3 => 0.14.4): Extracting archive
+  - Upgrading phpunit/php-file-iterator (5.1.0 => 5.1.1): Extracting archive
+  - Installing spatie/image-optimizer (1.8.1): Extracting archive
+  - Installing spatie/temporary-directory (2.3.1): Extracting archive
+  - Installing spatie/image (3.9.1): Extracting archive
+  - Installing maennchen/zipstream-php (3.1.2): Extracting archive
+  - Installing composer/semver (3.4.4): Extracting archive
+  - Installing spatie/laravel-medialibrary (11.17.10): Extracting archive
+Generating optimized autoload files
+Class App\Http\Controllers\Auth\ForgotPasswordController located in ./app/Http/Controllers/ForgotPasswordController.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+Class App\Http\Controllers\Auth\ResetPasswordController located in ./app/Http/Controllers/ResetPasswordController.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+87 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+PS C:\Users\DADY\Desktop\projects\hotel-management-system> composer require spatie/laravel-medialibrary --no-scripts
+./composer.json has been updated
+Running composer update spatie/laravel-medialibrary
+Loading composer repositories with package information
+Updating dependencies
+Nothing to modify in lock file
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Nothing to install, update or remove
+Generating optimized autoload files
+Class App\Http\Controllers\Auth\ForgotPasswordController located in ./app/Http/Controllers/ForgotPasswordController.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+Class App\Http\Controllers\Auth\ResetPasswordController located in ./app/Http/Controllers/ResetPasswordController.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+87 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+No security vulnerability advisories found.
+Using version ^11.17 for spatie/laravel-medialibrary
+PS C:\Users\DADY\Desktop\projects\hotel-management-system> php  artisan  serve
+
+In Application.php line 961:
+
+  Class "BladeUI\Heroicons\BladeHeroiconsServiceProvider" not found
+
+
+PS C:\Users\DADY\Desktop\projects\hotel-management-system> composer dump-autoload
+Generating optimized autoload files
+Class App\Http\Controllers\Auth\ForgotPasswordController located in ./app/Http/Controllers/ForgotPasswordController.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+Class App\Http\Controllers\Auth\ResetPasswordController located in ./app/Http/Controllers/ResetPasswordController.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+> @php artisan package:discover --ansi
+
+   INFO  Discovering packages.
+
+  laravel/pail .................................................................................................. DONE
+  laravel/sail .................................................................................................. DONE
+  laravel/tinker ................................................................................................ DONE
+  nesbot/carbon ................................................................................................. DONE
+  nunomaduro/collision .......................................................................................... DONE
+  nunomaduro/termwind ........................................................................................... DONE
+  spatie/laravel-medialibrary ................................................................................... DONE
+
+Generated optimized autoload files containing 6557 classes
+PS C:\Users\DADY\Desktop\projects\hotel-management-system> php artisan package:discover
+
+   INFO  Discovering packages.
+
+  laravel/pail .................................................................................................. DONE
+  laravel/sail .................................................................................................. DONE
+  laravel/tinker ................................................................................................ DONE
+  nesbot/carbon ................................................................................................. DONE
+  nunomaduro/collision .......................................................................................... DONE
+  nunomaduro/termwind ........................................................................................... DONE
+  spatie/laravel-medialibrary ................................................................................... DONE
+
+PS C:\Users\DADY\Desktop\projects\hotel-management-system> php  artisan  serve
+
+   INFO  Server running on [http://127.0.0.1:8000].
+
+  Press Ctrl+C to stop the server

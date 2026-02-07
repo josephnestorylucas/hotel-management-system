@@ -6,6 +6,7 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Room extends Model
 {
@@ -32,8 +33,34 @@ class Room extends Model
         return $this->hasMany(Reservation::class);
     }
 
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
     public function isAvailable(): bool
     {
         return $this->status === 'available' && $this->is_active === true;
+    }
+
+    /**
+     * Scope to get rooms available for a specific date range.
+     * Checks both bookings and reservations for conflicts.
+     */
+    public function scopeAvailableForDates($query, string $checkIn, string $checkOut)
+    {
+        return $query->where('status', 'available')
+            ->where('is_active', true)
+            ->whereDoesntHave('bookings', function ($q) use ($checkIn, $checkOut) {
+                $q->where('check_in_date', '<', $checkOut)
+                  ->where('check_out_date', '>', $checkIn)
+                  ->whereNotIn('status', ['cancelled', 'no_show', 'checked_out']);
+            })
+            ->whereDoesntHave('reservations', function ($q) use ($checkIn, $checkOut) {
+                $q->where('check_in_date', '<', $checkOut)
+                  ->where('check_out_date', '>', $checkIn)
+                  ->whereNotIn('status', ['cancelled', 'no_show', 'checked_out'])
+                  ->whereNull('booking_id');
+            });
     }
 }

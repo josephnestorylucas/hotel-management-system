@@ -72,6 +72,15 @@ class RoomType extends Model implements HasMedia
     }
 
     /**
+     * Get the price per night (alias for base_rate).
+     * Provides compatibility with views referencing price_per_night.
+     */
+    public function getPricePerNightAttribute(): float
+    {
+        return (float) $this->base_rate;
+    }
+
+    /**
      * Get the main image URL.
      */
     public function getImageUrlAttribute(): ?string

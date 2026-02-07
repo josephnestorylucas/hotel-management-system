@@ -9,7 +9,7 @@ class Reservation extends Model {
     use HasUuid;
 
     protected $fillable = [
-        'reservation_number', 'room_id', 'guest_id', 'guest_name', 'guest_phone', 'guest_email',
+        'reservation_number', 'room_id', 'guest_id', 'booking_id', 'guest_name', 'guest_phone', 'guest_email',
         'check_in_date', 'check_out_date', 'number_of_guests', 'status', 'total_amount', 'created_by'
     ];
 
@@ -36,6 +36,10 @@ class Reservation extends Model {
 
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function booking(): BelongsTo {
+        return $this->belongsTo(Booking::class);
     }
 
     /**

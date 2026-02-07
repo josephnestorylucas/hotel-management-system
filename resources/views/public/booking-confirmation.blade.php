@@ -48,8 +48,8 @@
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-center">
-                    <p class="text-white/80 font-semibold tracking-widest uppercase text-sm mb-1">Confirmation Number</p>
-                    <h2 class="text-3xl font-bold text-white tracking-wider">MRK-{{ str_pad($reservation->id, 6, '0', STR_PAD_LEFT) }}</h2>
+                    <p class="text-white/80 font-semibold tracking-widest uppercase text-sm mb-1">Booking Number</p>
+                    <h2 class="text-3xl font-bold text-white tracking-wider">{{ $booking->booking_number }}</h2>
                 </div>
 
                 <!-- Reservation Details -->
@@ -61,16 +61,22 @@
                             <div class="space-y-3">
                                 <div>
                                     <span class="text-gray-500 text-sm">Name</span>
-                                    <p class="font-semibold text-secondary">{{ $reservation->guest_name }}</p>
+                                    <p class="font-semibold text-secondary">{{ $booking->guest_name }}</p>
                                 </div>
                                 <div>
                                     <span class="text-gray-500 text-sm">Email</span>
-                                    <p class="font-semibold text-secondary">{{ $reservation->guest_email }}</p>
+                                    <p class="font-semibold text-secondary">{{ $booking->guest_email }}</p>
                                 </div>
                                 <div>
                                     <span class="text-gray-500 text-sm">Phone</span>
-                                    <p class="font-semibold text-secondary">{{ $reservation->guest_phone }}</p>
+                                    <p class="font-semibold text-secondary">{{ $booking->guest_phone }}</p>
                                 </div>
+                                @if($booking->guest_country)
+                                <div>
+                                    <span class="text-gray-500 text-sm">Country</span>
+                                    <p class="font-semibold text-secondary">{{ $booking->guest_country }}</p>
+                                </div>
+                                @endif
                             </div>
                         </div>
 
@@ -81,18 +87,18 @@
                                 <div class="flex justify-between">
                                     <div>
                                         <span class="text-gray-500 text-sm">Check-in</span>
-                                        <p class="font-semibold text-secondary">{{ \Carbon\Carbon::parse($reservation->check_in_date)->format('D, M d, Y') }}</p>
+                                        <p class="font-semibold text-secondary">{{ $booking->check_in_date->format('D, M d, Y') }}</p>
                                         <p class="text-sm text-gray-500">After 3:00 PM</p>
                                     </div>
                                     <div class="text-right">
                                         <span class="text-gray-500 text-sm">Check-out</span>
-                                        <p class="font-semibold text-secondary">{{ \Carbon\Carbon::parse($reservation->check_out_date)->format('D, M d, Y') }}</p>
+                                        <p class="font-semibold text-secondary">{{ $booking->check_out_date->format('D, M d, Y') }}</p>
                                         <p class="text-sm text-gray-500">Before 11:00 AM</p>
                                     </div>
                                 </div>
                                 <div>
                                     <span class="text-gray-500 text-sm">Guests</span>
-                                    <p class="font-semibold text-secondary">{{ $reservation->guests_count }} {{ $reservation->guests_count > 1 ? 'Guests' : 'Guest' }}</p>
+                                    <p class="font-semibold text-secondary">{{ $booking->number_of_guests }} {{ $booking->number_of_guests > 1 ? 'Guests' : 'Guest' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -104,14 +110,14 @@
                         <div class="flex items-start gap-6">
                             <div class="w-32 h-24 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
                                 <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?w=300&h=200&fit=crop" 
-                                     alt="{{ $reservation->room->roomType->name ?? 'Room' }}" class="w-full h-full object-cover">
+                                     alt="{{ $booking->room->roomType->name ?? 'Room' }}" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-secondary">{{ $reservation->room->roomType->name ?? 'Room' }}</h4>
-                                <p class="text-gray-500">Room {{ $reservation->room->room_number }} &bull; Floor {{ $reservation->room->floor->number ?? 'N/A' }}</p>
-                                @if($reservation->special_requests)
+                                <h4 class="text-lg font-bold text-secondary">{{ $booking->room->roomType->name ?? 'Room' }}</h4>
+                                <p class="text-gray-500">Room {{ $booking->room->room_number }} &bull; Floor {{ $booking->room->floor->number ?? 'N/A' }}</p>
+                                @if($booking->special_requests)
                                     <p class="text-sm text-gray-500 mt-2">
-                                        <span class="font-medium">Special Requests:</span> {{ $reservation->special_requests }}
+                                        <span class="font-medium">Special Requests:</span> {{ $booking->special_requests }}
                                     </p>
                                 @endif
                             </div>
@@ -122,8 +128,8 @@
                     <div class="border-t border-gray-100 pt-6">
                         <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Payment Summary</h3>
                         @php
-                            $nights = (strtotime($reservation->check_out_date) - strtotime($reservation->check_in_date)) / (60 * 60 * 24);
-                            $pricePerNight = $reservation->room->roomType->price_per_night ?? 150;
+                            $nights = $booking->nights;
+                            $pricePerNight = $booking->room->roomType->price_per_night ?? 150;
                         @endphp
                         <div class="space-y-2">
                             <div class="flex justify-between text-gray-500">
@@ -136,7 +142,7 @@
                             </div>
                             <div class="flex justify-between text-lg font-bold text-secondary pt-2 border-t border-gray-100 mt-2">
                                 <span>Total</span>
-                                <span class="text-primary">${{ number_format($reservation->total_price, 2) }}</span>
+                                <span class="text-primary">${{ number_format($booking->total_amount, 2) }}</span>
                             </div>
                         </div>
                         <p class="text-sm text-gray-500 mt-4">Payment will be collected at check-in.</p>
@@ -148,9 +154,9 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                            <span class="text-sm font-medium text-gray-700">Status: {{ ucfirst($reservation->status) }}</span>
+                            <span class="text-sm font-medium text-gray-700">Status: {{ ucfirst($booking->status) }}</span>
                         </div>
-                        <span class="text-sm text-gray-500">A confirmation email has been sent to {{ $reservation->guest_email }}</span>
+                        <span class="text-sm text-gray-500">A confirmation email has been sent to {{ $booking->guest_email }}</span>
                     </div>
                 </div>
             </div>

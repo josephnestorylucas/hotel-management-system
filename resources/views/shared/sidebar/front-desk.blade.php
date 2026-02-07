@@ -29,6 +29,24 @@
         <span class="font-medium">All Reservations</span>
     </a>
 
+    <div class="mt-6 mb-2">
+        <div class="px-3 text-xs font-bold text-primary uppercase tracking-wider">Bookings</div>
+    </div>
+
+    <a href="{{ route('bookings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 {{ request()->routeIs('bookings.index') ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg' : 'text-gray-700 hover:bg-blue-50 hover:text-primary' }} transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <span class="font-medium">All Bookings</span>
+    </a>
+
+    <a href="{{ route('bookings.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 {{ request()->routeIs('bookings.create') ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg' : 'text-gray-700 hover:bg-blue-50 hover:text-primary' }} transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        <span class="font-medium">New Booking</span>
+    </a>
+
     <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-gray-700 hover:bg-blue-50 hover:text-primary transition-all">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>

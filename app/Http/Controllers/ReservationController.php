@@ -51,20 +51,20 @@ class ReservationController extends Controller
             $guestData = $request->validate([
                 'guest_first_name' => 'required|string|max:255',
                 'guest_last_name' => 'required|string|max:255',
-                'guest_email' => 'nullable|email|max:255|unique:guests,email',
+                'guest_email' => 'required|email|max:255|unique:guests,email',
                 'guest_phone' => 'required|string|max:20',
-                'guest_id_number' => 'nullable|string|max:50',
-                'guest_nationality' => 'nullable|string|max:100',
+                'guest_id_number' => 'required|string|max:50',
+                'guest_nationality' => 'required|string|max:100',
             ]);
 
             // Create new guest
             $guest = Guest::create([
                 'first_name' => $guestData['guest_first_name'],
                 'last_name' => $guestData['guest_last_name'],
-                'email' => $guestData['guest_email'] ?? null,
+                'email' => $guestData['guest_email'],
                 'phone_number' => $guestData['guest_phone'],
-                'id_number' => $guestData['guest_id_number'] ?? null,
-                'nationality' => $guestData['guest_nationality'] ?? null,
+                'id_number' => $guestData['guest_id_number'],
+                'nationality' => $guestData['guest_nationality'],
             ]);
 
             $guestId = $guest->id;
@@ -138,20 +138,20 @@ class ReservationController extends Controller
             $guestData = $request->validate([
                 'guest_first_name' => 'required|string|max:255',
                 'guest_last_name' => 'required|string|max:255',
-                'guest_email' => 'nullable|email|max:255|unique:guests,email',
+                'guest_email' => 'required|email|max:255|unique:guests,email',
                 'guest_phone' => 'required|string|max:20',
-                'guest_id_number' => 'nullable|string|max:50',
-                'guest_nationality' => 'nullable|string|max:100',
+                'guest_id_number' => 'required|string|max:50',
+                'guest_nationality' => 'required|string|max:100',
             ]);
 
             // Create new guest
             $guest = Guest::create([
                 'first_name' => $guestData['guest_first_name'],
                 'last_name' => $guestData['guest_last_name'],
-                'email' => $guestData['guest_email'] ?? null,
+                'email' => $guestData['guest_email'],
                 'phone_number' => $guestData['guest_phone'],
-                'id_number' => $guestData['guest_id_number'] ?? null,
-                'nationality' => $guestData['guest_nationality'] ?? null,
+                'id_number' => $guestData['guest_id_number'],
+                'nationality' => $guestData['guest_nationality'],
             ]);
 
             $guestId = $guest->id;

@@ -112,7 +112,7 @@
                         <!-- Nationality -->
                         <div>
                             <label for="nationality" class="block text-sm font-semibold text-secondary mb-2">
-                                Nationality <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                Nationality <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -120,7 +120,8 @@
                                 id="nationality"
                                 value="{{ old('nationality', $guest->nationality) }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('nationality') border-red-500 @enderror"
-                                placeholder="e.g., American, British">
+                                placeholder="e.g., American, British"
+                                required>
                             @error('nationality')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -172,14 +173,15 @@
                         <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-semibold text-secondary mb-2">
-                                Email Address <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                Email Address <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="email" 
                                 name="email" 
                                 id="email"
                                 value="{{ old('email', $guest->email) }}" 
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('email') border-red-500 @enderror">
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('email') border-red-500 @enderror"
+                                required>
                             @error('email')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -229,14 +231,15 @@
                         <!-- ID Number -->
                         <div>
                             <label for="id_number" class="block text-sm font-semibold text-secondary mb-2">
-                                ID/Passport Number <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                ID/Passport Number <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
                                 name="id_number" 
                                 id="id_number"
                                 value="{{ old('id_number', $guest->id_number) }}" 
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('id_number') border-red-500 @enderror">
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('id_number') border-red-500 @enderror"
+                                required>
                             @error('id_number')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

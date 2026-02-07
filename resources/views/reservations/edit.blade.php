@@ -210,7 +210,7 @@
                             <!-- Email -->
                             <div>
                                 <label for="guest_email" class="block text-sm font-semibold text-secondary mb-2">
-                                    Email Address <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                    Email Address <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="email" 
@@ -218,7 +218,8 @@
                                     id="guest_email"
                                     value="{{ old('guest_email') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_email') border-red-500 @enderror"
-                                    placeholder="guest@example.com">
+                                    placeholder="guest@example.com"
+                                    x-bind:required="changeGuest === 'new'">
                                 @error('guest_email')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -232,7 +233,7 @@
                             <!-- ID Number -->
                             <div>
                                 <label for="guest_id_number" class="block text-sm font-semibold text-secondary mb-2">
-                                    ID/Passport Number <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                    ID/Passport Number <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -240,13 +241,14 @@
                                     id="guest_id_number"
                                     value="{{ old('guest_id_number') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id_number') border-red-500 @enderror"
-                                    placeholder="Enter ID number">
+                                    placeholder="Enter ID number"
+                                    x-bind:required="changeGuest === 'new'">
                             </div>
 
                             <!-- Nationality -->
                             <div>
                                 <label for="guest_nationality" class="block text-sm font-semibold text-secondary mb-2">
-                                    Nationality <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                    Nationality <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -254,7 +256,8 @@
                                     id="guest_nationality"
                                     value="{{ old('guest_nationality') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_nationality') border-red-500 @enderror"
-                                    placeholder="e.g., American, British">
+                                    placeholder="e.g., American, British"
+                                    x-bind:required="changeGuest === 'new'">
                             </div>
                         </div>
                     </div>

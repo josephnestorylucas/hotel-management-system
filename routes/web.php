@@ -22,7 +22,10 @@ use App\Http\Controllers\LaundryOrderController;
 use App\Http\Controllers\BookingChargeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SnippePaymentController;
-
+use App\Http\Controllers\ConferenceHallController;
+use App\Http\Controllers\ConferenceBookingController;
+use App\Http\Controllers\ConferenceController;
+use App\Http\Controllers\ConferenceParticipantController;
 // Public welcome page (accessible to everyone)
 Route::get('/', function () {
     return view('welcome');
@@ -190,5 +193,45 @@ Route::middleware(['auth'])->group(function () {
         Route::get('payments/{payment}/check-status', [PaymentController::class, 'checkStatus'])->name('payments.check-status');
         Route::post('payments/{payment}/trigger-push', [PaymentController::class, 'triggerPush'])->name('payments.trigger-push');
         Route::post('payments/{payment}/refund', [PaymentController::class, 'refund'])->name('payments.refund');
+    });
+
+    // Conference Management Routes (Front Desk, Admin, Supervisor)
+    Route::middleware(['role:admin,supervisor,front_desk'])->group(function () {
+        // Conference Halls
+        Route::resource('conference-halls', ConferenceHallController::class);
+        
+        // Conference Bookings
+        Route::get('conference-bookings', [ConferenceBookingController::class, 'index'])->name('conference-bookings.index');
+        Route::get('conference-bookings/create', [ConferenceBookingController::class, 'create'])->name('conference-bookings.create');
+        Route::post('conference-bookings', [ConferenceBookingController::class, 'store'])->name('conference-bookings.store');
+        Route::get('conference-bookings/{conferenceBooking}', [ConferenceBookingController::class, 'show'])->name('conference-bookings.show');
+        Route::get('conference-bookings/{conferenceBooking}/edit', [ConferenceBookingController::class, 'edit'])->name('conference-bookings.edit');
+        Route::put('conference-bookings/{conferenceBooking}', [ConferenceBookingController::class, 'update'])->name('conference-bookings.update');
+        Route::delete('conference-bookings/{conferenceBooking}', [ConferenceBookingController::class, 'destroy'])->name('conference-bookings.destroy');
+        Route::post('conference-bookings/{conferenceBooking}/confirm', [ConferenceBookingController::class, 'confirm'])->name('conference-bookings.confirm');
+        Route::post('conference-bookings/{conferenceBooking}/cancel', [ConferenceBookingController::class, 'cancel'])->name('conference-bookings.cancel');
+        Route::get('conference-bookings/check-availability', [ConferenceBookingController::class, 'checkAvailability'])->name('conference-bookings.check-availability');
+        
+        // Conferences
+        Route::get('conferences', [ConferenceController::class, 'index'])->name('conferences.index');
+        Route::get('conferences/create', [ConferenceController::class, 'create'])->name('conferences.create');
+        Route::post('conferences', [ConferenceController::class, 'store'])->name('conferences.store');
+        Route::get('conferences/{conference}', [ConferenceController::class, 'show'])->name('conferences.show');
+        Route::get('conferences/{conference}/edit', [ConferenceController::class, 'edit'])->name('conferences.edit');
+        Route::put('conferences/{conference}', [ConferenceController::class, 'update'])->name('conferences.update');
+        Route::delete('conferences/{conference}', [ConferenceController::class, 'destroy'])->name('conferences.destroy');
+        
+        // Conference Participants
+        Route::post('conferences/{conference}/participants', [ConferenceParticipantController::class, 'store'])->name('conference-participants.store');
+        Route::put('conference-participants/{participant}', [ConferenceParticipantController::class, 'update'])->name('conference-participants.update');
+        Route::delete('conference-participants/{participant}', [ConferenceParticipantController::class, 'destroy'])->name('conference-participants.destroy');
+        Route::get('conference-participants/{participant}/badge', [ConferenceParticipantController::class, 'printBadge'])->name('conference-participants.badge');
+        Route::get('conferences/{conference}/badges', [ConferenceParticipantController::class, 'printAllBadges'])->name('conferences.badges');
+        Route::post('conference-participants/{participant}/convert-to-guest', [ConferenceParticipantController::class, 'convertToGuest'])->name('conference-participants.convert-to-guest');
+        
+        // Check-in
+        Route::get('conferences/{conference}/check-in', [ConferenceParticipantController::class, 'checkInDashboard'])->name('conferences.check-in');
+        Route::post('conference-check-in/scan', [ConferenceParticipantController::class, 'checkInByScan'])->name('conference-check-in.scan');
+        Route::post('conference-check-in/manual', [ConferenceParticipantController::class, 'checkInByCode'])->name('conference-check-in.manual');
     });
 });

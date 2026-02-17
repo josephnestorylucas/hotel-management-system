@@ -66,8 +66,8 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Returned</p>
-                <p class="text-3xl font-extrabold text-teal-600 mt-1">{{ $stats['returned_laundry'] }}</p>
+                <p class="text-sm font-medium text-gray-500">Delivered</p>
+                <p class="text-3xl font-extrabold text-teal-600 mt-1">{{ $stats['delivered_laundry'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl flex items-center justify-center">
                 <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@
                     'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'bar' => 'bg-yellow-500', 'label' => 'Pending'],
                     'in_progress' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-700', 'bar' => 'bg-blue-500', 'label' => 'In Progress'],
                     'completed' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'bar' => 'bg-green-500', 'label' => 'Completed'],
-                    'returned' => ['bg' => 'bg-teal-100', 'text' => 'text-teal-700', 'bar' => 'bg-teal-500', 'label' => 'Returned'],
+                    'delivered' => ['bg' => 'bg-teal-100', 'text' => 'text-teal-700', 'bar' => 'bg-teal-500', 'label' => 'Delivered'],
                 ];
                 $totalLaundry = array_sum($laundryStatusCounts);
             @endphp
@@ -163,57 +163,57 @@
     </div>
 </div>
 
-<!-- Recent Laundry Tasks -->
+<!-- Recent Laundry Orders -->
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-    <h3 class="text-lg font-extrabold text-secondary mb-6">Recent Laundry Tasks</h3>
+    <h3 class="text-lg font-extrabold text-secondary mb-6">Recent Laundry Orders</h3>
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                    <th class="pb-3 pr-4">Task</th>
+                    <th class="pb-3 pr-4">Order #</th>
+                    <th class="pb-3 pr-4">Guest</th>
                     <th class="pb-3 pr-4">Room</th>
-                    <th class="pb-3 pr-4">Assigned To</th>
-                    <th class="pb-3 pr-4">Created By</th>
+                    <th class="pb-3 pr-4">Total</th>
                     <th class="pb-3 pr-4">Date</th>
                     <th class="pb-3">Status</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-                @forelse($recentLaundryTasks as $task)
+                @forelse($recentLaundryOrders as $order)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="py-3 pr-4">
-                        <span class="font-medium text-secondary">{{ $task->description ?? 'Laundry Task' }}</span>
+                        <a href="{{ route('laundry.show', $order) }}" class="font-semibold text-blue-600 hover:text-blue-800">{{ $order->order_number }}</a>
                     </td>
                     <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $task->reservation->room->room_number ?? 'N/A' }}</span>
+                        <span class="text-sm text-gray-600">{{ $order->guest->first_name ?? '' }} {{ $order->guest->last_name ?? '' }}</span>
                     </td>
                     <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $task->assignedTo->name ?? 'Unassigned' }}</span>
+                        <span class="text-sm text-gray-600">{{ $order->booking->room->room_number ?? 'N/A' }}</span>
                     </td>
                     <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $task->creator->name ?? 'N/A' }}</span>
+                        <span class="font-bold text-green-600">{{ number_format($order->total_amount) }}</span>
                     </td>
                     <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $task->created_at->format('M d, Y') }}</span>
+                        <span class="text-sm text-gray-600">{{ $order->created_at->format('M d, Y') }}</span>
                     </td>
                     <td class="py-3">
                         @php
-                            $taskBadge = match($task->status) {
+                            $orderBadge = match($order->status) {
                                 'pending' => 'bg-yellow-100 text-yellow-800',
                                 'in_progress' => 'bg-blue-100 text-blue-800',
                                 'completed' => 'bg-green-100 text-green-800',
-                                'returned' => 'bg-teal-100 text-teal-800',
+                                'delivered' => 'bg-teal-100 text-teal-800',
                                 default => 'bg-gray-100 text-gray-800',
                             };
                         @endphp
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $taskBadge }}">
-                            {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $orderBadge }}">
+                            {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                         </span>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="py-8 text-center text-gray-400">No laundry tasks found.</td>
+                    <td colspan="6" class="py-8 text-center text-gray-400">No laundry orders found.</td>
                 </tr>
                 @endforelse
             </tbody>

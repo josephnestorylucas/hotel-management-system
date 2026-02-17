@@ -169,16 +169,17 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         @php
             $laundryStats = [
-                'total' => \App\Models\LaundryTask::count(),
-                'pending' => \App\Models\LaundryTask::where('status', 'pending')->count(),
-                'in_progress' => \App\Models\LaundryTask::where('status', 'in_progress')->count(),
-                'completed' => \App\Models\LaundryTask::where('status', 'completed')->count(),
+                'total' => \App\Models\LaundryOrder::count(),
+                'pending' => \App\Models\LaundryOrder::where('status', 'pending')->count(),
+                'in_progress' => \App\Models\LaundryOrder::where('status', 'in_progress')->count(),
+                'completed' => \App\Models\LaundryOrder::where('status', 'completed')->count(),
+                'delivered' => \App\Models\LaundryOrder::where('status', 'delivered')->count(),
             ];
         @endphp
         
         <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
             <div class="text-2xl font-extrabold text-purple-600">{{ $laundryStats['total'] }}</div>
-            <div class="text-sm text-gray-600 font-medium">Total Tasks</div>
+            <div class="text-sm text-gray-600 font-medium">Total Orders</div>
         </div>
         <div class="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200">
             <div class="text-2xl font-extrabold text-yellow-600">{{ $laundryStats['pending'] }}</div>
@@ -189,8 +190,8 @@
             <div class="text-sm text-gray-600 font-medium">In Progress</div>
         </div>
         <div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
-            <div class="text-2xl font-extrabold text-green-600">{{ $laundryStats['completed'] }}</div>
-            <div class="text-sm text-gray-600 font-medium">Completed</div>
+            <div class="text-2xl font-extrabold text-green-600">{{ $laundryStats['completed'] + $laundryStats['delivered'] }}</div>
+            <div class="text-sm text-gray-600 font-medium">Done / Delivered</div>
         </div>
     </div>
 </div>

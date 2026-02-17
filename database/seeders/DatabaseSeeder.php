@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder {
             RoomSeeder::class,
             ReservationSeeder::class,
             BookingSeeder::class,
+            LaundryItemSeeder::class,
         ]);
     }
 }

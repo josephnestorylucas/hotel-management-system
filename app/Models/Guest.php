@@ -98,6 +98,11 @@ class Guest extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
+    public function laundryOrders(): HasMany
+    {
+        return $this->hasMany(LaundryOrder::class);
+    }
+
     /**
      * Get the guest's photo URL using Spatie Media Library.
      * Returns the original photo URL or null if not set.

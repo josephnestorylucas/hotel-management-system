@@ -259,40 +259,49 @@
         </div>
     </div>
 
-    <!-- Recent Laundry Tasks -->
+    <!-- Recent Laundry Orders -->
     <div class="pt-6 border-t border-gray-100">
-        <h4 class="font-bold text-secondary mb-4">Recent Laundry Tasks</h4>
+        <h4 class="font-bold text-secondary mb-4">Recent Laundry Orders</h4>
         <div class="overflow-x-auto">
             <table class="min-w-full">
                 <thead class="bg-purple-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Task #</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Order #</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Guest</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Room</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Assigned To</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Total</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-purple-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
-                    @forelse($recentLaundryTasks as $task)
+                    @forelse($recentLaundryOrders as $order)
                     <tr class="hover:bg-purple-50/50 transition-colors">
                         <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-secondary">
-                            {{ substr($task->task_number, -6) }}
+                            {{ $order->order_number }}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">{{ $task->guest_name }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">{{ $task->room_number }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">{{ $task->assignedTo->name }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm">{{ $order->guest->first_name ?? '' }} {{ $order->guest->last_name ?? '' }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">{{ $order->booking->room->room_number ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-green-600">{{ number_format($order->total_amount) }}</td>
                         <td class="px-4 py-3 whitespace-nowrap">
-                            @include('components.laundry-status-badge', ['status' => $task->status])
+                            @php
+                                $badge = match($order->status) {
+                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    'in_progress' => 'bg-blue-100 text-blue-800',
+                                    'completed' => 'bg-green-100 text-green-800',
+                                    'delivered' => 'bg-purple-100 text-purple-800',
+                                    default => 'bg-gray-100 text-gray-800',
+                                };
+                            @endphp
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $badge }}">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm">
-                            <a href="{{ route('laundry.edit', $task) }}" class="text-primary hover:text-blue-700 font-semibold">View</a>
+                            <a href="{{ route('laundry.show', $order) }}" class="text-primary hover:text-blue-700 font-semibold">View</a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">No recent laundry tasks</td>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">No recent laundry orders</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -305,7 +314,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Create Laundry Task
+            Create Laundry Order
         </a>
     </div>
 </div>

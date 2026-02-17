@@ -17,6 +17,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\LaundryTaskController;
+use App\Http\Controllers\LaundryItemController;
+use App\Http\Controllers\LaundryOrderController;
+use App\Http\Controllers\BookingChargeController;
 
 // Public welcome page (accessible to everyone)
 Route::get('/', function () {
@@ -115,24 +118,57 @@ Route::middleware(['auth'])->group(function () {
     Route::get('guests-search', [GuestController::class, 'search'])->name('guests.search');
     Route::delete('guests/{guest}/media/{media}', [GuestController::class, 'removeMedia'])->name('guests.media.destroy');
 
-    // Laundry Management Routes
+    // Laundry Management Routes (Legacy - keeping for backward compatibility)
     // Combined: Admin, Supervisor, and House Help
     Route::middleware(['role:admin,supervisor,house_help'])->group(function () {
-        // All roles can view laundry index
-        Route::get('laundry', [LaundryTaskController::class, 'index'])->name('laundry.index');
-        
-        // All roles can mark tasks as returned (controller will handle permission logic)
-        Route::post('laundry/{laundryTask}/mark-returned', [LaundryTaskController::class, 'markAsReturned'])->name('laundry.mark-returned');
+        Route::get('laundry-tasks', [LaundryTaskController::class, 'index'])->name('laundry-tasks.index');
+        Route::post('laundry-tasks/{laundryTask}/mark-returned', [LaundryTaskController::class, 'markAsReturned'])->name('laundry-tasks.mark-returned');
     });
 
-    // Admin & Supervisor only - Full CRUD
     Route::middleware(['role:admin,supervisor'])->group(function () {
-        Route::get('laundry/create', [LaundryTaskController::class, 'create'])->name('laundry.create');
-        Route::post('laundry', [LaundryTaskController::class, 'store'])->name('laundry.store');
-        Route::get('laundry/{laundryTask}/edit', [LaundryTaskController::class, 'edit'])->name('laundry.edit');
-        Route::put('laundry/{laundryTask}', [LaundryTaskController::class, 'update'])->name('laundry.update');
-        Route::delete('laundry/{laundryTask}', [LaundryTaskController::class, 'destroy'])->name('laundry.destroy');
-        Route::post('laundry/{laundryTask}/mark-in-progress', [LaundryTaskController::class, 'markAsInProgress'])->name('laundry.mark-in-progress');
-        Route::post('laundry/{laundryTask}/mark-completed', [LaundryTaskController::class, 'markAsCompleted'])->name('laundry.mark-completed');
+        Route::get('laundry-tasks/create', [LaundryTaskController::class, 'create'])->name('laundry-tasks.create');
+        Route::post('laundry-tasks', [LaundryTaskController::class, 'store'])->name('laundry-tasks.store');
+        Route::get('laundry-tasks/{laundryTask}/edit', [LaundryTaskController::class, 'edit'])->name('laundry-tasks.edit');
+        Route::put('laundry-tasks/{laundryTask}', [LaundryTaskController::class, 'update'])->name('laundry-tasks.update');
+        Route::delete('laundry-tasks/{laundryTask}', [LaundryTaskController::class, 'destroy'])->name('laundry-tasks.destroy');
+        Route::post('laundry-tasks/{laundryTask}/mark-in-progress', [LaundryTaskController::class, 'markAsInProgress'])->name('laundry-tasks.mark-in-progress');
+        Route::post('laundry-tasks/{laundryTask}/mark-completed', [LaundryTaskController::class, 'markAsCompleted'])->name('laundry-tasks.mark-completed');
+    });
+
+    // ═══ NEW LAUNDRY SYSTEM ═══
+
+    // Laundry Items (Admin & Supervisor - pricing management)
+    Route::middleware(['role:admin,supervisor'])->group(function () {
+        Route::resource('laundry-items', LaundryItemController::class);
+    });
+
+    // Laundry Orders - View (all staff roles)
+    Route::middleware(['role:admin,supervisor,front_desk,house_help,manager,store_keeper'])->group(function () {
+        Route::get('laundry', [LaundryOrderController::class, 'index'])->name('laundry.index');
+        Route::get('laundry/{laundryOrder}', [LaundryOrderController::class, 'show'])->name('laundry.show');
+        Route::get('laundry-orders/items', [LaundryOrderController::class, 'getItems'])->name('laundry.items.json');
+    });
+
+    // Laundry Orders - Create/Edit (Front Desk, Admin, Supervisor)
+    Route::middleware(['role:admin,supervisor,front_desk'])->group(function () {
+        Route::get('laundry-orders/create', [LaundryOrderController::class, 'create'])->name('laundry.create');
+        Route::post('laundry-orders', [LaundryOrderController::class, 'store'])->name('laundry.store');
+        Route::get('laundry-orders/{laundryOrder}/edit', [LaundryOrderController::class, 'edit'])->name('laundry.edit');
+        Route::put('laundry-orders/{laundryOrder}', [LaundryOrderController::class, 'update'])->name('laundry.update');
+        Route::delete('laundry-orders/{laundryOrder}', [LaundryOrderController::class, 'destroy'])->name('laundry.destroy');
+        Route::post('laundry-orders/{laundryOrder}/mark-delivered', [LaundryOrderController::class, 'markDelivered'])->name('laundry.mark-delivered');
+    });
+
+    // Laundry Orders - Status updates (House Help can mark in-progress & completed)
+    Route::middleware(['role:admin,supervisor,house_help'])->group(function () {
+        Route::post('laundry-orders/{laundryOrder}/mark-in-progress', [LaundryOrderController::class, 'markInProgress'])->name('laundry.mark-in-progress');
+        Route::post('laundry-orders/{laundryOrder}/mark-completed', [LaundryOrderController::class, 'markCompleted'])->name('laundry.mark-completed');
+    });
+
+    // Booking Charges
+    Route::middleware(['role:admin,supervisor,front_desk,manager'])->group(function () {
+        Route::get('bookings/{booking}/charges', [BookingChargeController::class, 'index'])->name('booking-charges.index');
+        Route::post('booking-charges/{bookingCharge}/mark-paid', [BookingChargeController::class, 'markPaid'])->name('booking-charges.mark-paid');
+        Route::post('bookings/{booking}/charges/mark-all-paid', [BookingChargeController::class, 'markAllPaid'])->name('booking-charges.mark-all-paid');
     });
 });

@@ -440,6 +440,7 @@ class BookingController extends Controller
 
     /**
      * Check out a checked-in booking.
+     * Collects all unpaid booking charges and marks them as paid.
      */
     public function checkOut(Booking $booking)
     {
@@ -447,9 +448,27 @@ class BookingController extends Controller
             return back()->with('error', 'Only checked-in bookings can be checked out.');
         }
 
+        // Check for pending/undelivered laundry orders
+        $pendingLaundry = $booking->laundryOrders()
+            ->whereIn('status', ['pending', 'in_progress', 'completed'])
+            ->count();
+
+        if ($pendingLaundry > 0) {
+            return back()->with('error', 'Cannot check out: there are ' . $pendingLaundry . ' pending/undelivered laundry order(s). Please deliver all laundry first.');
+        }
+
+        // Collect all unpaid charges
+        $unpaidCharges = $booking->bookingCharges()->unpaid()->sum('amount');
+        $booking->bookingCharges()->unpaid()->update(['status' => 'paid']);
+
         $booking->update(['status' => 'checked_out']);
 
-        return back()->with('success', 'Guest checked out successfully.');
+        $message = 'Guest checked out successfully.';
+        if ($unpaidCharges > 0) {
+            $message .= ' Total service charges collected: ' . number_format($unpaidCharges);
+        }
+
+        return back()->with('success', $message);
     }
 
     /**

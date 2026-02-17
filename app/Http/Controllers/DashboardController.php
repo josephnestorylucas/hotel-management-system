@@ -8,6 +8,8 @@ use App\Models\Reservation;
 use App\Models\Building;
 use App\Models\User;
 use App\Models\LaundryTask;
+use App\Models\LaundryOrder;
+use App\Models\BookingCharge;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller {
@@ -103,11 +105,12 @@ class DashboardController extends Controller {
             'pending_reservations' => Reservation::where('status', 'pending')->count(),
         ];
 
-        // Laundry stats
-        $stats['pending_laundry'] = LaundryTask::where('status', 'pending')->count();
-        $stats['inprogress_laundry'] = LaundryTask::where('status', 'in_progress')->count();
-        $stats['completed_laundry'] = LaundryTask::where('status', 'completed')->count();
-        $stats['today_laundry'] = LaundryTask::whereDate('created_at', today())->count();
+        // Laundry stats (new system)
+        $stats['pending_laundry'] = LaundryOrder::where('status', 'pending')->count();
+        $stats['inprogress_laundry'] = LaundryOrder::where('status', 'in_progress')->count();
+        $stats['completed_laundry'] = LaundryOrder::where('status', 'completed')->count();
+        $stats['delivered_laundry'] = LaundryOrder::where('status', 'delivered')->count();
+        $stats['today_laundry'] = LaundryOrder::whereDate('created_at', today())->count();
 
         $occupancyRate = $stats['total_rooms'] > 0 
             ? round(($stats['occupied_rooms'] / $stats['total_rooms']) * 100, 1) 
@@ -143,8 +146,8 @@ class DashboardController extends Controller {
             ->whereIn('status', ['dirty', 'out_of_order'])
             ->get();
 
-        // Recent laundry tasks
-        $recentLaundryTasks = LaundryTask::with(['assignedTo', 'reservation'])
+        // Recent laundry orders (new system)
+        $recentLaundryOrders = LaundryOrder::with(['guest', 'booking.room', 'creator'])
             ->latest()
             ->limit(5)
             ->get();
@@ -164,37 +167,37 @@ class DashboardController extends Controller {
             'todayActivity',
             'upcomingArrivals',
             'roomsNeedingAttention',
-            'recentLaundryTasks'
+            'recentLaundryOrders'
         ));
     }
 
     private function houseHelpDashboard() {
-        $userId = auth()->id();
-        
         $stats = [
-            'my_pending_tasks' => LaundryTask::where('assigned_to', $userId)->where('status', 'pending')->count(),
-            'my_inprogress_tasks' => LaundryTask::where('assigned_to', $userId)->where('status', 'in_progress')->count(),
-            'my_completed_tasks' => LaundryTask::where('assigned_to', $userId)->where('status', 'completed')->count(),
-            'my_returned_tasks' => LaundryTask::where('assigned_to', $userId)->where('status', 'returned')->count(),
-            'today_tasks' => LaundryTask::where('assigned_to', $userId)->whereDate('created_at', today())->count(),
-            'total_tasks' => LaundryTask::where('assigned_to', $userId)->count(),
+            'pending_orders' => LaundryOrder::where('status', 'pending')->count(),
+            'inprogress_orders' => LaundryOrder::where('status', 'in_progress')->count(),
+            'completed_orders' => LaundryOrder::where('status', 'completed')->count(),
+            'delivered_orders' => LaundryOrder::where('status', 'delivered')->count(),
+            'today_orders' => LaundryOrder::whereDate('created_at', today())->count(),
+            'total_orders' => LaundryOrder::count(),
         ];
 
-        // My tasks
-        $myTasks = LaundryTask::with(['reservation.room', 'creator'])
-            ->where('assigned_to', $userId)
+        // Room stats for house help
+        $stats['dirty_rooms'] = Room::where('status', 'dirty')->count();
+        $stats['out_of_order_rooms'] = Room::where('status', 'out_of_order')->count();
+
+        // Recent laundry orders
+        $recentOrders = LaundryOrder::with(['guest', 'booking.room', 'creator'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
-        // Tasks by status
-        $tasksByStatus = LaundryTask::where('assigned_to', $userId)
-            ->select('status', DB::raw('count(*) as count'))
+        // Orders by status
+        $ordersByStatus = LaundryOrder::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        return view('dashboards.house-help', compact('stats', 'myTasks', 'tasksByStatus'));
+        return view('dashboards.house-help', compact('stats', 'recentOrders', 'ordersByStatus'));
     }
 
     private function frontDeskDashboard() {
@@ -326,21 +329,21 @@ class DashboardController extends Controller {
             'out_of_order_rooms' => Room::where('status', 'out_of_order')->count(),
         ];
 
-        // Laundry stats
-        $stats['pending_laundry'] = LaundryTask::where('status', 'pending')->count();
-        $stats['inprogress_laundry'] = LaundryTask::where('status', 'in_progress')->count();
-        $stats['completed_laundry'] = LaundryTask::where('status', 'completed')->count();
-        $stats['returned_laundry'] = LaundryTask::where('status', 'returned')->count();
-        $stats['today_laundry'] = LaundryTask::whereDate('created_at', today())->count();
+        // Laundry stats (new system)
+        $stats['pending_laundry'] = LaundryOrder::where('status', 'pending')->count();
+        $stats['inprogress_laundry'] = LaundryOrder::where('status', 'in_progress')->count();
+        $stats['completed_laundry'] = LaundryOrder::where('status', 'completed')->count();
+        $stats['delivered_laundry'] = LaundryOrder::where('status', 'delivered')->count();
+        $stats['today_laundry'] = LaundryOrder::whereDate('created_at', today())->count();
 
-        // Laundry tasks by status
-        $laundryStatusCounts = LaundryTask::select('status', DB::raw('count(*) as count'))
+        // Laundry orders by status
+        $laundryStatusCounts = LaundryOrder::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        // Recent laundry tasks
-        $recentLaundryTasks = LaundryTask::with(['assignedTo', 'reservation.room', 'creator'])
+        // Recent laundry orders
+        $recentLaundryOrders = LaundryOrder::with(['guest', 'booking.room', 'creator'])
             ->latest()
             ->limit(10)
             ->get();
@@ -353,7 +356,7 @@ class DashboardController extends Controller {
         return view('dashboards.store-keeper', compact(
             'stats',
             'laundryStatusCounts',
-            'recentLaundryTasks',
+            'recentLaundryOrders',
             'roomsNeedingAttention'
         ));
     }

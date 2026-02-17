@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Booking = active guest stay + billing.
+ *
+ * Created at check-in (either from a converted Reservation, or as a walk-in).
+ * All service charges (laundry, minibar, damages, etc.) attach here.
+ * Ends at checkout. Responsible for final billing.
+ *
+ * Statuses: checked_in → checked_out | cancelled
+ */
 class Booking extends Model
 {
     use HasUuid;
@@ -68,6 +77,9 @@ class Booking extends Model
         return $this->belongsTo(Room::class);
     }
 
+    /**
+     * The reservation this booking was created from (nullable — walk-ins have none).
+     */
     public function reservation(): BelongsTo
     {
         return $this->belongsTo(Reservation::class);
@@ -78,26 +90,31 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function laundryOrders(): HasMany
+    {
+        return $this->hasMany(LaundryOrder::class);
+    }
+
+    public function bookingCharges(): HasMany
+    {
+        return $this->hasMany(BookingCharge::class);
+    }
+
+    public function unpaidCharges(): HasMany
+    {
+        return $this->hasMany(BookingCharge::class)->where('status', 'unpaid');
+    }
+
     // ─── Scopes ────────────────────────────────────────────────────
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereNotIn('status', ['cancelled', 'no_show', 'checked_out']);
+        return $query->where('status', 'checked_in');
     }
 
-    public function scopePending(Builder $query): Builder
+    public function scopeCheckedOut(Builder $query): Builder
     {
-        return $query->where('status', 'pending');
-    }
-
-    public function scopeConfirmed(Builder $query): Builder
-    {
-        return $query->where('status', 'confirmed');
-    }
-
-    public function scopeBySource(Builder $query, string $source): Builder
-    {
-        return $query->where('source', $source);
+        return $query->where('status', 'checked_out');
     }
 
     public function scopeForDateRange(Builder $query, string $checkIn, string $checkOut): Builder
@@ -105,13 +122,7 @@ class Booking extends Model
         return $query->where(function ($q) use ($checkIn, $checkOut) {
             $q->where('check_in_date', '<', $checkOut)
               ->where('check_out_date', '>', $checkIn);
-        })->whereNotIn('status', ['cancelled', 'no_show', 'checked_out']);
-    }
-
-    public function scopeUpcoming(Builder $query): Builder
-    {
-        return $query->where('check_in_date', '>=', now()->toDateString())
-                     ->whereIn('status', ['pending', 'confirmed']);
+        })->whereNotIn('status', ['cancelled', 'checked_out']);
     }
 
     public function scopeToday(Builder $query): Builder
@@ -121,9 +132,6 @@ class Booking extends Model
 
     // ─── Computed Attributes ───────────────────────────────────────
 
-    /**
-     * Get the number of nights for the stay.
-     */
     public function getNightsAttribute(): int
     {
         if ($this->check_in_date && $this->check_out_date) {
@@ -132,9 +140,6 @@ class Booking extends Model
         return 0;
     }
 
-    /**
-     * Get guest display name - from guest relationship or legacy field.
-     */
     public function getGuestDisplayNameAttribute(): string
     {
         if ($this->guest) {
@@ -143,9 +148,6 @@ class Booking extends Model
         return $this->guest_name ?? 'Unknown Guest';
     }
 
-    /**
-     * Get guest display email - from guest relationship or legacy field.
-     */
     public function getGuestDisplayEmailAttribute(): ?string
     {
         if ($this->guest) {
@@ -154,9 +156,6 @@ class Booking extends Model
         return $this->guest_email;
     }
 
-    /**
-     * Get guest display phone - from guest relationship or legacy field.
-     */
     public function getGuestDisplayPhoneAttribute(): ?string
     {
         if ($this->guest) {
@@ -165,47 +164,31 @@ class Booking extends Model
         return $this->guest_phone;
     }
 
+    public function getTotalUnpaidChargesAttribute(): float
+    {
+        return $this->bookingCharges()->unpaid()->sum('amount');
+    }
+
+    public function getTotalChargesAttribute(): float
+    {
+        return $this->bookingCharges()->sum('amount');
+    }
+
+    public function getGrandTotalAttribute(): float
+    {
+        return (float) $this->total_amount + $this->total_unpaid_charges;
+    }
+
+    public function getPricePerNightAttribute(): float
+    {
+        return $this->room?->roomType?->base_rate ?? 0;
+    }
+
     // ─── Status Helpers ────────────────────────────────────────────
 
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function isConfirmed(): bool
-    {
-        return $this->status === 'confirmed';
-    }
-
-    public function isCheckedIn(): bool
-    {
-        return $this->status === 'checked_in';
-    }
-
-    public function isCheckedOut(): bool
-    {
-        return $this->status === 'checked_out';
-    }
-
-    public function isCancelled(): bool
-    {
-        return $this->status === 'cancelled';
-    }
-
-    public function isNoShow(): bool
-    {
-        return $this->status === 'no_show';
-    }
-
-    public function canBeConfirmed(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function canBeCheckedIn(): bool
-    {
-        return $this->status === 'confirmed';
-    }
+    public function isCheckedIn(): bool  { return $this->status === 'checked_in'; }
+    public function isCheckedOut(): bool { return $this->status === 'checked_out'; }
+    public function isCancelled(): bool  { return $this->status === 'cancelled'; }
 
     public function canBeCheckedOut(): bool
     {
@@ -214,12 +197,12 @@ class Booking extends Model
 
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, ['pending', 'confirmed']);
+        return $this->status === 'checked_in';
     }
 
     public function canBeEdited(): bool
     {
-        return in_array($this->status, ['pending', 'confirmed']);
+        return $this->status === 'checked_in';
     }
 
     // ─── Business Logic ────────────────────────────────────────────
@@ -232,7 +215,7 @@ class Booking extends Model
     {
         // Check against existing bookings
         $bookingConflict = static::where('room_id', $roomId)
-            ->whereNotIn('status', ['cancelled', 'no_show', 'checked_out'])
+            ->whereNotIn('status', ['cancelled', 'checked_out'])
             ->where('check_in_date', '<', $checkOut)
             ->where('check_out_date', '>', $checkIn)
             ->when($excludeBookingId, fn($q) => $q->where('id', '!=', $excludeBookingId))
@@ -242,10 +225,9 @@ class Booking extends Model
             return false;
         }
 
-        // Also check against existing reservations (created without bookings)
+        // Also check against active reservations (not yet converted to bookings)
         $reservationConflict = Reservation::where('room_id', $roomId)
-            ->whereNotIn('status', ['cancelled', 'no_show', 'checked_out'])
-            ->whereNull('booking_id')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->where('check_in_date', '<', $checkOut)
             ->where('check_out_date', '>', $checkIn)
             ->exists();
@@ -254,46 +236,33 @@ class Booking extends Model
     }
 
     /**
-     * Create a linked reservation from this booking.
+     * Create a Booking from a confirmed Reservation (check-in).
      */
-    public function createReservation(): Reservation
+    public static function createFromReservation(Reservation $reservation, ?int $createdBy = null): self
     {
-        $reservation = Reservation::create([
-            'room_id' => $this->room_id,
-            'guest_id' => $this->guest_id,
-            'guest_name' => $this->guest_name,
-            'guest_email' => $this->guest_email,
-            'guest_phone' => $this->guest_phone,
-            'check_in_date' => $this->check_in_date,
-            'check_out_date' => $this->check_out_date,
-            'number_of_guests' => $this->number_of_guests,
-            'total_amount' => $this->total_amount,
-            'status' => $this->status,
-            'booking_id' => $this->id,
-            'created_by' => $this->created_by,
+        $booking = static::create([
+            'guest_id' => $reservation->guest_id,
+            'guest_name' => $reservation->guest_display_name,
+            'guest_email' => $reservation->guest_display_email ?? '',
+            'guest_phone' => $reservation->guest_display_phone ?? '',
+            'guest_country' => $reservation->guest?->nationality ?? null,
+            'room_id' => $reservation->room_id,
+            'reservation_id' => $reservation->id,
+            'check_in_date' => $reservation->check_in_date,
+            'check_out_date' => $reservation->check_out_date,
+            'number_of_guests' => $reservation->number_of_guests,
+            'total_amount' => $reservation->estimated_amount,
+            'status' => 'checked_in',
+            'source' => 'frontdesk',
+            'created_by' => $createdBy,
         ]);
 
-        // Link reservation back to this booking
-        $this->update(['reservation_id' => $reservation->id]);
+        // Mark the reservation as converted
+        $reservation->update([
+            'status' => 'converted',
+            'booking_id' => $booking->id,
+        ]);
 
-        return $reservation;
-    }
-
-    /**
-     * Sync this booking's status to the linked reservation.
-     */
-    public function syncReservationStatus(): void
-    {
-        if ($this->reservation) {
-            $this->reservation->update(['status' => $this->status]);
-        }
-    }
-
-    /**
-     * Get the price per night based on the room type.
-     */
-    public function getPricePerNightAttribute(): float
-    {
-        return $this->room?->roomType?->base_rate ?? 0;
+        return $booking;
     }
 }

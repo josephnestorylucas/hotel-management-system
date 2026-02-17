@@ -3,11 +3,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Guest;
 use App\Models\Reservation;
 use App\Models\Room;
 use Illuminate\Http\Request;
 
+/**
+ * ReservationController — manages future room holds.
+ *
+ * Reservation = future intent. No billing.
+ * Check-in converts a Reservation → Booking (active stay).
+ */
 class ReservationController extends Controller
 {
     public function index()
@@ -82,7 +89,7 @@ class ReservationController extends Controller
             'check_in_date' => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
             'number_of_guests' => 'required|integer|min:1',
-            'total_amount' => 'required|numeric|min:0',
+            'estimated_amount' => 'required|numeric|min:0',
             'room_id' => 'nullable|uuid|exists:rooms,id',
             'status' => 'required|in:pending,confirmed',
         ]);
@@ -100,7 +107,7 @@ class ReservationController extends Controller
             'check_in_date' => $validated['check_in_date'],
             'check_out_date' => $validated['check_out_date'],
             'number_of_guests' => $validated['number_of_guests'],
-            'total_amount' => $validated['total_amount'],
+            'estimated_amount' => $validated['estimated_amount'],
             'status' => $validated['status'],
             'created_by' => auth()->id(),
         ]);
@@ -111,11 +118,15 @@ class ReservationController extends Controller
 
     public function edit(Reservation $reservation)
     {
+        if (!$reservation->canBeEdited()) {
+            return back()->with('error', 'This reservation cannot be edited (already converted or cancelled).');
+        }
+
         // Get available rooms plus the currently assigned room
         $availableRooms = Room::where(function($query) use ($reservation) {
                 $query->where('status', 'available')
                       ->where('is_active', true);
-                
+
                 // Include the currently assigned room even if it's not available
                 if ($reservation->room_id) {
                     $query->orWhere('id', $reservation->room_id);
@@ -136,6 +147,10 @@ class ReservationController extends Controller
 
     public function update(Request $request, Reservation $reservation)
     {
+        if (!$reservation->canBeEdited()) {
+            return back()->with('error', 'This reservation cannot be edited.');
+        }
+
         // Determine if using existing guest or creating new one
         $guestId = $request->input('guest_id');
         $createNewGuest = $request->input('create_new_guest') === '1';
@@ -171,14 +186,14 @@ class ReservationController extends Controller
             $guestId = $guest->id;
         }
 
-        // Validate reservation data
+        // Validate reservation data (only pending/confirmed/cancelled/no_show allowed)
         $validated = $request->validate([
             'check_in_date' => 'required|date',
             'check_out_date' => 'required|date|after:check_in_date',
             'number_of_guests' => 'required|integer|min:1',
-            'total_amount' => 'required|numeric|min:0',
+            'estimated_amount' => 'required|numeric|min:0',
             'room_id' => 'nullable|uuid|exists:rooms,id',
-            'status' => 'required|in:pending,confirmed,checked_in,checked_out,cancelled,no_show',
+            'status' => 'required|in:pending,confirmed,cancelled,no_show',
         ]);
 
         // Get guest for legacy field population
@@ -191,7 +206,7 @@ class ReservationController extends Controller
             'check_in_date' => $validated['check_in_date'],
             'check_out_date' => $validated['check_out_date'],
             'number_of_guests' => $validated['number_of_guests'],
-            'total_amount' => $validated['total_amount'],
+            'estimated_amount' => $validated['estimated_amount'],
             'status' => $validated['status'],
         ];
 
@@ -216,40 +231,62 @@ class ReservationController extends Controller
             ->with('success', 'Reservation deleted successfully.');
     }
 
+    /**
+     * Confirm a pending reservation.
+     */
+    public function confirm(Reservation $reservation)
+    {
+        if (!$reservation->canBeConfirmed()) {
+            return back()->with('error', 'Only pending reservations can be confirmed.');
+        }
+
+        $reservation->update(['status' => 'confirmed']);
+
+        return back()->with('success', 'Reservation confirmed successfully.');
+    }
+
+    /**
+     * Check in a confirmed reservation → creates a Booking (active stay).
+     * The reservation status becomes "converted".
+     */
     public function checkIn(Reservation $reservation)
     {
-        if ($reservation->status !== 'confirmed') {
-            return back()->with('error', 'Only confirmed reservations can be checked in.');
+        if (!$reservation->canBeCheckedIn()) {
+            return back()->with('error', 'Only confirmed reservations with a room assigned can be checked in.');
         }
 
-        if (!$reservation->room_id) {
-            return back()->with('error', 'Please assign a room before checking in.');
-        }
+        // Create Booking from this reservation (handles status + room via observer)
+        $booking = Booking::createFromReservation($reservation, auth()->id());
 
-        $reservation->update(['status' => 'checked_in']);
-
-        return back()->with('success', 'Guest checked in successfully.');
+        return redirect()->route('bookings.show', $booking)
+            ->with('success', 'Guest checked in successfully. Booking #' . $booking->booking_number . ' created.');
     }
 
-    public function checkOut(Reservation $reservation)
-    {
-        if ($reservation->status !== 'checked_in') {
-            return back()->with('error', 'Only checked-in reservations can be checked out.');
-        }
-
-        $reservation->update(['status' => 'checked_out']);
-
-        return back()->with('success', 'Guest checked out successfully.');
-    }
-
+    /**
+     * Cancel a pending or confirmed reservation.
+     */
     public function cancel(Reservation $reservation)
     {
-        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
+        if (!$reservation->canBeCancelled()) {
             return back()->with('error', 'Only pending or confirmed reservations can be cancelled.');
         }
 
         $reservation->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Reservation cancelled successfully.');
+    }
+
+    /**
+     * Mark reservation as no-show.
+     */
+    public function noShow(Reservation $reservation)
+    {
+        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
+            return back()->with('error', 'Only pending or confirmed reservations can be marked as no-show.');
+        }
+
+        $reservation->update(['status' => 'no_show']);
+
+        return back()->with('success', 'Reservation marked as no-show.');
     }
 }

@@ -4,38 +4,44 @@ namespace App\Observers;
 
 use App\Models\Booking;
 
+/**
+ * BookingObserver — manages room status transitions for active stays.
+ *
+ * Booking = active guest stay. Room status is controlled here:
+ *   checked_in  → room occupied
+ *   checked_out → room dirty (needs cleaning)
+ *   cancelled   → room available
+ */
 class BookingObserver
 {
     /**
-     * Handle the Booking "updating" event.
-     * Syncs booking status changes to the linked reservation and room.
+     * When a Booking is created (check-in), mark the room as occupied.
      */
-    public function updating(Booking $booking): void
+    public function created(Booking $booking): void
     {
-        if ($booking->isDirty('status')) {
-            // Sync status to linked reservation
-            if ($booking->reservation) {
-                $booking->reservation->update(['status' => $booking->status]);
-            }
-
-            // Update timestamps based on status
-            match ($booking->status) {
-                'confirmed' => $booking->confirmed_at = $booking->confirmed_at ?? now(),
-                'cancelled' => $booking->cancelled_at = $booking->cancelled_at ?? now(),
-                default => null,
-            };
+        if ($booking->status === 'checked_in') {
+            $booking->room?->update(['status' => 'occupied']);
         }
     }
 
     /**
-     * Handle the Booking "created" event.
-     * Automatically creates a linked reservation.
+     * When a Booking status changes, update room status accordingly.
      */
-    public function created(Booking $booking): void
+    public function updating(Booking $booking): void
     {
-        // Auto-create a linked reservation when a booking is created
-        if (!$booking->reservation_id) {
-            $booking->createReservation();
+        if ($booking->isDirty('status')) {
+            match ($booking->status) {
+                'checked_in'  => $booking->room?->update(['status' => 'occupied']),
+                'checked_out' => $booking->room?->update(['status' => 'dirty']),
+                'cancelled'   => $booking->room?->update(['status' => 'available']),
+                default => null,
+            };
+
+            // Update timestamps
+            match ($booking->status) {
+                'cancelled' => $booking->cancelled_at = $booking->cancelled_at ?? now(),
+                default => null,
+            };
         }
     }
 }

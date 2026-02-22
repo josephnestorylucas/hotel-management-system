@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Stock Adjustments</h1>
-    @if(auth()->user()->hasAnyRole(['STORE_MANAGER', 'SUPERVISOR', 'BAR_MANAGER', 'KITCHEN_MANAGER']))
+    @if(auth()->user()->hasAnyRole(['STORE_MANAGER', 'SUPERVISOR', 'RESTAURANT_MANAGER']))
     <a href="{{ route('store.adjustments.create') }}"
        class="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-blue-700 font-medium">
         + New Adjustment

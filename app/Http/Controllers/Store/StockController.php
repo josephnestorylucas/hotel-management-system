@@ -86,7 +86,7 @@ class StockController extends Controller
             'notes'       => 'nullable|string|max:500',
         ]);
 
-        // BAR_MANAGER and KITCHEN_MANAGER are scoped to their own location
+        // RESTAURANT_MANAGER is scoped to bar and kitchen locations
         $this->assertLocationAccess(auth()->user(), $data['location_id']);
 
         $product = Product::findOrFail($data['product_id']);
@@ -109,12 +109,9 @@ class StockController extends Controller
         $role     = $user->role->name;
         $location = StockLocation::findOrFail($locationId);
 
-        if ($role === 'bar_manager' && $location->code !== 'bar') {
-            abort(403, 'BAR_MANAGER can only record damage at the bar location.');
-        }
-
-        if ($role === 'kitchen_manager' && $location->code !== 'kitchen') {
-            abort(403, 'KITCHEN_MANAGER can only record damage at the kitchen location.');
+        // RESTAURANT_MANAGER can access both bar and kitchen locations
+        if ($role === 'restaurant_manager' && !in_array($location->code, ['bar', 'kitchen'])) {
+            abort(403, 'RESTAURANT_MANAGER can only record damage at bar or kitchen locations.');
         }
     }
 }

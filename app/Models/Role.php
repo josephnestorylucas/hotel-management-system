@@ -21,24 +21,20 @@ class Role extends Model {
     public const STORE_KEEPER = 'store_keeper';
 
     // New roles for Bar / Restaurant / Cashier modules
-    public const BAR_MANAGER = 'bar_manager';
+    public const RESTAURANT_MANAGER = 'restaurant_manager';
     public const BAR_TENDER = 'bar_tender';
-    public const KITCHEN_MANAGER = 'kitchen_manager';
-    public const WAITER = 'waiter';
     public const CASHIER = 'cashier';
 
     public static array $roles = [
-        self::ADMIN           => 'System administrator with full access',
-        self::FRONT_DESK      => 'Booking management and guest charges',
-        self::SUPERVISOR      => 'Approvals and operational oversight',
-        self::HOUSE_HELP      => 'Internal usage requests only',
-        self::STORE_MANAGER   => 'Full store control, pricing, all reports',
-        self::STORE_KEEPER    => 'Stock operations, restock, fulfillments',
-        self::BAR_MANAGER     => 'Bar inventory and menu management',
-        self::BAR_TENDER      => 'Bar order taking and stock view',
-        self::KITCHEN_MANAGER => 'Kitchen inventory and recipe management',
-        self::WAITER          => 'Table order taking',
-        self::CASHIER         => 'Payment settlement and shift reports',
+        self::ADMIN              => 'System administrator with full access',
+        self::FRONT_DESK         => 'Booking management and guest charges',
+        self::SUPERVISOR         => 'Approvals and operational oversight',
+        self::HOUSE_HELP         => 'Internal usage requests only',
+        self::STORE_MANAGER      => 'Full store control, pricing, all reports',
+        self::STORE_KEEPER       => 'Stock operations, restock, fulfillments',
+        self::RESTAURANT_MANAGER => 'Bar and restaurant inventory, menus, transfers, damage',
+        self::BAR_TENDER         => 'Bar order taking and stock view',
+        self::CASHIER            => 'Payment settlement and shift reports',
     ];
 
     public static function seedRoles(): void {

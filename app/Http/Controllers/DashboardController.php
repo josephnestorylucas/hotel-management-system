@@ -38,14 +38,10 @@ class DashboardController extends Controller {
             return $this->houseHelpDashboard();
         } elseif ($user->isStoreKeeper()) {
             return $this->storeKeeperDashboard();
-        } elseif ($user->isBarManager()) {
-            return $this->barManagerDashboard();
+        } elseif ($user->isRestaurantManager()) {
+            return $this->restaurantManagerDashboard();
         } elseif ($user->isBarTender()) {
             return $this->barTenderDashboard();
-        } elseif ($user->isKitchenManager()) {
-            return $this->kitchenManagerDashboard();
-        } elseif ($user->isWaiter()) {
-            return $this->waiterDashboard();
         } elseif ($user->isCashier()) {
             return $this->cashierDashboard();
         } else {
@@ -390,32 +386,40 @@ class DashboardController extends Controller {
         ));
     }
 
-    private function barManagerDashboard() {
-        $barLocation = \App\Models\StockLocation::bar();
+    private function restaurantManagerDashboard() {
+        $barLocation     = \App\Models\StockLocation::bar();
+        $kitchenLocation = \App\Models\StockLocation::kitchen();
+
+        $locationIds = collect([$barLocation, $kitchenLocation])->filter()->pluck('id');
+
         $stats = [
-            'total_bar_products' => $barLocation ? StockLevel::where('location_id', $barLocation->id)->where('quantity', '>', 0)->count() : 0,
-            'low_stock_items' => 0,
-            'pending_transfers' => StockTransfer::where('status', 'pending')
-                ->when($barLocation, fn($q) => $q->where('to_location_id', $barLocation->id))
+            'total_bar_products'     => $barLocation ? StockLevel::where('location_id', $barLocation->id)->where('quantity', '>', 0)->count() : 0,
+            'total_kitchen_products' => $kitchenLocation ? StockLevel::where('location_id', $kitchenLocation->id)->where('quantity', '>', 0)->count() : 0,
+            'low_stock_items'        => 0,
+            'pending_transfers'      => StockTransfer::where('status', 'pending')
+                ->whereIn('to_location_id', $locationIds)
                 ->count(),
-            'today_movements' => StockMovement::whereDate('created_at', today())
-                ->when($barLocation, fn($q) => $q->where('location_id', $barLocation->id))
+            'today_movements'        => StockMovement::whereDate('created_at', today())
+                ->whereIn('location_id', $locationIds)
                 ->count(),
         ];
 
-        if ($barLocation) {
-            $stats['low_stock_items'] = StockLevel::where('location_id', $barLocation->id)
-                ->whereColumn('quantity', '<=', 'reserved_qty')
-                ->orWhere(function ($q) use ($barLocation) {
-                    $q->where('location_id', $barLocation->id)
-                      ->whereHas('product', function ($pq) {
-                          $pq->whereColumn('stock_levels.quantity', '<=', 'products.reorder_level');
-                      });
-                })->count();
+        // Low stock across both locations
+        foreach ([$barLocation, $kitchenLocation] as $loc) {
+            if ($loc) {
+                $stats['low_stock_items'] += StockLevel::where('location_id', $loc->id)
+                    ->whereColumn('quantity', '<=', 'reserved_qty')
+                    ->orWhere(function ($q) use ($loc) {
+                        $q->where('location_id', $loc->id)
+                          ->whereHas('product', function ($pq) {
+                              $pq->whereColumn('stock_levels.quantity', '<=', 'products.reorder_level');
+                          });
+                    })->count();
+            }
         }
 
         $recentMovements = StockMovement::with(['product', 'location', 'user'])
-            ->when($barLocation, fn($q) => $q->where('location_id', $barLocation->id))
+            ->whereIn('location_id', $locationIds)
             ->latest()
             ->limit(10)
             ->get();
@@ -426,7 +430,7 @@ class DashboardController extends Controller {
             ->limit(5)
             ->get();
 
-        return view('dashboards.bar-manager', compact('stats', 'recentMovements', 'notifications'));
+        return view('dashboards.restaurant-manager', compact('stats', 'recentMovements', 'notifications'));
     }
 
     private function barTenderDashboard() {
@@ -446,63 +450,6 @@ class DashboardController extends Controller {
             ->get();
 
         return view('dashboards.bar-tender', compact('stats', 'stockLevels'));
-    }
-
-    private function kitchenManagerDashboard() {
-        $kitchenLocation = \App\Models\StockLocation::kitchen();
-        $stats = [
-            'total_kitchen_products' => $kitchenLocation ? StockLevel::where('location_id', $kitchenLocation->id)->where('quantity', '>', 0)->count() : 0,
-            'low_stock_items' => 0,
-            'pending_transfers' => StockTransfer::where('status', 'pending')
-                ->when($kitchenLocation, fn($q) => $q->where('to_location_id', $kitchenLocation->id))
-                ->count(),
-            'today_movements' => StockMovement::whereDate('created_at', today())
-                ->when($kitchenLocation, fn($q) => $q->where('location_id', $kitchenLocation->id))
-                ->count(),
-        ];
-
-        if ($kitchenLocation) {
-            $stats['low_stock_items'] = StockLevel::where('location_id', $kitchenLocation->id)
-                ->whereColumn('quantity', '<=', 'reserved_qty')
-                ->orWhere(function ($q) use ($kitchenLocation) {
-                    $q->where('location_id', $kitchenLocation->id)
-                      ->whereHas('product', function ($pq) {
-                          $pq->whereColumn('stock_levels.quantity', '<=', 'products.reorder_level');
-                      });
-                })->count();
-        }
-
-        $recentMovements = StockMovement::with(['product', 'location', 'user'])
-            ->when($kitchenLocation, fn($q) => $q->where('location_id', $kitchenLocation->id))
-            ->latest()
-            ->limit(10)
-            ->get();
-
-        $notifications = StoreNotification::where('user_id', auth()->id())
-            ->where('is_read', false)
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('dashboards.kitchen-manager', compact('stats', 'recentMovements', 'notifications'));
-    }
-
-    private function waiterDashboard() {
-        $stats = [
-            'today_orders' => 0,
-            'pending_requests' => InternalUsageRequest::where('requested_by', auth()->id())
-                ->where('status', 'pending')
-                ->count(),
-            'my_requests' => InternalUsageRequest::where('requested_by', auth()->id())->count(),
-        ];
-
-        $myRequests = InternalUsageRequest::with('product')
-            ->where('requested_by', auth()->id())
-            ->latest()
-            ->limit(10)
-            ->get();
-
-        return view('dashboards.waiter', compact('stats', 'myRequests'));
     }
 
     private function cashierDashboard() {

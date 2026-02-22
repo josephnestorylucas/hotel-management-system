@@ -83,24 +83,14 @@ class User extends Authenticatable
         return $this->role && $this->role->name === Role::STORE_KEEPER;
     }
 
-    public function isBarManager(): bool
+    public function isRestaurantManager(): bool
     {
-        return $this->role && $this->role->name === Role::BAR_MANAGER;
+        return $this->role && $this->role->name === Role::RESTAURANT_MANAGER;
     }
 
     public function isBarTender(): bool
     {
         return $this->role && $this->role->name === Role::BAR_TENDER;
-    }
-
-    public function isKitchenManager(): bool
-    {
-        return $this->role && $this->role->name === Role::KITCHEN_MANAGER;
-    }
-
-    public function isWaiter(): bool
-    {
-        return $this->role && $this->role->name === Role::WAITER;
     }
 
     public function isCashier(): bool

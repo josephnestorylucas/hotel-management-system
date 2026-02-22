@@ -266,17 +266,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('stock/restock',            [StockController::class, 'restock'])->name('stock.restock')
              ->middleware('role:store_keeper,store_manager');
         Route::get('stock/damage',              [StockController::class, 'damageForm'])->name('stock.damage-form')
-             ->middleware('role:store_keeper,store_manager,bar_manager,kitchen_manager');
+             ->middleware('role:store_keeper,store_manager,restaurant_manager');
         Route::post('stock/damage',             [StockController::class, 'damage'])->name('stock.damage')
-             ->middleware('role:store_keeper,store_manager,bar_manager,kitchen_manager');
+             ->middleware('role:store_keeper,store_manager,restaurant_manager');
 
         // ── Adjustments ───────────────────────────────────────────────────
         Route::get('adjustments',              [AdjustmentController::class, 'index'])->name('adjustments.index')
              ->middleware('role:store_manager,supervisor');
         Route::get('adjustments/create',       [AdjustmentController::class, 'create'])->name('adjustments.create')
-             ->middleware('role:store_manager,supervisor,bar_manager,kitchen_manager');
+             ->middleware('role:store_manager,supervisor,restaurant_manager');
         Route::post('adjustments',             [AdjustmentController::class, 'store'])->name('adjustments.store')
-             ->middleware('role:store_manager,supervisor,bar_manager,kitchen_manager');
+             ->middleware('role:store_manager,supervisor,restaurant_manager');
         Route::post('adjustments/{adjustment}/approve', [AdjustmentController::class, 'approve'])->name('adjustments.approve')
              ->middleware('role:store_manager');
         Route::post('adjustments/{adjustment}/reject',  [AdjustmentController::class, 'reject'])->name('adjustments.reject')
@@ -298,11 +298,11 @@ Route::middleware(['auth'])->group(function () {
 
         // ── Stock Transfers ───────────────────────────────────────────────
         Route::get('transfers',                [StockTransferController::class, 'index'])->name('transfers.index')
-             ->middleware('role:store_manager,store_keeper,bar_manager,kitchen_manager');
+             ->middleware('role:store_manager,store_keeper,restaurant_manager');
         Route::get('transfers/create',         [StockTransferController::class, 'create'])->name('transfers.create')
-             ->middleware('role:bar_manager,kitchen_manager');
+             ->middleware('role:restaurant_manager');
         Route::post('transfers',               [StockTransferController::class, 'store'])->name('transfers.store')
-             ->middleware('role:bar_manager,kitchen_manager');
+             ->middleware('role:restaurant_manager');
         Route::post('transfers/{stockTransfer}/fulfill', [StockTransferController::class, 'fulfill'])->name('transfers.fulfill')
              ->middleware('role:store_keeper,store_manager');
         Route::post('transfers/{stockTransfer}/reject',  [StockTransferController::class, 'reject'])->name('transfers.reject')

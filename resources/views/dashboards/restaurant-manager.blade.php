@@ -1,31 +1,45 @@
-{{-- resources/views/dashboards/kitchen-manager.blade.php --}}
+{{-- resources/views/dashboards/restaurant-manager.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Kitchen Manager Dashboard - MRK Hotel')
-@section('page-title', 'Kitchen Manager Dashboard')
+@section('title', 'Restaurant Manager Dashboard - MRK Hotel')
+@section('page-title', 'Restaurant Manager Dashboard')
 
 @section('content')
 <!-- Welcome Banner -->
-<div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 mb-8 text-white shadow-xl">
+<div class="bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl p-6 mb-8 text-white shadow-xl">
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-extrabold mb-2">Welcome, {{ auth()->user()->name }}!</h2>
-            <p class="text-emerald-100">Kitchen inventory overview for today.</p>
+            <p class="text-violet-100">Bar & Kitchen inventory overview for today.</p>
         </div>
         <div class="hidden md:block text-right">
-            <p class="text-sm text-emerald-200">{{ now()->format('l, F d, Y') }}</p>
+            <p class="text-sm text-violet-200">{{ now()->format('l, F d, Y') }}</p>
             <p class="text-3xl font-extrabold">{{ now()->format('h:i A') }}</p>
         </div>
     </div>
 </div>
 
 <!-- Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Bar Products</p>
+                <p class="text-3xl font-extrabold text-amber-600 mt-1">{{ $stats['total_bar_products'] }}</p>
+            </div>
+            <div class="w-14 h-14 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center">
+                <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-500">Kitchen Products</p>
-                <p class="text-3xl font-extrabold text-secondary mt-1">{{ $stats['total_kitchen_products'] }}</p>
+                <p class="text-3xl font-extrabold text-emerald-600 mt-1">{{ $stats['total_kitchen_products'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center">
                 <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,7 +96,7 @@
     <!-- Recent Movements -->
     <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-extrabold text-secondary">Recent Kitchen Movements</h3>
+            <h3 class="text-lg font-extrabold text-secondary">Recent Bar & Kitchen Movements</h3>
             <a href="{{ route('store.reports.movements') }}" class="text-primary text-sm hover:underline">View all</a>
         </div>
         <div class="space-y-3">
@@ -90,7 +104,11 @@
             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div>
                     <p class="font-medium text-secondary">{{ $m->product->name ?? 'Unknown' }}</p>
-                    <p class="text-xs text-gray-500">{{ ucwords(str_replace('_',' ',$m->type)) }} &bull; {{ $m->created_at->diffForHumans() }}</p>
+                    <p class="text-xs text-gray-500">
+                        {{ ucwords(str_replace('_',' ',$m->type)) }}
+                        &bull; {{ $m->location->name ?? '' }}
+                        &bull; {{ $m->created_at->diffForHumans() }}
+                    </p>
                 </div>
                 <span class="text-sm font-bold {{ $m->direction === 'increase' ? 'text-green-600' : 'text-red-600' }}">
                     {{ $m->direction === 'increase' ? '+' : '-' }}{{ $m->quantity }}
@@ -107,7 +125,7 @@
         <h3 class="text-lg font-extrabold text-secondary mb-4">Notifications</h3>
         <div class="space-y-3">
             @forelse($notifications as $note)
-            <a href="{{ $note->action_url ?? '#' }}" class="block p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition">
+            <a href="{{ $note->action_url ?? '#' }}" class="block p-3 bg-violet-50 rounded-xl hover:bg-violet-100 transition">
                 <p class="text-sm font-medium text-secondary">{{ $note->title }}</p>
                 <p class="text-xs text-gray-500 mt-1">{{ Str::limit($note->message, 60) }}</p>
             </a>
@@ -122,8 +140,8 @@
 <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
     <a href="{{ route('store.transfers.create') }}" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition group">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
-                <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-gradient-to-br from-violet-50 to-violet-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+                <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                 </svg>
             </div>
@@ -142,7 +160,7 @@
             </div>
             <div>
                 <p class="font-bold text-secondary">View Stock</p>
-                <p class="text-xs text-gray-500">Check kitchen inventory</p>
+                <p class="text-xs text-gray-500">Check bar & kitchen inventory</p>
             </div>
         </div>
     </a>
@@ -155,7 +173,7 @@
             </div>
             <div>
                 <p class="font-bold text-secondary">Report Damage</p>
-                <p class="text-xs text-gray-500">Record damaged kitchen items</p>
+                <p class="text-xs text-gray-500">Record damaged bar or kitchen items</p>
             </div>
         </div>
     </a>

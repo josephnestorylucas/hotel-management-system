@@ -30,7 +30,10 @@
         <a href="{{ route('restaurant.reports.daily-sales') }}" class="{{ request()->routeIs('restaurant.reports.*') ? 'text-primary font-semibold' : 'text-gray-600 hover:text-blue-600' }}">Reports</a>
         @endif
     </div>
-    <div class="text-sm text-gray-500">{{ auth()->user()->name }} — {{ ucwords(str_replace('_', ' ', auth()->user()->role->name)) }}</div>
+    <div class="flex items-center gap-3">
+        @include('partials.notification-bell')
+        <span class="text-sm text-gray-500">{{ auth()->user()->name }} — {{ ucwords(str_replace('_', ' ', auth()->user()->role->name)) }}</span>
+    </div>
 </nav>
 
 <div class="max-w-7xl mx-auto px-6 mt-4">

@@ -41,6 +41,9 @@ use App\Http\Controllers\Finance\CheckoutController as FinanceCheckoutController
 use App\Http\Controllers\Finance\FinancePaymentController;
 use App\Http\Controllers\Finance\ReceiptController;
 use App\Http\Controllers\Finance\FinancialDashboardController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Admin\BroadcastController;
+use App\Http\Controllers\Admin\AuditController;
 // Public welcome page (accessible to everyone)
 Route::get('/', function () {
     return view('welcome');
@@ -401,5 +404,24 @@ Route::middleware(['auth'])->group(function () {
         // ── Receipts ──────────────────────────────────────────────────────────────
         Route::get('receipts/guest/{checkout}', [ReceiptController::class, 'guest'])->name('receipt.guest');
         Route::get('receipts/walkin',           [ReceiptController::class, 'walkin'])->name('receipt.walkin');
+    });
+
+    // ═══ NOTIFICATIONS ═══
+    Route::get('notifications',                          [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/unread-count',             [NotificationController::class, 'unreadCount'])->name('notifications.count');
+    Route::post('notifications/{notification}/read',     [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    // ═══ ADMIN — Broadcasts & Offers ═══
+    Route::middleware(['role:admin,store_manager,supervisor,laundry_manager'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('broadcasts',                       [BroadcastController::class, 'index'])->name('broadcasts.index');
+        Route::get('broadcasts/create',                [BroadcastController::class, 'create'])->name('broadcasts.create');
+        Route::post('broadcasts',                      [BroadcastController::class, 'store'])->name('broadcasts.store');
+        Route::post('broadcasts/{broadcast}/send',     [BroadcastController::class, 'send'])->name('broadcasts.send');
+    });
+
+    // ═══ ADMIN — Discount Audit ═══
+    Route::middleware(['role:admin,store_manager,supervisor'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('audit/discounts',                  [AuditController::class, 'discounts'])->name('audit.discounts');
+        Route::post('bookings/{booking}/discount',     [AuditController::class, 'applyDiscount'])->name('audit.apply-discount');
     });
 });

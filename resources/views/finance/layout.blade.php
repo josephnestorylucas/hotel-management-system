@@ -14,7 +14,10 @@
         <a href="{{ route('finance.dashboard') }}"        class="text-gray-600 hover:text-blue-600">Dashboard</a>
         <a href="{{ route('finance.payments.index') }}"   class="text-gray-600 hover:text-blue-600">Payments</a>
     </div>
-    <div class="text-sm text-gray-500">{{ auth()->user()->name }} — {{ auth()->user()->role->name }}</div>
+    <div class="flex items-center gap-3">
+        @include('partials.notification-bell')
+        <span class="text-sm text-gray-500">{{ auth()->user()->name }} — {{ auth()->user()->role->name }}</span>
+    </div>
 </nav>
 
 <div class="max-w-7xl mx-auto px-6 mt-4">

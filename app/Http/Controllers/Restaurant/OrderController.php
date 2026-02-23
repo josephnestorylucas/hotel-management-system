@@ -228,6 +228,18 @@ class OrderController extends Controller
             }
         });
 
+        // Award loyalty points for restaurant (50 points per 10,000 TZS)
+        $freshOrder = $order->fresh();
+        if ($freshOrder->booking_id) {
+            $booking = \App\Models\Booking::with('guest')->find($freshOrder->booking_id);
+            if ($booking && $booking->guest) {
+                $pointsEarned = (int) floor(($freshOrder->total ?? 0) / 10000) * 50;
+                if ($pointsEarned > 0) {
+                    $booking->guest->addPoints($pointsEarned, 'restaurant', $freshOrder->id);
+                }
+            }
+        }
+
         return redirect()
             ->route('restaurant.orders.show', $order)
             ->with('success', "Order {$order->order_number} settled successfully.");

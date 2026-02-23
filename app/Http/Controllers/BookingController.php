@@ -315,6 +315,22 @@ class BookingController extends Controller
                 ->with('error', $e->getMessage());
         }
 
+        // Dispatch booking confirmation (email + SMS)
+        \App\Jobs\SendBookingConfirmationJob::dispatch([
+            'reference'   => $booking->booking_number,
+            'guest_name'  => $booking->guest?->full_name ?? $booking->guest_name,
+            'email'       => $booking->guest?->email ?? $booking->guest_email,
+            'phone'       => $booking->guest?->phone_number ?? $booking->guest_phone,
+            'room_number' => $booking->room?->room_number ?? '',
+            'room_type'   => $booking->room?->roomType?->name ?? '',
+            'check_in'    => $booking->check_in_date,
+            'check_out'   => $booking->check_out_date,
+            'nights'      => $booking->check_in_date && $booking->check_out_date
+                ? \Carbon\Carbon::parse($booking->check_in_date)->diffInDays($booking->check_out_date) : 1,
+            'rate'        => $booking->room?->roomType?->base_price ?? 0,
+            'total'       => $booking->total_amount ?? 0,
+        ])->onQueue('notifications');
+
         return redirect()->route('bookings.index')
             ->with('success', 'Walk-in guest checked in. Booking #' . $booking->booking_number . ' created.');
     }
@@ -443,6 +459,20 @@ class BookingController extends Controller
             $message .= ' Total service charges collected: ' . number_format($unpaidCharges);
         }
 
+        // Award loyalty points for the stay
+        if ($booking->guest) {
+            $nights = $booking->check_in_date && $booking->check_out_date
+                ? max(1, \Carbon\Carbon::parse($booking->check_in_date)->diffInDays($booking->check_out_date))
+                : 1;
+            $booking->guest->addPoints(
+                points: $nights * 100,
+                source: 'booking',
+                referenceId: $booking->id
+            );
+            $booking->guest->increment('total_stays');
+            $booking->guest->increment('total_spent', $booking->total_amount ?? 0);
+        }
+
         return back()->with('success', $message);
     }
 
@@ -461,6 +491,18 @@ class BookingController extends Controller
             'status' => 'cancelled',
             'cancellation_reason' => $reason,
         ]);
+
+        // Dispatch cancellation notification (email + SMS)
+        \App\Jobs\SendBookingCancellationJob::dispatch([
+            'reference'           => $booking->booking_number,
+            'guest_name'          => $booking->guest?->full_name ?? $booking->guest_name,
+            'email'               => $booking->guest?->email ?? $booking->guest_email,
+            'phone'               => $booking->guest?->phone_number ?? $booking->guest_phone,
+            'room_number'         => $booking->room?->room_number ?? '',
+            'check_in'            => $booking->check_in_date,
+            'check_out'           => $booking->check_out_date,
+            'cancellation_reason' => $reason,
+        ])->onQueue('notifications');
 
         return back()->with('success', 'Booking cancelled successfully.');
     }

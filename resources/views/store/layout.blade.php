@@ -51,6 +51,7 @@
         @endif
     </div>
     <div class="flex items-center gap-3">
+        @include('partials.notification-bell')
         <span class="text-sm text-gray-500">{{ auth()->user()->name }}</span>
         <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">{{ str_replace('_', ' ', auth()->user()->role->name) }}</span>
     </div>

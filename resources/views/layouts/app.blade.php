@@ -104,6 +104,9 @@
                         </svg>
                         <span class="font-medium">{{ now()->format('D, M d, Y') }}</span>
                     </div>
+
+                    <!-- Notification Bell -->
+                    @include('partials.notification-bell')
                     
                     <!-- Profile Link -->
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">

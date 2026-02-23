@@ -19,8 +19,9 @@
         @endif
         <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-gray-600">← Dashboard</a>
     </div>
-    <div class="text-sm text-gray-500">
-        {{ auth()->user()->name }} — {{ auth()->user()->role->name ?? 'N/A' }}
+    <div class="flex items-center gap-3">
+        @include('partials.notification-bell')
+        <span class="text-sm text-gray-500">{{ auth()->user()->name }} — {{ auth()->user()->role->name ?? 'N/A' }}</span>
     </div>
 </nav>
 

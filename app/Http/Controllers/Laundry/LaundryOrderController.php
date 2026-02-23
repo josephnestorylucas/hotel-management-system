@@ -203,6 +203,16 @@ class LaundryOrderController extends Controller
                 ]));
         }
 
+        // Send SMS/Email notification to guest/walk-in that laundry is ready
+        $guest = $laundryOrder->guest;
+        \App\Jobs\SendLaundryReadyJob::dispatch([
+            'order_number' => $laundryOrder->order_number,
+            'email'        => $guest?->email ?? null,
+            'phone'        => $guest?->phone_number ?? $laundryOrder->walkin_phone ?? null,
+            'room_number'  => $laundryOrder->room_number ?? null,
+            'total'        => $laundryOrder->total ?? 0,
+        ])->onQueue('notifications');
+
         return redirect()
             ->route('laundry.orders.show', $laundryOrder)
             ->with('success', "Order {$laundryOrder->order_number} is ready.");
@@ -322,10 +332,19 @@ class LaundryOrderController extends Controller
             }
         });
 
+        // Award loyalty points for laundry (30 points per 10,000 TZS)
+        $freshOrder = $laundryOrder->fresh();
+        if ($freshOrder->guest_id && $freshOrder->guest) {
+            $pointsEarned = (int) floor(($freshOrder->total ?? 0) / 10000) * 30;
+            if ($pointsEarned > 0) {
+                $freshOrder->guest->addPoints($pointsEarned, 'laundry', $freshOrder->id);
+            }
+        }
+
         return redirect()
             ->route('laundry.orders.show', $laundryOrder)
             ->with('success', "Order {$laundryOrder->order_number} settled. Total: " .
-                              number_format($laundryOrder->fresh()->total, 2) . ' TZS');
+                              number_format($freshOrder->total, 2) . ' TZS');
     }
 
     // POST /laundry/orders/{laundryOrder}/cancel

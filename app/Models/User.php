@@ -113,4 +113,24 @@ class User extends Authenticatable
     {
         return $this->hasMany(LaundryTask::class, 'created_by');
     }
+
+    /**
+     * Get latest in-app notifications for the notification bell.
+     */
+    public function latestNotifications()
+    {
+        return $this->hasMany(StoreNotification::class)
+                    ->latest('created_at')
+                    ->limit(10);
+    }
+
+    /**
+     * Get unread notification count.
+     */
+    public function unreadNotificationCount(): int
+    {
+        return StoreNotification::where('user_id', $this->id)
+            ->where('is_read', false)
+            ->count();
+    }
 }

@@ -17,8 +17,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\LaundryTaskController;
-use App\Http\Controllers\LaundryItemController;
-use App\Http\Controllers\LaundryOrderController;
+use App\Http\Controllers\Laundry\LaundryServiceController;
+use App\Http\Controllers\Laundry\LaundryOrderController as NewLaundryOrderController;
+use App\Http\Controllers\Laundry\LaundryReportController;
 use App\Http\Controllers\BookingChargeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SnippePaymentController;
@@ -145,51 +146,57 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('guests/{guest}/media/{media}', [GuestController::class, 'removeMedia'])->name('guests.media.destroy');
     });
 
-    // Laundry Management Routes (Legacy - keeping for backward compatibility)
-    // Combined: Admin, Supervisor, and House Help
-    Route::middleware(['role:admin,supervisor,house_help'])->group(function () {
-        Route::get('laundry-tasks', [LaundryTaskController::class, 'index'])->name('laundry-tasks.index');
-        Route::post('laundry-tasks/{laundryTask}/mark-returned', [LaundryTaskController::class, 'markAsReturned'])->name('laundry-tasks.mark-returned');
-    });
+    // ═══ LAUNDRY MODULE ═══
+    Route::prefix('laundry')->name('laundry.')->group(function () {
 
-    Route::middleware(['role:admin,supervisor'])->group(function () {
-        Route::get('laundry-tasks/create', [LaundryTaskController::class, 'create'])->name('laundry-tasks.create');
-        Route::post('laundry-tasks', [LaundryTaskController::class, 'store'])->name('laundry-tasks.store');
-        Route::get('laundry-tasks/{laundryTask}/edit', [LaundryTaskController::class, 'edit'])->name('laundry-tasks.edit');
-        Route::put('laundry-tasks/{laundryTask}', [LaundryTaskController::class, 'update'])->name('laundry-tasks.update');
-        Route::delete('laundry-tasks/{laundryTask}', [LaundryTaskController::class, 'destroy'])->name('laundry-tasks.destroy');
-        Route::post('laundry-tasks/{laundryTask}/mark-in-progress', [LaundryTaskController::class, 'markAsInProgress'])->name('laundry-tasks.mark-in-progress');
-        Route::post('laundry-tasks/{laundryTask}/mark-completed', [LaundryTaskController::class, 'markAsCompleted'])->name('laundry-tasks.mark-completed');
-    });
+        // ── Price List ────────────────────────────────────────────────────────
+        Route::get('services', [LaundryServiceController::class, 'index'])
+             ->name('services.index')
+             ->middleware('role:laundry_manager,supervisor,store_manager,admin');
+        Route::post('services/{service}/items', [LaundryServiceController::class, 'addItem'])
+             ->name('services.add-item')
+             ->middleware('role:laundry_manager,store_manager,admin');
+        Route::put('services/{service}/items/{item}', [LaundryServiceController::class, 'updateItem'])
+             ->name('services.update-item')
+             ->middleware('role:laundry_manager,store_manager,admin');
+        Route::delete('services/{service}/items/{item}', [LaundryServiceController::class, 'removeItem'])
+             ->name('services.remove-item')
+             ->middleware('role:laundry_manager,store_manager,admin');
 
-    // ═══ NEW LAUNDRY SYSTEM ═══
+        // ── Orders ────────────────────────────────────────────────────────────
+        Route::get('orders', [NewLaundryOrderController::class, 'index'])
+             ->name('orders.index');
+        Route::get('orders/create', [NewLaundryOrderController::class, 'create'])
+             ->name('orders.create')
+             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,admin');
+        Route::post('orders', [NewLaundryOrderController::class, 'store'])
+             ->name('orders.store')
+             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,admin');
+        Route::get('orders/{laundryOrder}', [NewLaundryOrderController::class, 'show'])
+             ->name('orders.show');
+        Route::post('orders/{laundryOrder}/process', [NewLaundryOrderController::class, 'process'])
+             ->name('orders.process')
+             ->middleware('role:house_help,supervisor,laundry_manager,admin');
+        Route::post('orders/{laundryOrder}/ready', [NewLaundryOrderController::class, 'markReady'])
+             ->name('orders.ready')
+             ->middleware('role:house_help,supervisor,laundry_manager,admin');
+        Route::post('orders/{laundryOrder}/deliver', [NewLaundryOrderController::class, 'deliver'])
+             ->name('orders.deliver')
+             ->middleware('role:house_help,supervisor,laundry_manager,admin');
+        Route::post('orders/{laundryOrder}/collected', [NewLaundryOrderController::class, 'collected'])
+             ->name('orders.collected')
+             ->middleware('role:house_help,cashier,supervisor,laundry_manager,admin');
+        Route::post('orders/{laundryOrder}/settle', [NewLaundryOrderController::class, 'settle'])
+             ->name('orders.settle')
+             ->middleware('role:cashier,front_desk,laundry_manager,supervisor,admin');
+        Route::post('orders/{laundryOrder}/cancel', [NewLaundryOrderController::class, 'cancel'])
+             ->name('orders.cancel')
+             ->middleware('role:supervisor,laundry_manager,admin');
 
-    // Laundry Items (Admin & Supervisor - pricing management)
-    Route::middleware(['role:admin,supervisor'])->group(function () {
-        Route::resource('laundry-items', LaundryItemController::class);
-    });
-
-    // Laundry Orders - View (all staff roles)
-    Route::middleware(['role:admin,supervisor,front_desk,house_help,store_manager,store_keeper'])->group(function () {
-        Route::get('laundry', [LaundryOrderController::class, 'index'])->name('laundry.index');
-        Route::get('laundry/{laundryOrder}', [LaundryOrderController::class, 'show'])->name('laundry.show');
-        Route::get('laundry-orders/items', [LaundryOrderController::class, 'getItems'])->name('laundry.items.json');
-    });
-
-    // Laundry Orders - Create/Edit (Front Desk, Admin, Supervisor)
-    Route::middleware(['role:admin,supervisor,front_desk'])->group(function () {
-        Route::get('laundry-orders/create', [LaundryOrderController::class, 'create'])->name('laundry.create');
-        Route::post('laundry-orders', [LaundryOrderController::class, 'store'])->name('laundry.store');
-        Route::get('laundry-orders/{laundryOrder}/edit', [LaundryOrderController::class, 'edit'])->name('laundry.edit');
-        Route::put('laundry-orders/{laundryOrder}', [LaundryOrderController::class, 'update'])->name('laundry.update');
-        Route::delete('laundry-orders/{laundryOrder}', [LaundryOrderController::class, 'destroy'])->name('laundry.destroy');
-        Route::post('laundry-orders/{laundryOrder}/mark-delivered', [LaundryOrderController::class, 'markDelivered'])->name('laundry.mark-delivered');
-    });
-
-    // Laundry Orders - Status updates (House Help can mark in-progress & completed)
-    Route::middleware(['role:admin,supervisor,house_help'])->group(function () {
-        Route::post('laundry-orders/{laundryOrder}/mark-in-progress', [LaundryOrderController::class, 'markInProgress'])->name('laundry.mark-in-progress');
-        Route::post('laundry-orders/{laundryOrder}/mark-completed', [LaundryOrderController::class, 'markCompleted'])->name('laundry.mark-completed');
+        // ── Reports ───────────────────────────────────────────────────────────
+        Route::get('reports/daily', [LaundryReportController::class, 'daily'])
+             ->name('reports.daily')
+             ->middleware('role:laundry_manager,supervisor,store_manager,admin');
     });
 
     // Booking Charges

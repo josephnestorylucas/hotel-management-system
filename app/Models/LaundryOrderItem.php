@@ -11,36 +11,23 @@ class LaundryOrderItem extends Model
     use HasUuid;
 
     protected $fillable = [
-        'laundry_order_id',
-        'laundry_item_id',
-        'quantity',
-        'unit_price',
-        'total_price',
+        'laundry_order_id', 'laundry_service_item_id',
+        'quantity', 'unit_price', 'subtotal', 'notes',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
         'unit_price' => 'decimal:2',
-        'total_price' => 'decimal:2',
+        'subtotal'   => 'decimal:2',
+        'quantity'   => 'integer',
     ];
 
-    protected static function boot()
+    public function order(): BelongsTo
     {
-        parent::boot();
-
-        static::saving(function ($orderItem) {
-            $orderItem->total_price = $orderItem->quantity * $orderItem->unit_price;
-        });
+        return $this->belongsTo(LaundryOrder::class, 'laundry_order_id');
     }
 
-    // Relationships
-    public function laundryOrder(): BelongsTo
+    public function serviceItem(): BelongsTo
     {
-        return $this->belongsTo(LaundryOrder::class);
-    }
-
-    public function laundryItem(): BelongsTo
-    {
-        return $this->belongsTo(LaundryItem::class);
+        return $this->belongsTo(LaundryServiceItem::class, 'laundry_service_item_id');
     }
 }

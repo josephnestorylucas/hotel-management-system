@@ -29,7 +29,7 @@ HMS Phase One acts as a **digital front-desk and room control center** that:
 - **Data Layer:** PostgreSQL with Eloquent ORM
 
 ---
-
+composer require africastalking/africastalking barryvdh/laravel-dompdf
 ## Phase One Implementation
 
 ### ✅ Implemented Modules

@@ -163,7 +163,7 @@
             </svg>
             Laundry Services Overview
         </h3>
-        <a href="{{ route('laundry.index') }}" class="text-sm text-primary hover:text-blue-700 font-semibold">View All →</a>
+        <a href="{{ route('laundry.orders.index') }}" class="text-sm text-primary hover:text-blue-700 font-semibold">View All →</a>
     </div>
     
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

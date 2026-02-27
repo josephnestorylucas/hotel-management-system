@@ -33,12 +33,27 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
 
         // Content Security Policy — restrict resource loading
+
+        // these block the tarwind css 
+        // $response->headers->set('Content-Security-Policy', implode('; ', [
+        //     "default-src 'self'",
+        //     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  
+        //     "style-src 'self' 'unsafe-inline'", 
+        //     "img-src 'self' data: blob:",
+        //     "font-src 'self' data:",
+        //     "connect-src 'self'",
+        //     "frame-ancestors 'none'",
+        //     "base-uri 'self'",
+        //     "form-action 'self'",
+        // ]));
+
+        // Content Security Policy — restrict resource loading
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  // Adjust if using CDN scripts
-            "style-src 'self' 'unsafe-inline'",  // Adjust if using CDN styles
-            "img-src 'self' data: blob:",
-            "font-src 'self' data:",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "img-src 'self' data: blob: https:",
+            "font-src 'self' data: https://fonts.gstatic.com",
             "connect-src 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",

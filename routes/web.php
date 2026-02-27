@@ -41,6 +41,11 @@ use App\Http\Controllers\Finance\CheckoutController as FinanceCheckoutController
 use App\Http\Controllers\Finance\FinancePaymentController;
 use App\Http\Controllers\Finance\ReceiptController;
 use App\Http\Controllers\Finance\FinancialDashboardController;
+use App\Http\Controllers\Procurement\DashboardController as ProcurementDashboardController;
+use App\Http\Controllers\Procurement\SupplierController;
+use App\Http\Controllers\Procurement\LocalPurchaseOrderController;
+use App\Http\Controllers\Procurement\GoodsReceivedNoteController;
+
 // Public welcome page (accessible to everyone)
 Route::get('/', function () {
     return view('welcome');
@@ -401,5 +406,73 @@ Route::middleware(['auth'])->group(function () {
         // ── Receipts ──────────────────────────────────────────────────────────────
         Route::get('receipts/guest/{checkout}', [ReceiptController::class, 'guest'])->name('receipt.guest');
         Route::get('receipts/walkin',           [ReceiptController::class, 'walkin'])->name('receipt.walkin');
+    });
+
+    // ═══ PROCUREMENT MODULE ═══
+    Route::prefix('procurement')->name('procurement.')->group(function () {
+
+        // Dashboard
+        Route::get('/', [ProcurementDashboardController::class, 'index'])->name('dashboard')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+
+        // ── Suppliers ─────────────────────────────────────────────────────
+        Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+        Route::get('suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+        Route::get('suppliers/{supplier}/edit', [SupplierController::class, 'edit'])->name('suppliers.edit')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy')
+             ->middleware('role:store_manager,admin');
+
+        // ── Local Purchase Orders ─────────────────────────────────────────
+        Route::get('lpo', [LocalPurchaseOrderController::class, 'index'])->name('lpo.index')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+        Route::get('lpo/create', [LocalPurchaseOrderController::class, 'create'])->name('lpo.create')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::post('lpo', [LocalPurchaseOrderController::class, 'store'])->name('lpo.store')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::get('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'show'])->name('lpo.show')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+        Route::get('lpo/{localPurchaseOrder}/edit', [LocalPurchaseOrderController::class, 'edit'])->name('lpo.edit')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::put('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'update'])->name('lpo.update')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::delete('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'destroy'])->name('lpo.destroy')
+             ->middleware('role:store_manager,admin');
+        Route::post('lpo/{localPurchaseOrder}/submit', [LocalPurchaseOrderController::class, 'submitForApproval'])->name('lpo.submit')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::post('lpo/{localPurchaseOrder}/approve', [LocalPurchaseOrderController::class, 'approve'])->name('lpo.approve')
+             ->middleware('role:store_manager,supervisor,admin');
+        Route::post('lpo/{localPurchaseOrder}/reject', [LocalPurchaseOrderController::class, 'reject'])->name('lpo.reject')
+             ->middleware('role:store_manager,supervisor,admin');
+        Route::post('lpo/{localPurchaseOrder}/sent', [LocalPurchaseOrderController::class, 'markSent'])->name('lpo.sent')
+             ->middleware('role:store_manager,store_keeper,admin');
+
+        // ── Goods Received Notes ──────────────────────────────────────────
+        Route::get('grn', [GoodsReceivedNoteController::class, 'index'])->name('grn.index')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+        Route::get('grn/create', [GoodsReceivedNoteController::class, 'create'])->name('grn.create')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::post('grn', [GoodsReceivedNoteController::class, 'store'])->name('grn.store')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::get('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'show'])->name('grn.show')
+             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+        Route::delete('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'destroy'])->name('grn.destroy')
+             ->middleware('role:store_manager,admin');
+        Route::post('grn/{goodsReceivedNote}/receipt', [GoodsReceivedNoteController::class, 'uploadReceipt'])->name('grn.upload-receipt')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::post('grn/{goodsReceivedNote}/submit', [GoodsReceivedNoteController::class, 'submitForConfirmation'])->name('grn.submit')
+             ->middleware('role:store_manager,store_keeper,admin');
+        Route::post('grn/{goodsReceivedNote}/confirm', [GoodsReceivedNoteController::class, 'confirm'])->name('grn.confirm')
+             ->middleware('role:store_manager,supervisor,admin');
+        Route::post('grn/{goodsReceivedNote}/reject', [GoodsReceivedNoteController::class, 'reject'])->name('grn.reject')
+             ->middleware('role:store_manager,supervisor,admin');
     });
 });

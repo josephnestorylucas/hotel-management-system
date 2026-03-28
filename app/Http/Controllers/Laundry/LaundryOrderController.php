@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use App\Services\AccountingService;
 
 class LaundryOrderController extends Controller
 {
@@ -280,6 +281,17 @@ class LaundryOrderController extends Controller
                 'settled_at'     => now(),
                 'booking_id'     => $request->booking_id ?? $laundryOrder->booking_id,
             ]);
+
+            // Post to accounting journal (if cash/card settlement)
+            if (in_array($request->payment_method, ['cash', 'card'])) {
+                app(AccountingService::class)->postLaundrySettlement(
+                    orderNo: $laundryOrder->order_number,
+                    orderId: $laundryOrder->id,
+                    amount: (float) $laundryOrder->total,
+                    paymentMethod: $request->payment_method,
+                    actorId: auth()->id()
+                );
+            }
 
             // Guest charge to booking → create BookingCharge
             if ($request->payment_method === 'charge_to_booking') {

@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use App\Services\AccountingService;
 
 class OrderController extends Controller
 {
@@ -207,7 +208,18 @@ class OrderController extends Controller
                 'booking_id'     => $request->booking_id ?? $order->booking_id,
             ]);
 
-            // 3. If charge to booking — create booking charge record
+            // 3. Post to accounting journal (if cash/card settlement)
+            if (in_array($request->payment_method, ['cash', 'card'])) {
+                app(AccountingService::class)->postRestaurantSettlement(
+                    orderNo: $order->order_number,
+                    orderId: $order->id,
+                    amount: (float) $order->total,
+                    paymentMethod: $request->payment_method,
+                    actorId: auth()->id()
+                );
+            }
+
+            // 4. If charge to booking — create booking charge record
             if ($request->payment_method === 'charge_to_booking') {
                 $bookingId = $request->booking_id ?? $order->booking_id;
                 BookingCharge::create([
@@ -222,7 +234,7 @@ class OrderController extends Controller
                 ]);
             }
 
-            // 4. Free up the table
+            // 5. Free up the table
             if ($order->table_id) {
                 Table::where('id', $order->table_id)->update(['status' => 'available']);
             }

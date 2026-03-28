@@ -25,6 +25,7 @@ class Role extends Model {
     public const BAR_TENDER = 'bar_tender';
     public const CASHIER = 'cashier';
     public const LAUNDRY_MANAGER = 'laundry_manager';
+    public const ACCOUNTANT = 'ACCOUNTANT';
 
     public static array $roles = [
         self::ADMIN              => 'System administrator with full access',
@@ -37,6 +38,7 @@ class Role extends Model {
         self::BAR_TENDER         => 'Bar order taking and stock view',
         self::CASHIER            => 'Payment settlement and shift reports',
         self::LAUNDRY_MANAGER    => 'Manages laundry pricing, reports, and full order oversight',
+        self::ACCOUNTANT         => 'Full financial records, reports, payroll, reconciliation',
     ];
 
     public static function seedRoles(): void {

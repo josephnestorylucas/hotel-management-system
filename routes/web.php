@@ -45,6 +45,13 @@ use App\Http\Controllers\Procurement\DashboardController as ProcurementDashboard
 use App\Http\Controllers\Procurement\SupplierController;
 use App\Http\Controllers\Procurement\LocalPurchaseOrderController;
 use App\Http\Controllers\Procurement\GoodsReceivedNoteController;
+use App\Http\Controllers\Accounting\AccountingReportController;
+use App\Http\Controllers\Accounting\ChartOfAccountsController;
+use App\Http\Controllers\Accounting\JournalEntryController;
+use App\Http\Controllers\Accounting\InvoiceController;
+use App\Http\Controllers\Accounting\PayrollController;
+use App\Http\Controllers\Accounting\BankReconciliationController;
+use App\Http\Controllers\Finance\PettyCashController;
 
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\BroadcastController;
@@ -409,6 +416,11 @@ Route::middleware(['auth'])->group(function () {
         // ── Receipts ──────────────────────────────────────────────────────────────
         Route::get('receipts/guest/{checkout}', [ReceiptController::class, 'guest'])->name('receipt.guest');
         Route::get('receipts/walkin',           [ReceiptController::class, 'walkin'])->name('receipt.walkin');
+        // ── Petty Cash ──────────────────────────────────────────────────────
+        Route::post('petty-cash/{pettyCash}/approve', [PettyCashController::class, 'approve'])->name('petty-cash.approve')
+             ->middleware('role:store_manager,admin');
+        Route::post('petty-cash/{pettyCash}/reject',  [PettyCashController::class, 'reject'])->name('petty-cash.reject')
+             ->middleware('role:store_manager,admin');
     });
 
     // ═══ PROCUREMENT MODULE ═══
@@ -496,5 +508,56 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin,store_manager,supervisor'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('audit/discounts',                  [AuditController::class, 'discounts'])->name('audit.discounts');
         Route::post('bookings/{booking}/discount',     [AuditController::class, 'applyDiscount'])->name('audit.apply-discount');
+    });
+
+    // ═══ ACCOUNTING MODULE ═══
+    Route::middleware(['role:ACCOUNTANT,STORE_MANAGER'])->prefix('accounting')->name('accounting.')->group(function () {
+
+        // Dashboard
+        Route::get('/', fn() => view('accounting.dashboard.index'))->name('dashboard');
+
+        // Chart of Accounts
+        Route::get('accounts',                    [ChartOfAccountsController::class, 'index'])->name('accounts.index');
+        Route::get('accounts/create',             [ChartOfAccountsController::class, 'create'])->name('accounts.create');
+        Route::post('accounts',                   [ChartOfAccountsController::class, 'store'])->name('accounts.store');
+        Route::get('accounts/{account}/edit',     [ChartOfAccountsController::class, 'edit'])->name('accounts.edit');
+        Route::put('accounts/{account}',          [ChartOfAccountsController::class, 'update'])->name('accounts.update');
+
+        // Journal
+        Route::get('journal',                     [JournalEntryController::class, 'index'])->name('journal.index');
+        Route::get('journal/create',              [JournalEntryController::class, 'create'])->name('journal.create')
+             ->middleware('role:ACCOUNTANT');
+        Route::post('journal',                    [JournalEntryController::class, 'store'])->name('journal.store')
+             ->middleware('role:ACCOUNTANT');
+        Route::get('journal/{journalEntry}',      [JournalEntryController::class, 'show'])->name('journal.show');
+
+        // General Ledger
+        Route::get('ledger',                      [AccountingReportController::class, 'ledger'])->name('ledger');
+
+        // Invoices
+        Route::get('invoices',                    [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('invoices/{invoice}',          [InvoiceController::class, 'show'])->name('invoices.show');
+
+        // Payroll
+        Route::get('payroll',                     [PayrollController::class, 'index'])->name('payroll.index');
+        Route::get('payroll/create',              [PayrollController::class, 'create'])->name('payroll.create')
+             ->middleware('role:ACCOUNTANT');
+        Route::post('payroll',                    [PayrollController::class, 'store'])->name('payroll.store')
+             ->middleware('role:ACCOUNTANT');
+        Route::get('payroll/{payrollRun}',        [PayrollController::class, 'show'])->name('payroll.show');
+        Route::post('payroll/{payrollRun}/approve',[PayrollController::class, 'approve'])->name('payroll.approve')
+             ->middleware('role:ACCOUNTANT,STORE_MANAGER');
+
+        // Bank Reconciliation
+        Route::get('reconciliation',              [BankReconciliationController::class, 'index'])->name('reconciliation.index');
+        Route::get('reconciliation/create',       [BankReconciliationController::class, 'create'])->name('reconciliation.create');
+        Route::post('reconciliation',             [BankReconciliationController::class, 'store'])->name('reconciliation.store');
+        Route::get('reconciliation/{rec}',        [BankReconciliationController::class, 'show'])->name('reconciliation.show');
+
+        // Reports
+        Route::get('reports/profit-loss',         [AccountingReportController::class, 'profitLoss'])->name('reports.profit-loss');
+        Route::get('reports/balance-sheet',       [AccountingReportController::class, 'balanceSheet'])->name('reports.balance-sheet');
+        Route::get('reports/trial-balance',       [AccountingReportController::class, 'trialBalance'])->name('reports.trial-balance');
+        Route::get('reports/vat',                 [AccountingReportController::class, 'vatReport'])->name('reports.vat');
     });
 });

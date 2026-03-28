@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use App\Services\AccountingService;
 
 class GoodsReceivedNoteController extends Controller
 {
@@ -158,6 +159,15 @@ class GoodsReceivedNoteController extends Controller
 
             // CRITICAL: Push goods into stock
             $goodsReceivedNote->pushToStock(auth()->id());
+
+            // Post to accounting journal
+            app(AccountingService::class)->postGrnConfirmation(
+                grnNo: $goodsReceivedNote->grn_number,
+                grnId: $goodsReceivedNote->id,
+                netAmount: (float) $goodsReceivedNote->subtotal,
+                vatAmount: (float) $goodsReceivedNote->tax_amount,
+                actorId: auth()->id()
+            );
         });
 
         return back()->with('success', "GRN {$goodsReceivedNote->grn_number} confirmed. Stock levels updated successfully.");

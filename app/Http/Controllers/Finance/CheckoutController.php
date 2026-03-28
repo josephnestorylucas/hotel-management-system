@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use App\Services\AccountingService;
 
 class CheckoutController extends Controller
 {
@@ -162,6 +163,24 @@ class CheckoutController extends Controller
                 'payment_method' => $payment->method,
                 'description'    => "Guest checkout — Receipt {$checkout->receipt_number}",
             ], auth()->id());
+
+            // Post to accounting journal (room revenue)
+            $booking = Booking::find($checkout->booking_id);
+            $paymentMethodMap = [
+                'cash_usd' => 'cash',
+                'cash_tzs' => 'cash',
+                'card_usd' => 'card',
+                'card_tzs' => 'card',
+                'split' => 'cash',
+            ];
+            $paymentMethod = $paymentMethodMap[$data['payment_method']] ?? 'cash';
+            app(AccountingService::class)->postBookingSettlement(
+                bookingRef: $booking->booking_number,
+                bookingId: $booking->id,
+                amount: (float) $checkout->grand_total_tzs,
+                paymentMethod: $paymentMethod,
+                actorId: auth()->id()
+            );
         });
 
         return redirect()

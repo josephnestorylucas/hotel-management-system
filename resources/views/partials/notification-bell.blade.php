@@ -50,6 +50,26 @@
     </div>
 </div>
 
+{{-- Load Pusher and Laravel Echo from CDN (only once per page) --}}
+@once
+@push('scripts')
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+<script>
+    // Initialize Echo globally for WebSocket connections
+    window.Echo = new Echo({
+        broadcaster: 'reverb',
+        key: '{{ config("broadcasting.connections.reverb.key") }}',
+        wsHost: '{{ config("broadcasting.connections.reverb.options.host") }}',
+        wsPort: {{ config("broadcasting.connections.reverb.options.port", 8080) }},
+        wssPort: {{ config("broadcasting.connections.reverb.options.port", 443) }},
+        forceTLS: {{ config("broadcasting.connections.reverb.options.scheme", "http") === "https" ? 'true' : 'false' }},
+        enabledTransports: ['ws', 'wss'],
+    });
+</script>
+@endpush
+@endonce
+
 <script>
 function notificationBell() {
     return {
@@ -71,14 +91,15 @@ function notificationBell() {
         },
 
         setupWebSocket() {
-            // Check if Echo is available (Laravel Echo with Reverb)
+            // Check if Echo is available
             if (typeof window.Echo !== 'undefined') {
                 try {
                     const userId = {{ auth()->id() }};
+                    const self = this;
                     
-                    window.Echo.private(`notifications.${userId}`)
-                        .listen('.notification.created', (e) => {
-                            this.unreadCount = e.unread_count;
+                    window.Echo.private('notifications.' + userId)
+                        .listen('.notification.created', function(e) {
+                            self.unreadCount = e.unread_count;
                             
                             // Show browser notification if permission granted
                             if (e.notification && Notification.permission === 'granted') {
@@ -89,11 +110,11 @@ function notificationBell() {
                             }
                         });
                     
-                    this.wsConnected = true;
+                    self.wsConnected = true;
                     console.log('Notification WebSocket connected');
                     
                     // Stop polling if WebSocket is connected
-                    this.stopPolling();
+                    self.stopPolling();
                 } catch (error) {
                     console.warn('WebSocket connection failed, falling back to polling:', error);
                     this.startPolling();
@@ -106,15 +127,16 @@ function notificationBell() {
         },
 
         setupVisibilityHandler() {
-            this.visibilityHandler = () => {
+            const self = this;
+            this.visibilityHandler = function() {
                 if (document.hidden) {
                     // Tab is hidden, stop polling to save resources
-                    this.stopPolling();
+                    self.stopPolling();
                 } else {
                     // Tab is visible again
-                    this.fetchCount(); // Fetch immediately
-                    if (!this.wsConnected) {
-                        this.startPolling(); // Resume polling if not using WebSocket
+                    self.fetchCount(); // Fetch immediately
+                    if (!self.wsConnected) {
+                        self.startPolling(); // Resume polling if not using WebSocket
                     }
                 }
             };
@@ -123,12 +145,13 @@ function notificationBell() {
         },
 
         startPolling() {
+            const self = this;
             // Only start if not already polling and tab is visible
             if (!this.pollingInterval && !document.hidden) {
                 // Poll every 2 minutes (120000ms) instead of 30 seconds
-                this.pollingInterval = setInterval(() => {
+                this.pollingInterval = setInterval(function() {
                     if (!document.hidden) {
-                        this.fetchCount();
+                        self.fetchCount();
                     }
                 }, 120000);
             }
@@ -142,12 +165,13 @@ function notificationBell() {
         },
 
         fetchCount() {
+            const self = this;
             fetch('{{ route("notifications.count") }}')
-                .then(r => r.json())
-                .then(data => {
-                    this.unreadCount = data.count;
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    self.unreadCount = data.count;
                 })
-                .catch(() => {});
+                .catch(function() {});
         },
 
         destroy() {

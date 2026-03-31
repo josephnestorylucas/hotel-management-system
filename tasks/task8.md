@@ -37,6 +37,7 @@ System Administrator should NOT:
 ----------------------------------------
 
 2. MANAGER ROLE (MAIN BUSINESS ROLE)
+from  which  please   view  the  admin  sidebar  and   remove them  and transer them   to  the  manager  
 TRANSFER the following modules TO Manager:
 - Operations
 - Reservations
@@ -44,10 +45,10 @@ TRANSFER the following modules TO Manager:
 - Guests
 - Laundry Orders
 - Hall Bookings
-- Conferences
+- Conference only  not  conference  hall 
 
 Tasks:
-- Ensure Manager has FULL access to these modules
+- Ensure Manager has FULL access to these modules  and  they  are  in  the    manager s idbaer 
 - Update routes, controllers, middleware accordingly
 
 ----------------------------------------
@@ -59,6 +60,7 @@ TRANSFER:
 Tasks:
 - Restrict Procurement access only to Store Manager
 - Remove it from other roles (including System Admin)
+remove  from the  sidebar  
 
 ========================================
 DASHBOARD + SIDEBAR CREATION

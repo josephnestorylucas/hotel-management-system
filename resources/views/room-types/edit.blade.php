@@ -151,7 +151,7 @@
                         <label class="block text-sm font-semibold text-secondary mb-2">Current Main Image</label>
                         <div class="flex items-start gap-4">
                             <div class="relative">
-                                <img src="{{ $roomType->image_medium_url }}" 
+                                <img src="{{ $roomType->medium_image_with_fallback }}" 
                                      alt="{{ $roomType->name }}" 
                                      class="w-32 h-24 object-cover rounded-xl border border-gray-200 shadow-sm">
                             </div>
@@ -194,7 +194,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                             @foreach($roomType->gallery_images as $image)
                             <div class="relative group">
-                                <img src="{{ $image->getUrl('thumb') }}" 
+                                <img src="{{ $image->getUrl('thumb') ?: $image->getUrl() }}" 
                                      alt="{{ $image->file_name }}" 
                                      class="w-full h-24 object-cover rounded-xl border border-gray-200 shadow-sm">
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">

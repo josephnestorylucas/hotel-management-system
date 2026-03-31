@@ -50,14 +50,18 @@ class BookingController extends Controller
         $roomTypes = RoomType::all();
         $checkIn = $request->check_in;
         $checkOut = $request->check_out;
-        $guests = $request->guests;
+        $guests = (int) $request->guests;
         $roomTypeId = $request->room_type;
 
         // Get available rooms for the selected dates
+        // Filter by room type and ensure max_occupancy can accommodate the guests
         $availableRooms = Room::with(['roomType', 'floor'])
             ->availableForDates($checkIn, $checkOut)
             ->when($roomTypeId, function ($query) use ($roomTypeId) {
                 $query->where('room_type_id', $roomTypeId);
+            })
+            ->whereHas('roomType', function ($query) use ($guests) {
+                $query->where('max_occupancy', '>=', $guests);
             })
             ->get();
 

@@ -44,6 +44,18 @@ class Room extends Model
     }
 
     /**
+     * Get the room image from its room type with fallback.
+     */
+    public function getImageAttribute(): string
+    {
+        if ($this->roomType && $this->roomType->hasImage()) {
+            return $this->roomType->getFirstMediaUrl('room_type_image', 'medium') 
+                ?: $this->roomType->getFirstMediaUrl('room_type_image');
+        }
+        return asset('images/room-placeholder.svg');
+    }
+
+    /**
      * Scope to get rooms available for a specific date range.
      * Checks both bookings and reservations for conflicts.
      */

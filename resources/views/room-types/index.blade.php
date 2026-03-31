@@ -26,9 +26,8 @@
         @forelse($roomTypes as $roomType)
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all overflow-hidden">
             <!-- Image -->
-            @if($roomType->hasImage())
-            <div class="relative h-48 overflow-hidden">
-                <img src="{{ $roomType->image_medium_url }}" 
+            <div class="relative h-48 overflow-hidden bg-gray-100">
+                <img src="{{ $roomType->medium_image_with_fallback }}" 
                      alt="{{ $roomType->name }}" 
                      class="w-full h-full object-cover">
                 @if($roomType->hasGalleryImages())
@@ -40,7 +39,6 @@
                 </div>
                 @endif
             </div>
-            @endif
 
             <!-- Header -->
             <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">

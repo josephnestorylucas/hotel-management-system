@@ -121,6 +121,39 @@ class RoomType extends Model implements HasMedia
     }
 
     /**
+     * Get the image URL with fallback to default placeholder.
+     */
+    public function getImageWithFallbackAttribute(): string
+    {
+        if ($this->hasImage()) {
+            return $this->getFirstMediaUrl('room_type_image');
+        }
+        return asset('images/room-placeholder.svg');
+    }
+
+    /**
+     * Get the medium image URL with fallback to default placeholder.
+     */
+    public function getMediumImageWithFallbackAttribute(): string
+    {
+        if ($this->hasImage()) {
+            return $this->getFirstMediaUrl('room_type_image', 'medium') ?: $this->getFirstMediaUrl('room_type_image');
+        }
+        return asset('images/room-placeholder.svg');
+    }
+
+    /**
+     * Get the thumbnail image URL with fallback to default placeholder.
+     */
+    public function getThumbImageWithFallbackAttribute(): string
+    {
+        if ($this->hasImage()) {
+            return $this->getFirstMediaUrl('room_type_image', 'thumb') ?: $this->getFirstMediaUrl('room_type_image');
+        }
+        return asset('images/room-placeholder.svg');
+    }
+
+    /**
      * Get all gallery images.
      */
     public function getGalleryImagesAttribute()

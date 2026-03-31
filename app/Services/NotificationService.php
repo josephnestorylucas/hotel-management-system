@@ -22,7 +22,7 @@ class NotificationService
      * Get the unread notification count for a user.
      * Uses cache to avoid hitting the database on every request.
      */
-    public function getUnreadCount(int $userId): int
+    public function getUnreadCount(string|int $userId): int
     {
         return Cache::remember(
             self::CACHE_PREFIX . $userId,
@@ -36,7 +36,7 @@ class NotificationService
     /**
      * Invalidate the cached unread count for a user.
      */
-    public function invalidateCache(int $userId): void
+    public function invalidateCache(string|int $userId): void
     {
         Cache::forget(self::CACHE_PREFIX . $userId);
     }
@@ -44,7 +44,7 @@ class NotificationService
     /**
      * Increment the cached unread count (when a new notification is created).
      */
-    public function incrementUnreadCount(int $userId): int
+    public function incrementUnreadCount(string|int $userId): int
     {
         $cacheKey = self::CACHE_PREFIX . $userId;
         
@@ -60,7 +60,7 @@ class NotificationService
     /**
      * Decrement the cached unread count (when a notification is marked as read).
      */
-    public function decrementUnreadCount(int $userId, int $amount = 1): int
+    public function decrementUnreadCount(string|int $userId, int $amount = 1): int
     {
         $cacheKey = self::CACHE_PREFIX . $userId;
         
@@ -120,7 +120,7 @@ class NotificationService
     /**
      * Mark all notifications as read for a user.
      */
-    public function markAllAsRead(int $userId): int
+    public function markAllAsRead(string|int $userId): int
     {
         $count = StoreNotification::where('user_id', $userId)
             ->where('is_read', false)

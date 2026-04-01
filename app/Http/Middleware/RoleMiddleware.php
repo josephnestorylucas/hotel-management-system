@@ -16,7 +16,7 @@ class RoleMiddleware {
         // Null-safe check: reject if user has no role assigned
         if (!$user->role) {
             Log::warning('User without role attempted access', ['user_id' => $user->id, 'path' => $request->path()]);
-            abort(403, 'Unauthorized action. No role assigned.');
+            return redirect()->route('dashboard')->with('unauthorized', 'Unauthorized action. No role assigned to your account.');
         }
 
         $userRole = $user->role->name;
@@ -28,7 +28,7 @@ class RoleMiddleware {
                 'required_roles' => $roles,
                 'path' => $request->path(),
             ]);
-            abort(403, 'Unauthorized action.');
+            return redirect()->route('dashboard')->with('unauthorized', 'Unauthorized action. Your role does not have access to this resource.');
         }
 
         return $next($request);

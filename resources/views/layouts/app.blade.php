@@ -24,6 +24,9 @@
         };
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 <body class="bg-white font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
@@ -139,6 +142,60 @@
             </main>
         </div>
     </div>
+
+    <!-- Unauthorized Access Modal -->
+    @if(session('unauthorized'))
+    <div id="unauthorizedModal" class="fixed inset-0 z-50 flex items-center justify-center" x-data="{ open: true }" x-show="open" x-cloak>
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="open = false"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all"
+             x-show="open"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+            
+            <!-- Red Header -->
+            <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8 text-center">
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white">Access Denied!</h2>
+            </div>
+            
+            <!-- Body -->
+            <div class="px-6 py-6 text-center">
+                <div class="mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Unauthorized
+                    </span>
+                </div>
+                <p class="text-gray-600 text-lg mb-2">{{ session('unauthorized') }}</p>
+                <p class="text-gray-500 text-sm">You don't have permission to access this resource. Please contact your administrator if you believe this is a mistake.</p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                <a href="{{ route('dashboard') }}" class="flex-1 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold text-center transition-colors">
+                    Go to Dashboard
+                </a>
+                <button @click="open = false" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-semibold transition-colors">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @stack('scripts')
     
     <!-- Live Time Script - Updates every second without page refresh -->

@@ -336,14 +336,15 @@ class LaundryOrderController extends Controller
                 ]);
 
                 FinancialTransaction::record([
-                    'finance_payment_id' => $payment->id,
-                    'type'               => 'income',
-                    'category'           => 'laundry',
-                    'description'        => "Laundry walk-in payment — {$laundryOrder->order_number}",
-                    'amount_usd'         => $amountUsd,
-                    'currency'           => 'TZS',
-                    'amount_original'    => $laundryOrder->total,
-                    'exchange_rate'      => $exchangeRate,
+                    'payment_id'     => $payment->id,
+                    'type'           => 'walkin_sale',
+                    'source_module'  => 'laundry',
+                    'description'    => "Laundry walk-in payment — {$laundryOrder->order_number}",
+                    'amount_usd'     => $amountUsd,
+                    'currency'       => 'TZS',
+                    'amount'         => $laundryOrder->total,
+                    'exchange_rate'  => $exchangeRate,
+                    'payment_method' => $request->payment_method,
                 ], auth()->id());
             }
         });

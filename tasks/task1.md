@@ -1,293 +1,204 @@
-You are a senior Laravel backend engineer operating INSIDE a production codebase.
 
-You have full access to the repository. You MUST discover structure dynamically.
-DO NOT assume file names, relationships, or architecture without verifying.
+You are working inside a production Laravel 11 hotel management system.
 
-This task is HIGH RISK because it touches booking flow. Do NOT break existing logic.
+The system already has:
+- Booking and reservation flows
+- Guest/customer data captured
+- Notification infrastructure (SMS + email exists but not fully wired)
+- Queue support (for async jobs)
+
+Your task is to COMPLETE and STANDARDIZE the sending of confirmation notifications.
+
+DO NOT redesign the system.
+DO NOT create new architecture.
+EXTEND what exists and CONNECT missing parts.
 
 ========================================
 OBJECTIVE
 ========================================
-Implement a reliable notification system that sends:
-- Email notifications
-- SMS notifications
 
-to the  customers 
+Ensure that whenever a booking or reservation is successfully created or confirmed:
 
-TRIGGERS:
-1. When a reservation is successfully created
-2. When a booking is successfully confirmed/finalized
+1. The customer receives:
+   - SMS confirmation
+   - Email confirmation
 
-The system must:
-- Not block user flow
-- Not introduce latency
-- Not break transactions
-- Work with partial data (email or phone may be missing)
+2. The notification must include:
+   - Customer name
+   - Booking/reservation reference
+   - Dates (check-in / check-out)
+   - Basic summary (room/service)
 
-========================================
-GLOBAL RULES
-========================================
-- DO NOT duplicate logic across controllers
-- DO NOT hardcode email/SMS inside controllers
-- DO NOT interrupt booking/reservation flow on failure
-- ALL notification logic must be centralized
-- ALL failures must be logged, not thrown to user
+3. The notification must trigger automatically from the existing flow.
 
 ========================================
-STEP 1: LOCATE ENTRY POINTS
+IMPLEMENTATION RULES
 ========================================
 
-Search for:
-- Reservation creation logic
-- Booking confirmation logic
-
-Use search keywords:
-- "ReservationController"
-- "BookingController"
-- "store("
-- "create("
-- "confirm("
-- "finalize("
-- "completeBooking"
-
-For each match:
-- Read full method
-- Identify EXACT line where:
-  - DB save is successful
-  - Transaction is committed
-
-DO NOT hook before transaction completes.
-
-Record:
-- File path
-- Method name
-- Line reference
+- DO NOT hardcode values
+- USE existing models (Booking, Guest, Reservation)
+- USE existing notification or SMS services already in the system
+- If queue is enabled → use queued jobs
+- Keep logic OUT of controllers as much as possible
+- Prefer events, listeners, or service layer if already used
 
 ========================================
-STEP 2: TRACE DATA STRUCTURE
+STEP 1: HOOK INTO BOOKING FLOW
 ========================================
 
-For both Reservation and Booking:
+Locate where booking is:
+- created OR
+- confirmed OR
+- checked-in
 
-Identify:
-- Model used (Reservation, Booking, etc.)
-- Relationships:
-  - customer()
-  - guest()
-  - user()
+At the FINAL successful point:
 
-Extract fields:
-- name
+Trigger notification dispatch.
+
+DO NOT trigger before DB commit.
+
+========================================
+STEP 2: HOOK INTO RESERVATION FLOW
+========================================
+
+Locate reservation creation/confirmation.
+
+At success point:
+- Trigger same notification logic
+
+========================================
+STEP 3: REUSE EXISTING SERVICES
+========================================
+
+Find:
+- SMS service (AfricasTalking or similar)
+- Email system (Laravel Mail / Notification)
+
+USE them.
+
+DO NOT build a new provider.
+
+========================================
+STEP 4: CREATE NOTIFICATION CLASS
+========================================
+
+If not existing:
+
+Create a notification like:
+- BookingConfirmationNotification
+
+It should support:
 - email
-- phone
-- booking id
-- reservation id
-- dates
-- total amount
-
-If relationships are missing:
-- Add proper Eloquent relationships
-- Ensure eager loading if needed
+- sms (if system supports custom channel)
 
 ========================================
-STEP 3: CREATE NOTIFICATION SERVICE
+STEP 5: MESSAGE CONTENT
 ========================================
 
-Check if a service layer already exists:
-- Search "Services/"
-- Search "NotificationService"
+SMS (short format):
+- "Hello {name}, your booking #{ref} is confirmed from {checkin} to {checkout}"
 
-IF EXISTS:
-- Extend it
-
-IF NOT:
-- Create:
-  app/Services/NotificationService.php
-
-Inside it implement:
-
-Methods:
-- sendReservationConfirmation($reservation)
-- sendBookingConfirmation($booking)
-
-Rules:
-- Methods must accept full model instance
-- Methods must NOT depend on controller context
-- Must internally call Email + SMS logic
-
-========================================
-STEP 4: EMAIL IMPLEMENTATION
-========================================
-
-Check:
-- Does app/Mail exist?
-
-IF NOT:
-- Create directory
-
-Create:
-- app/Mail/ReservationConfirmed.php
-- app/Mail/BookingConfirmed.php
-
-Each must:
-- Extend Mailable
-- Accept model in constructor
-- Pass data to Blade view
-
-Create views:
-- resources/views/emails/reservation_confirmed.blade.php
-- resources/views/emails/booking_confirmed.blade.php
-
-Content must include:
-- Greeting with customer name
-- Booking/Reservation ID
+Email (detailed):
+- Greeting
+- Booking reference
 - Dates
-- Amount
-- Simple clean HTML
-
-In NotificationService:
-- Use Mail facade
-- Prefer:
-  Mail::to($email)->queue(new ReservationConfirmed($reservation))
-
-Fallback:
-- If queue not configured → use send()
-
-Validate:
-- Skip email if email is null
+- Summary
+- Simple closing
 
 ========================================
-STEP 5: SMS IMPLEMENTATION
+STEP 6: CUSTOMER DATA SOURCE
 ========================================
 
-Search for existing SMS:
-- "SmsService"
-- "sendSms"
-- "twilio"
-- "africastalking"
+Pull from:
+- Guest model
+- OR booking-related user
 
-IF FOUND:
-- Reuse it
+Ensure:
+- phone exists for SMS
+- email exists for email
 
-IF NOT:
-- Create:
-  app/Services/SmsService.php
-
-Method:
-- send($phone, $message)
-
-Rules:
-- Accept raw phone
-- Normalize format if needed
-- Return success/failure boolean
-
-Message format:
-- Reservation:
-  "Hello {name}, your reservation #{id} is received."
-
-- Booking:
-  "Hello {name}, your booking #{id} is confirmed."
-
-In NotificationService:
-- Call SmsService after email
-
-Validation:
-- Skip if phone is null
+If missing:
+- skip that channel safely (no crash)
 
 ========================================
-STEP 6: ERROR HANDLING
+STEP 7: QUEUE HANDLING
 ========================================
 
-Wrap ALL notification calls in try/catch
+If queues are active:
 
-Inside catch:
-- Log error using Log::error()
+- Dispatch notifications via queue
+- Do NOT block request
 
-DO NOT:
-- Throw exception
-- Interrupt main flow
-
-========================================
-STEP 7: INTEGRATE INTO CONTROLLERS
-========================================
-
-Return to controllers from STEP 1
-
-AFTER successful DB save:
-
-Add:
-- app(NotificationService::class)->sendReservationConfirmation($reservation)
-- app(NotificationService::class)->sendBookingConfirmation($booking)
-
-Placement:
-- AFTER commit
-- NOT before validation
-- NOT before save
+If not:
+- fallback to sync send
 
 ========================================
-STEP 8: QUEUE HANDLING
+STEP 8: ERROR HANDLING
 ========================================
 
-Check if queue is configured:
-- .env QUEUE_CONNECTION
-
-IF YES:
-- Use queue()
-
-IF NO:
-- Use send()
-
-DO NOT force queue if not configured
+- Wrap sending in try/catch
+- Log failures
+- DO NOT break booking flow if notification fails
 
 ========================================
-STEP 9: LOGGING
-========================================
-
-Log:
-- Success (optional)
-- Failures (mandatory)
-
-Use:
-- Log::info
-- Log::error
-
-========================================
-STEP 10: TEST CASES
-========================================
-
-Test:
-1. Reservation with email phone
-2. Reservation with phone and email
-3. Booking with both
-4. Missing both → no crash
-5. SMS failure → booking still works
-6. Email failure → booking still works
-
-========================================
-STEP 11: CLEANUP
+STEP 9: AVOID DUPLICATES
 ========================================
 
 Ensure:
-- No duplicate notification code
-- Controllers remain thin
-- Service is reusable
+- Notification is sent ONLY ONCE per booking/reservation
+
+Avoid:
+- double triggers from multiple saves
 
 ========================================
-OUTPUT
+STEP 10: TEST FLOW
 ========================================
 
-Return:
-1. Files created
-2. Files modified
-3. Exact controller integration points
-4. Logs showing execution
-5. Any assumptions
+Test cases:
+
+1. Create booking → SMS + email sent
+2. Create reservation → SMS + email sent
+3. Missing phone → email still sends
+4. Missing email → SMS still sends
+5. Failure in SMS → booking still succeeds
 
 ========================================
-FINAL GOAL
+STEP 11: LOGGING
 ========================================
 
-- Notifications sent reliably
-- No system breakage
-- Clean architecture
-- Production-safe implementation
+Log:
+- success send
+- failure send
+
+========================================
+STEP 12: CLEAN INTEGRATION
+========================================
+
+Final flow should be:
+
+Booking/Reservation Created
+        ↓
+Notification Triggered
+        ↓
+SMS + Email Sent
+
+========================================
+OUTPUT REQUIRED
+========================================
+
+1. Where notifications are triggered
+2. Notification class created/used
+3. Services reused (SMS + Email)
+4. Confirmation that both channels work
+
+========================================
+GOAL
+========================================
+
+- Every customer gets confirmation instantly
+- No manual sending
+- No broken flows
+- Clean integration into existing system
+
+DO NOT OVERCOMPLICATE.
+JUST CONNECT THE SYSTEM PROPERLY.

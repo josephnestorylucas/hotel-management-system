@@ -433,6 +433,11 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:cashier,store_manager');
         Route::post('payments/walkin', [FinancePaymentController::class, 'storeWalkin'])->name('payments.walkin')
              ->middleware('role:cashier,bar_tender,restaurant_manager');
+        
+        // ── Walk-in Payment Processing (unified for laundry/restaurant/bar) ──────
+        Route::post('walkin-payment/process', [\App\Http\Controllers\Finance\WalkinPaymentController::class, 'process'])
+             ->name('walkin-payment.process')
+             ->middleware('role:cashier,front_desk,laundry_manager,supervisor,bar_tender,restaurant_manager,manager');
 
         // ── Receipts ──────────────────────────────────────────────────────────────
         Route::get('receipts/guest/{checkout}', [ReceiptController::class, 'guest'])->name('receipt.guest');

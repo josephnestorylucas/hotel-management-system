@@ -222,34 +222,47 @@
                 @endif
 
                 {{-- Settle form --}}
-                <div x-data="{ showSettle: false }">
-                    <button @click="showSettle = !showSettle"
-                            class="w-full bg-primary text-white py-2 rounded text-sm hover:opacity-90">
-                        Settle Order
-                    </button>
-                    <form method="POST" action="{{ route('restaurant.orders.settle', $order) }}"
-                          x-show="showSettle" x-cloak class="mt-3 space-y-3 p-3 bg-gray-50 rounded">
-                        @csrf
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Payment Method *</label>
-                            <select name="payment_method" x-data="{ pm: '' }" x-model="pm" required
-                                    class="w-full border-gray-300 rounded px-3 py-2 text-sm">
-                                <option value="">— Select —</option>
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
-                                <option value="charge_to_booking">Charge to Booking</option>
-                            </select>
-                        </div>
-                        <div x-data x-show="$el.closest('form').querySelector('[name=payment_method]').value === 'charge_to_booking'">
-                            <label class="block text-xs text-gray-500 mb-1">Booking ID</label>
-                            <input type="text" name="booking_id" value="{{ $order->booking_id }}"
-                                   class="w-full border-gray-300 rounded px-3 py-2 text-sm" placeholder="Booking UUID">
-                        </div>
-                        <button type="submit" class="w-full bg-green-700 text-white py-2 rounded text-sm hover:bg-green-800">
-                            Confirm Settlement
+                @if($order->order_type === 'walkin')
+                    {{-- Walk-in: Use unified payment modal --}}
+                    <x-walkin-payment-modal 
+                        :amount="$order->total" 
+                        :order-id="$order->id"
+                        :order-number="$order->order_number"
+                        module="restaurant"
+                        :customer-name="$order->customer_name ?? ''"
+                        :customer-phone="$order->customer_phone ?? ''"
+                    />
+                @else
+                    {{-- Guest: Show existing settle panel --}}
+                    <div x-data="{ showSettle: false }">
+                        <button @click="showSettle = !showSettle"
+                                class="w-full bg-primary text-white py-2 rounded text-sm hover:opacity-90">
+                            Settle Order
                         </button>
-                    </form>
-                </div>
+                        <form method="POST" action="{{ route('restaurant.orders.settle', $order) }}"
+                              x-show="showSettle" x-cloak class="mt-3 space-y-3 p-3 bg-gray-50 rounded">
+                            @csrf
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Payment Method *</label>
+                                <select name="payment_method" x-data="{ pm: '' }" x-model="pm" required
+                                        class="w-full border-gray-300 rounded px-3 py-2 text-sm">
+                                    <option value="">— Select —</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="card">Card</option>
+                                    <option value="charge_to_booking">Charge to Booking</option>
+                                </select>
+                            </div>
+                            <div x-data x-show="$el.closest('form').querySelector('[name=payment_method]').value === 'charge_to_booking'">
+                                <label class="block text-xs text-gray-500 mb-1">Booking ID</label>
+                                <input type="text" name="booking_id" value="{{ $order->booking_id }}"
+                                       class="w-full border-gray-300 rounded px-3 py-2 text-sm" placeholder="Booking UUID">
+                            </div>
+                            <button type="submit" class="w-full bg-green-700 text-white py-2 rounded text-sm hover:bg-green-800">
+                                Confirm Settlement
+                            </button>
+                        </form>
+                    </div>
+                @endif
 
                 {{-- Cancel --}}
                 <form method="POST" action="{{ route('restaurant.orders.cancel', $order) }}"

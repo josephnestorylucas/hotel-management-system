@@ -96,11 +96,24 @@
                 @endif
 
                 {{-- Settle payment --}}
-                @if(auth()->user()->hasAnyRole(['cashier','front_desk','laundry_manager','supervisor','admin']))
-                <button onclick="document.getElementById('settle-panel').classList.toggle('hidden')"
-                        class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-all">
-                    {{ __('laundry.actions.settle_payment') }}
-                </button>
+                @if(!in_array($laundryOrder->status, ['settled', 'cancelled']) && auth()->user()->hasAnyRole(['cashier','front_desk','laundry_manager','supervisor','admin']))
+                    @if($laundryOrder->customer_type === 'walkin')
+                        {{-- Walk-in: Use unified payment modal --}}
+                        <x-walkin-payment-modal 
+                            :amount="$laundryOrder->total" 
+                            :order-id="$laundryOrder->id"
+                            :order-number="$laundryOrder->order_number"
+                            module="laundry"
+                            :customer-name="$laundryOrder->customer_name ?? ''"
+                            :customer-phone="$laundryOrder->customer_phone ?? ''"
+                        />
+                    @else
+                        {{-- Guest: Show existing settle panel toggle --}}
+                        <button onclick="document.getElementById('settle-panel').classList.toggle('hidden')"
+                                class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-all">
+                            {{ __('laundry.actions.settle_payment') }}
+                        </button>
+                    @endif
                 @endif
 
                 {{-- Cancel --}}
@@ -117,8 +130,8 @@
         </div>
     </div>
 
-    {{-- Settle panel --}}
-    @if(!in_array($laundryOrder->status, ['settled', 'cancelled']))
+    {{-- Settle panel (for guest orders only - walk-ins use the modal) --}}
+    @if(!in_array($laundryOrder->status, ['settled', 'cancelled']) && $laundryOrder->customer_type === 'guest')
     <div id="settle-panel" class="hidden bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <h3 class="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
             <div class="w-8 h-8 bg-gradient-to-br from-green-50 to-green-100 rounded-lg flex items-center justify-center">

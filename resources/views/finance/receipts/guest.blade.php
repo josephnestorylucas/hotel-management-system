@@ -26,9 +26,12 @@
     </style>
 </head>
 <body>
+@php
+    use App\Helpers\CurrencyHelper;
+@endphp
 
 <div class="header">
-    <div class="hotel-name">🏨 HOTEL NAME</div>
+    <div class="hotel-name">HOTEL NAME</div>
     <p>123 Hotel Street, Dar es Salaam, Tanzania</p>
     <p>Tel: +255 XXX XXX XXX | info@hotel.com</p>
     <h1 style="margin-top: 10px;">OFFICIAL RECEIPT</h1>
@@ -46,7 +49,7 @@
         <p><span class="label">Receipt No:</span> <strong>{{ $checkout->receipt_number }}</strong></p>
         <p><span class="label">Date:</span> {{ $checkout->completed_at?->format('d M Y H:i') }}</p>
         <p><span class="label">Cashier:</span> {{ $checkout->completer?->name ?? '—' }}</p>
-        <p><span class="label">Rate:</span> 1 USD = {{ number_format($exchangeRate, 0) }} TZS</p>
+        <p><span class="label">Rate:</span> 1 {{ CurrencyHelper::getCurrencySymbol('USD') }} = {{ number_format($exchangeRate, 0) }} {{ CurrencyHelper::getCurrencySymbol('TZS') }}</p>
     </div>
 </div>
 
@@ -56,8 +59,8 @@
         <tr>
             <th>Date</th>
             <th>Description</th>
-            <th class="text-right">USD</th>
-            <th class="text-right">TZS</th>
+            <th class="text-right">{{ CurrencyHelper::getCurrencySymbol('USD') }}</th>
+            <th class="text-right">{{ CurrencyHelper::getCurrencySymbol('TZS') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -71,8 +74,8 @@
         <tr>
             <td>{{ $charge->created_at->format('d M') }}</td>
             <td>{{ $charge->description }}</td>
-            <td class="text-right">{{ number_format($charge->amount, 2) }}</td>
-            <td class="text-right">{{ number_format($charge->amount * $exchangeRate, 0) }}</td>
+            <td class="text-right">{{ CurrencyHelper::formatCurrency($charge->amount, 'USD', false) }}</td>
+            <td class="text-right">{{ CurrencyHelper::formatCurrency($charge->amount * $exchangeRate, 'TZS', false) }}</td>
         </tr>
         @endforeach
         @endforeach
@@ -83,21 +86,21 @@
 <table class="totals">
     <tr>
         <td class="label">Total Charges:</td>
-        <td class="text-right">USD {{ number_format($checkout->total_charges_usd, 2) }}</td>
+        <td class="text-right">{{ CurrencyHelper::formatUSD($checkout->total_charges_usd) }}</td>
     </tr>
     @if($checkout->discount_usd > 0)
     <tr>
         <td class="label">Discount:</td>
-        <td class="text-right" style="color: red;">- USD {{ number_format($checkout->discount_usd, 2) }}</td>
+        <td class="text-right" style="color: red;">- {{ CurrencyHelper::formatUSD($checkout->discount_usd) }}</td>
     </tr>
     @endif
     <tr class="grand-total">
         <td>GRAND TOTAL:</td>
-        <td class="text-right">USD {{ number_format($checkout->grand_total_usd, 2) }}</td>
+        <td class="text-right">{{ CurrencyHelper::formatUSD($checkout->grand_total_usd) }}</td>
     </tr>
     <tr>
-        <td class="label">In TZS:</td>
-        <td class="text-right"><strong>TZS {{ number_format($checkout->grand_total_tzs, 0) }}</strong></td>
+        <td class="label">In {{ CurrencyHelper::getCurrencySymbol('TZS') }}:</td>
+        <td class="text-right"><strong>{{ CurrencyHelper::formatTZS($checkout->grand_total_tzs) }}</strong></td>
     </tr>
     <tr style="height: 8px;"></tr>
     <tr>
@@ -108,12 +111,12 @@
     </tr>
     <tr>
         <td class="label">Amount Paid:</td>
-        <td class="text-right">USD {{ number_format($checkout->total_paid_usd, 2) }}</td>
+        <td class="text-right">{{ CurrencyHelper::formatUSD($checkout->total_paid_usd) }}</td>
     </tr>
     @if($checkout->change_due_usd > 0)
     <tr>
         <td class="label">Change:</td>
-        <td class="text-right">USD {{ number_format($checkout->change_due_usd, 2) }}</td>
+        <td class="text-right">{{ CurrencyHelper::formatUSD($checkout->change_due_usd) }}</td>
     </tr>
     @endif
 </table>
@@ -129,7 +132,7 @@
 <div class="no-print" style="margin-top: 20px; text-align: center;">
     <button onclick="window.print()"
             style="background: #2563eb; color: white; padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-        🖨️ Print Receipt
+        Print Receipt
     </button>
 </div>
 

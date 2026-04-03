@@ -1,6 +1,10 @@
 @extends('finance.layout')
 @section('title', 'Guest Folio — ' . ($booking->guest_name ?? $booking->id))
 
+@php
+    use App\Helpers\CurrencyHelper;
+@endphp
+
 @section('content')
 <div class="flex justify-between items-start mb-6">
     <div>
@@ -33,18 +37,35 @@
                 <thead><tr class="border-b">
                     <th class="px-4 py-2 text-left text-gray-500">Date</th>
                     <th class="px-4 py-2 text-left text-gray-500">Description</th>
-                    <th class="px-4 py-2 text-right text-gray-500">USD</th>
-                    <th class="px-4 py-2 text-right text-gray-500">TZS</th>
+                    <th class="px-4 py-2 text-right text-gray-500">{{ CurrencyHelper::getCurrencySymbol('USD') }}</th>
+                    <th class="px-4 py-2 text-right text-gray-500">{{ CurrencyHelper::getCurrencySymbol('TZS') }}</th>
                     <th class="px-4 py-2 text-center text-gray-500">Status</th>
                 </tr></thead>
                 <tbody class="divide-y divide-gray-50">
                     @foreach($items as $charge)
                     <tr>
                         <td class="px-4 py-2 text-gray-400 text-xs">{{ $charge->created_at->format('d M Y') }}</td>
-                        <td class="px-4 py-2">{{ $charge->description }}</td>
-                        <td class="px-4 py-2 text-right font-medium">{{ number_format($charge->amount, 2) }}</td>
+                        <td class="px-4 py-2">
+                            {{ $charge->description }}
+                            @if($charge->charge_type === 'laundry' && $charge->laundryOrder)
+                                <a href="{{ route('laundry.orders.show', $charge->laundryOrder) }}"
+                                   class="text-xs text-blue-500 hover:underline ml-1" target="_blank">
+                                    (view order)
+                                </a>
+                            @elseif($charge->charge_type === 'restaurant' && $charge->order)
+                                <a href="{{ route('restaurant.orders.show', $charge->order) }}"
+                                   class="text-xs text-blue-500 hover:underline ml-1" target="_blank">
+                                    (view order)
+                                </a>
+                            @endif
+                        </td>
+                        <td class="px-4 py-2 text-right font-medium">{{ CurrencyHelper::formatCurrency($charge->amount, 'USD', false) }}</td>
                         <td class="px-4 py-2 text-right text-gray-500">
-                            {{ number_format($charge->amount * $exchangeRate, 0) }}
+                            @if($charge->amount_tzs)
+                                {{ CurrencyHelper::formatCurrency($charge->amount_tzs, 'TZS', false) }}
+                            @else
+                                {{ CurrencyHelper::formatCurrency($charge->amount * $exchangeRate, 'TZS', false) }}
+                            @endif
                         </td>
                         <td class="px-4 py-2 text-center">
                             <span class="text-xs px-2 py-0.5 rounded-full
@@ -56,9 +77,14 @@
                     @endforeach
                     <tr class="bg-gray-50 font-medium">
                         <td colspan="2" class="px-4 py-2 text-right text-gray-600">Subtotal</td>
-                        <td class="px-4 py-2 text-right">{{ number_format($items->sum('amount'), 2) }}</td>
+                        <td class="px-4 py-2 text-right">{{ CurrencyHelper::formatCurrency($items->sum('amount'), 'USD', false) }}</td>
                         <td class="px-4 py-2 text-right text-gray-500">
-                            {{ number_format($items->sum('amount') * $exchangeRate, 0) }}
+                            @php
+                                $totalTzs = $items->sum(function($c) {
+                                    return $c->amount_tzs ?? ($c->amount * $exchangeRate);
+                                });
+                            @endphp
+                            {{ CurrencyHelper::formatCurrency($totalTzs, 'TZS', false) }}
                         </td>
                         <td></td>
                     </tr>
@@ -82,7 +108,7 @@
                     <input type="text" name="description" placeholder="Description" required
                            class="border rounded px-3 py-2 text-sm">
                     <div class="flex gap-2">
-                        <input type="number" name="amount" placeholder="Amount (USD)" step="0.01" min="0.01" required
+                        <input type="number" name="amount" placeholder="Amount ({{ CurrencyHelper::getCurrencySymbol('USD') }})" step="0.01" min="0.01" required
                                class="border rounded px-3 py-2 text-sm flex-1">
                         <button class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700">Add</button>
                     </div>
@@ -99,19 +125,19 @@
             <dl class="space-y-2 text-sm">
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Total Charges</dt>
-                    <dd>USD {{ number_format($checkout->total_charges_usd, 2) }}</dd>
+                    <dd>{{ CurrencyHelper::formatUSD($checkout->total_charges_usd) }}</dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Discount</dt>
-                    <dd class="text-red-500">- USD {{ number_format($checkout->discount_usd, 2) }}</dd>
+                    <dd class="text-red-500">- {{ CurrencyHelper::formatUSD($checkout->discount_usd) }}</dd>
                 </div>
                 <div class="flex justify-between font-bold text-gray-800 border-t pt-2">
                     <dt>Grand Total</dt>
-                    <dd>USD {{ number_format($checkout->grand_total_usd, 2) }}</dd>
+                    <dd>{{ CurrencyHelper::formatUSD($checkout->grand_total_usd) }}</dd>
                 </div>
                 <div class="flex justify-between text-gray-500">
                     <dt>In TZS (rate: {{ number_format($exchangeRate, 0) }})</dt>
-                    <dd>TZS {{ number_format($checkout->grand_total_tzs, 0) }}</dd>
+                    <dd>{{ CurrencyHelper::formatTZS($checkout->grand_total_tzs) }}</dd>
                 </div>
             </dl>
         </div>
@@ -127,10 +153,10 @@
                         <select name="payment_method" id="pmMethod" required
                                 class="w-full border rounded px-3 py-2 text-sm"
                                 onchange="toggleSplitFields(this.value)">
-                            <option value="cash_usd">Cash — USD</option>
-                            <option value="cash_tzs">Cash — TZS</option>
-                            <option value="card_usd">Card — USD</option>
-                            <option value="card_tzs">Card — TZS</option>
+                            <option value="cash_usd">Cash — {{ CurrencyHelper::getCurrencySymbol('USD') }}</option>
+                            <option value="cash_tzs">Cash — {{ CurrencyHelper::getCurrencySymbol('TZS') }}</option>
+                            <option value="card_usd">Card — {{ CurrencyHelper::getCurrencySymbol('USD') }}</option>
+                            <option value="card_tzs">Card — {{ CurrencyHelper::getCurrencySymbol('TZS') }}</option>
                             <option value="split">Split Payment</option>
                         </select>
                     </div>
@@ -138,22 +164,22 @@
                     <div id="split-fields" class="hidden space-y-2">
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="text-xs text-gray-500">Cash USD</label>
+                                <label class="text-xs text-gray-500">Cash {{ CurrencyHelper::getCurrencySymbol('USD') }}</label>
                                 <input type="number" name="cash_usd_amount" step="0.01" min="0"
                                        class="w-full border rounded px-2 py-1.5 text-sm">
                             </div>
                             <div>
-                                <label class="text-xs text-gray-500">Card USD</label>
+                                <label class="text-xs text-gray-500">Card {{ CurrencyHelper::getCurrencySymbol('USD') }}</label>
                                 <input type="number" name="card_usd_amount" step="0.01" min="0"
                                        class="w-full border rounded px-2 py-1.5 text-sm">
                             </div>
                             <div>
-                                <label class="text-xs text-gray-500">Cash TZS</label>
+                                <label class="text-xs text-gray-500">Cash {{ CurrencyHelper::getCurrencySymbol('TZS') }}</label>
                                 <input type="number" name="cash_tzs_amount" step="1" min="0"
                                        class="w-full border rounded px-2 py-1.5 text-sm">
                             </div>
                             <div>
-                                <label class="text-xs text-gray-500">Card TZS</label>
+                                <label class="text-xs text-gray-500">Card {{ CurrencyHelper::getCurrencySymbol('TZS') }}</label>
                                 <input type="number" name="card_tzs_amount" step="1" min="0"
                                        class="w-full border rounded px-2 py-1.5 text-sm">
                             </div>
@@ -161,7 +187,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount (USD)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount ({{ CurrencyHelper::getCurrencySymbol('USD') }})</label>
                         <input type="number" name="discount_usd" value="0" step="0.01" min="0"
                                class="w-full border rounded px-3 py-2 text-sm">
                     </div>
@@ -181,10 +207,16 @@
         @endif
 
         @if($checkout->status === 'completed')
-        <a href="{{ route('finance.receipt.guest', $checkout) }}"
-           class="block text-center bg-blue-600 text-white py-2.5 rounded hover:bg-blue-700 font-medium">
-            🖨️ Print Receipt
-        </a>
+        <div class="space-y-2">
+            <a href="{{ route('receipts.checkout', $checkout) }}" target="_blank"
+               class="block text-center bg-blue-600 text-white py-2.5 rounded hover:bg-blue-700 font-medium">
+                Print Receipt
+            </a>
+            <a href="{{ route('finance.receipt.guest', $checkout) }}" target="_blank"
+               class="block text-center border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50 text-sm">
+                Print Detailed Folio
+            </a>
+        </div>
         @endif
     </div>
 </div>

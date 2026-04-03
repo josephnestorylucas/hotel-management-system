@@ -174,10 +174,10 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-3 text-right">
-                                    <span class="text-sm text-secondary">${{ number_format($item->unit_price, 2) }}</span>
+                                    <span class="text-sm text-secondary"><x-money :amount="$item->unit_price" /></span>
                                 </td>
                                 <td class="px-6 py-3 text-right">
-                                    <span class="text-sm font-bold text-secondary">${{ number_format($item->subtotal, 2) }}</span>
+                                    <span class="text-sm font-bold text-secondary"><x-money :amount="$item->subtotal" /></span>
                                 </td>
                             </tr>
                             @endforeach
@@ -185,15 +185,15 @@
                         <tfoot class="bg-gradient-to-r from-blue-50 to-white">
                             <tr>
                                 <td colspan="5" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Subtotal:</td>
-                                <td class="px-6 py-3 text-right text-sm font-bold text-secondary">${{ number_format($goodsReceivedNote->subtotal, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-bold text-secondary"><x-money :amount="$goodsReceivedNote->subtotal" /></td>
                             </tr>
                             <tr>
                                 <td colspan="5" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Tax (18%):</td>
-                                <td class="px-6 py-3 text-right text-sm font-bold text-secondary">${{ number_format($goodsReceivedNote->tax_amount, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-bold text-secondary"><x-money :amount="$goodsReceivedNote->tax_amount" /></td>
                             </tr>
                             <tr class="bg-gradient-to-r from-primary/10 to-blue-100">
                                 <td colspan="5" class="px-6 py-4 text-right text-base font-bold text-gray-800">Grand Total:</td>
-                                <td class="px-6 py-4 text-right text-xl font-extrabold text-primary">${{ number_format($goodsReceivedNote->grand_total, 2) }}</td>
+                                <td class="px-6 py-4 text-right text-xl font-extrabold text-primary"><x-money :amount="$goodsReceivedNote->grand_total" /></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -256,7 +256,7 @@
                     <div class="text-xs text-gray-600 mb-2">Order Date: {{ $goodsReceivedNote->lpo->order_date->format('M d, Y') }}</div>
                     <div class="flex items-center justify-between">
                         <div>@include('components.lpo-status-badge', ['status' => $goodsReceivedNote->lpo->status])</div>
-                        <div class="text-sm font-bold text-primary">${{ number_format($goodsReceivedNote->lpo->grand_total, 2) }}</div>
+                        <div class="text-sm font-bold text-primary"><x-money :amount="$goodsReceivedNote->lpo->grand_total" /></div>
                     </div>
                 </a>
             </div>

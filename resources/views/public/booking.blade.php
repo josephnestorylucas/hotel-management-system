@@ -33,10 +33,7 @@
 
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-primary via-blue-600 to-primary pt-32 pb-20">
-        <div class="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1920&h=600&fit=crop" 
-                 alt="Hotel Room" class="w-full h-full object-cover opacity-20">
-        </div>
+        <div class="absolute inset-0 bg-primary/90"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <span class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 text-white text-sm font-semibold rounded-full mb-6 backdrop-blur-sm">Reserve Your Room</span>
             <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-6">Book Your Stay</h1>
@@ -81,23 +78,25 @@
                             <label for="check_in" class="block text-sm font-semibold text-secondary mb-2">Check-in Date</label>
                             <input type="date" id="check_in" name="check_in" required
                                    min="{{ date('Y-m-d') }}"
+                                   value="{{ $checkIn ?? request('check_in') }}"
                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                         </div>
                         <div>
                             <label for="check_out" class="block text-sm font-semibold text-secondary mb-2">Check-out Date</label>
                             <input type="date" id="check_out" name="check_out" required
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                                   value="{{ $checkOut ?? request('check_out') }}"
                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                         </div>
                         <div>
                             <label for="guests" class="block text-sm font-semibold text-secondary mb-2">Number of Guests</label>
                             <select id="guests" name="guests" required
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                                <option value="1">1 Guest</option>
-                                <option value="2" selected>2 Guests</option>
-                                <option value="3">3 Guests</option>
-                                <option value="4">4 Guests</option>
-                                <option value="5">5+ Guests</option>
+                                <option value="1" {{ ($guests ?? request('guests')) == '1' ? 'selected' : '' }}>1 Guest</option>
+                                <option value="2" {{ ($guests ?? request('guests', '2')) == '2' ? 'selected' : '' }}>2 Guests</option>
+                                <option value="3" {{ ($guests ?? request('guests')) == '3' ? 'selected' : '' }}>3 Guests</option>
+                                <option value="4" {{ ($guests ?? request('guests')) == '4' ? 'selected' : '' }}>4 Guests</option>
+                                <option value="5" {{ ($guests ?? request('guests')) == '5' ? 'selected' : '' }}>5+ Guests</option>
                             </select>
                         </div>
                         <div>
@@ -107,13 +106,8 @@
                                 <option value="">All Room Types</option>
                                 @if(isset($roomTypes))
                                     @foreach($roomTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                        <option value="{{ $type->id }}" {{ request('room_type') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                                     @endforeach
-                                @else
-                                    <option value="standard">Standard Room</option>
-                                    <option value="deluxe">Deluxe Room</option>
-                                    <option value="suite">Suite</option>
-                                    <option value="executive">Executive Suite</option>
                                 @endif
                             </select>
                         </div>
@@ -139,14 +133,14 @@
                         @foreach($availableRooms as $room)
                             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all">
                                 <div class="aspect-video bg-gray-200">
-                                    <img src="{{ $room->image ?? 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&h=400&fit=crop' }}" 
+                                    <img src="{{ $room->image }}" 
                                          alt="{{ $room->roomType->name ?? 'Room' }}" class="w-full h-full object-cover">
                                 </div>
                                 <div class="p-6">
                                     <h3 class="text-xl font-bold text-secondary mb-2">{{ $room->roomType->name ?? 'Room' }}</h3>
                                     <p class="text-gray-600 text-sm mb-4">Room {{ $room->room_number }} &bull; Floor {{ $room->floor->number ?? 'N/A' }}</p>
                                     <div class="flex items-center justify-between mb-4">
-                                        <span class="text-2xl font-bold text-primary">${{ number_format($room->roomType->price_per_night ?? 150, 2) }}</span>
+                                        <span class="text-2xl font-bold text-primary"><x-money :amount="$room->roomType->price_per_night ?? 150" /></span>
                                         <span class="text-gray-500 text-sm">per night</span>
                                     </div>
                                     <a href="{{ route('booking.room', $room->id) }}?check_in={{ request('check_in') }}&check_out={{ request('check_out') }}&guests={{ request('guests') }}" 
@@ -175,21 +169,21 @@
                     <h2 class="text-3xl font-extrabold text-secondary">Room Types & Rates</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <!-- Standard Room -->
+                    @forelse($roomTypes as $type)
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all">
-                        <div class="aspect-[4/3] overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&h=450&fit=crop" 
-                                 alt="Standard Room" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="aspect-[4/3] overflow-hidden bg-gray-100">
+                            <img src="{{ $type->medium_image_with_fallback }}" 
+                                 alt="{{ $type->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         </div>
                         <div class="p-6">
-                            <h3 class="text-xl font-bold text-secondary mb-2">Standard Room</h3>
-                            <p class="text-gray-600 text-sm mb-4">Comfortable room with essential amenities for a pleasant stay.</p>
+                            <h3 class="text-xl font-bold text-secondary mb-2">{{ $type->name }}</h3>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ $type->description ?? 'Comfortable room with essential amenities for a pleasant stay.' }}</p>
                             <ul class="text-sm text-gray-500 space-y-1 mb-4">
                                 <li class="flex items-center gap-2">
                                     <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                     </svg>
-                                    Queen Bed
+                                    Up to {{ $type->max_occupancy }} Guests
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -201,123 +195,25 @@
                                     <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                     </svg>
-                                    Up to 2 Guests
+                                    Room Code: {{ $type->code }}
                                 </li>
                             </ul>
                             <div class="flex items-baseline gap-1">
-                                <span class="text-2xl font-bold text-primary">$99</span>
+                                <span class="text-2xl font-bold text-primary"><x-money :amount="$type->base_rate" /></span>
                                 <span class="text-gray-500 text-sm">/night</span>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Deluxe Room -->
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all">
-                        <div class="aspect-[4/3] overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=600&h=450&fit=crop" 
-                                 alt="Deluxe Room" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-secondary mb-2">Deluxe Room</h3>
-                            <p class="text-gray-600 text-sm mb-4">Spacious room with premium furnishings and city views.</p>
-                            <ul class="text-sm text-gray-500 space-y-1 mb-4">
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    King Bed
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    City View
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Up to 3 Guests
-                                </li>
-                            </ul>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-2xl font-bold text-primary">$149</span>
-                                <span class="text-gray-500 text-sm">/night</span>
-                            </div>
-                        </div>
+                    @empty
+                    <!-- Fallback if no room types in database -->
+                    <div class="col-span-full text-center py-12">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-secondary mb-2">No Room Types Available</h3>
+                        <p class="text-gray-500">Room types will be displayed here once added.</p>
                     </div>
-
-                    <!-- Suite -->
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all">
-                        <div class="aspect-[4/3] overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=450&fit=crop" 
-                                 alt="Suite" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-secondary mb-2">Suite</h3>
-                            <p class="text-gray-600 text-sm mb-4">Elegant suite with separate living area and luxurious amenities.</p>
-                            <ul class="text-sm text-gray-500 space-y-1 mb-4">
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    King Bed + Sofa
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Living Area
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Up to 4 Guests
-                                </li>
-                            </ul>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-2xl font-bold text-primary">$249</span>
-                                <span class="text-gray-500 text-sm">/night</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Executive Suite -->
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all">
-                        <div class="aspect-[4/3] overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=450&fit=crop" 
-                                 alt="Executive Suite" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-secondary mb-2">Executive Suite</h3>
-                            <p class="text-gray-600 text-sm mb-4">Ultimate luxury with panoramic views and exclusive services.</p>
-                            <ul class="text-sm text-gray-500 space-y-1 mb-4">
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Premium King Bed
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Private Balcony
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Butler Service
-                                </li>
-                            </ul>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-2xl font-bold text-primary">$399</span>
-                                <span class="text-gray-500 text-sm">/night</span>
-                            </div>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -344,7 +240,7 @@
                             </div>
                             <div>
                                 <span class="text-gray-500">Total</span>
-                                <p class="font-bold text-primary text-lg">${{ number_format($totalPrice ?? 0, 2) }}</p>
+                                <p class="font-bold text-primary text-lg"><x-money :amount="$totalPrice ?? 0" /></p>
                             </div>
                         </div>
                     </div>

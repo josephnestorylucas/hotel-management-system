@@ -26,9 +26,8 @@
         @forelse($roomTypes as $roomType)
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all overflow-hidden">
             <!-- Image -->
-            @if($roomType->hasImage())
-            <div class="relative h-48 overflow-hidden">
-                <img src="{{ $roomType->image_medium_url }}" 
+            <div class="relative h-48 overflow-hidden bg-gray-100">
+                <img src="{{ $roomType->medium_image_with_fallback }}" 
                      alt="{{ $roomType->name }}" 
                      class="w-full h-full object-cover">
                 @if($roomType->hasGalleryImages())
@@ -40,7 +39,6 @@
                 </div>
                 @endif
             </div>
-            @endif
 
             <!-- Header -->
             <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
@@ -48,7 +46,7 @@
                     <h3 class="text-xl font-bold">{{ $roomType->name }}</h3>
                     <span class="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-lg">{{ $roomType->code }}</span>
                 </div>
-                <div class="text-3xl font-extrabold">${{ number_format($roomType->base_rate, 2) }}</div>
+                <div class="text-3xl font-extrabold">@currency($roomType->base_rate)</div>
                 <div class="text-sm text-blue-100 font-medium">per night</div>
             </div>
 

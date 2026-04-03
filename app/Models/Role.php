@@ -15,7 +15,8 @@ class Role extends Model {
     // Existing roles
     public const ADMIN = 'admin';
     public const FRONT_DESK = 'front_desk';
-    public const SUPERVISOR = 'supervisor';
+    public const MANAGER = 'manager';  // General Manager - Approvals and high-level oversight
+    public const SUPERVISOR = 'supervisor';  // Supervisor - Day-to-day task supervision
     public const HOUSE_HELP = 'house_help';
     public const STORE_MANAGER = 'store_manager';
     public const STORE_KEEPER = 'store_keeper';
@@ -30,7 +31,8 @@ class Role extends Model {
     public static array $roles = [
         self::ADMIN              => 'System administrator with full access',
         self::FRONT_DESK         => 'Booking management and guest charges',
-        self::SUPERVISOR         => 'Approvals and operational oversight',
+        self::MANAGER            => 'Approvals, reports, and high-level operational oversight',
+        self::SUPERVISOR         => 'Day-to-day task supervision and staff coordination',
         self::HOUSE_HELP         => 'Internal usage requests only',
         self::STORE_MANAGER      => 'Full store control, pricing, all reports',
         self::STORE_KEEPER       => 'Stock operations, restock, fulfillments',

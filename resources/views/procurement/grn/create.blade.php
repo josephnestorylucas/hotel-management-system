@@ -1,4 +1,5 @@
 {{-- resources/views/procurement/grn/create.blade.php --}}
+@php use App\Helpers\CurrencyHelper; @endphp
 @extends('layouts.app')
 
 @section('title', 'Create GRN')
@@ -144,15 +145,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <div class="text-sm text-gray-600 mb-1">Subtotal</div>
-                            <div class="text-2xl font-bold text-secondary" id="subtotal-display">$0.00</div>
+                            <div class="text-2xl font-bold text-secondary" id="subtotal-display">{{ CurrencyHelper::formatCurrency(0) }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-600 mb-1">Tax (18%)</div>
-                            <div class="text-2xl font-bold text-secondary" id="tax-display">$0.00</div>
+                            <div class="text-2xl font-bold text-secondary" id="tax-display">{{ CurrencyHelper::formatCurrency(0) }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-600 mb-1">Grand Total</div>
-                            <div class="text-3xl font-extrabold text-primary" id="total-display">$0.00</div>
+                            <div class="text-3xl font-extrabold text-primary" id="total-display">{{ CurrencyHelper::formatCurrency(0) }}</div>
                         </div>
                     </div>
                 </div>
@@ -176,6 +177,16 @@
 
 <script>
 let itemIndex = 0;
+const currencySymbol = '{{ CurrencyHelper::getCurrencySymbol() }}';
+const currencyPosition = '{{ CurrencyHelper::CURRENCIES[CurrencyHelper::getDefaultCurrency()]["position"] ?? "before" }}';
+
+function formatMoney(amount) {
+    const formatted = amount.toFixed(2);
+    if (currencyPosition === 'before') {
+        return currencySymbol + formatted;
+    }
+    return formatted + ' ' + currencySymbol;
+}
 
 function loadLpoItems() {
     const select = document.getElementById('lpo_id');
@@ -236,7 +247,7 @@ function addItemRow(lpoItem) {
                 </div>
                 <div class="md:col-span-2">
                     <div class="text-xs text-gray-500 mb-1">Unit Price</div>
-                    <div class="text-sm font-bold text-secondary">$${parseFloat(lpoItem.unit_price).toFixed(2)}</div>
+                    <div class="text-sm font-bold text-secondary">${formatMoney(parseFloat(lpoItem.unit_price))}</div>
                 </div>
             </div>
             <div class="mt-2">
@@ -264,9 +275,9 @@ function calculateGrandTotal() {
     const tax = subtotal * 0.18;
     const total = subtotal + tax;
     
-    document.getElementById('subtotal-display').textContent = '$' + subtotal.toFixed(2);
-    document.getElementById('tax-display').textContent = '$' + tax.toFixed(2);
-    document.getElementById('total-display').textContent = '$' + total.toFixed(2);
+    document.getElementById('subtotal-display').textContent = formatMoney(subtotal);
+    document.getElementById('tax-display').textContent = formatMoney(tax);
+    document.getElementById('total-display').textContent = formatMoney(total);
 }
 
 // Auto-load if LPO is pre-selected

@@ -18,11 +18,12 @@ class Payment extends Model
     use HasUuid;
 
     // ─── Status constants ──────────────────────────────────────────
-    const STATUS_PENDING    = 'pending';
-    const STATUS_SUCCESSFUL = 'successful';
-    const STATUS_FAILED     = 'failed';
-    const STATUS_REFUNDED   = 'refunded';
-    const STATUS_EXPIRED    = 'expired';
+    const STATUS_PENDING            = 'pending';
+    const STATUS_SUCCESSFUL         = 'successful';
+    const STATUS_FAILED             = 'failed';
+    const STATUS_REFUNDED           = 'refunded';
+    const STATUS_PARTIALLY_REFUNDED = 'partially_refunded';
+    const STATUS_EXPIRED            = 'expired';
 
     // ─── Provider constants ────────────────────────────────────────
     const PROVIDER_SNIPPE  = 'snippe';
@@ -120,11 +121,12 @@ class Payment extends Model
     public function isSuccessful(): bool { return $this->status === self::STATUS_SUCCESSFUL; }
     public function isFailed(): bool     { return $this->status === self::STATUS_FAILED; }
     public function isRefunded(): bool   { return $this->status === self::STATUS_REFUNDED; }
+    public function isPartiallyRefunded(): bool { return $this->status === self::STATUS_PARTIALLY_REFUNDED; }
     public function isExpired(): bool    { return $this->status === self::STATUS_EXPIRED; }
 
     public function canBeRefunded(): bool
     {
-        return $this->status === self::STATUS_SUCCESSFUL;
+        return $this->status === self::STATUS_SUCCESSFUL || $this->status === self::STATUS_PARTIALLY_REFUNDED;
     }
 
     // ─── Mark Methods ──────────────────────────────────────────────
@@ -178,12 +180,13 @@ class Payment extends Model
     public function getStatusBadgeClassAttribute(): string
     {
         return match ($this->status) {
-            'pending'    => 'bg-yellow-100 text-yellow-800',
-            'successful' => 'bg-green-100 text-green-800',
-            'failed'     => 'bg-red-100 text-red-800',
-            'refunded'   => 'bg-purple-100 text-purple-800',
-            'expired'    => 'bg-gray-100 text-gray-800',
-            default      => 'bg-gray-100 text-gray-800',
+            'pending'            => 'bg-yellow-100 text-yellow-800',
+            'successful'         => 'bg-green-100 text-green-800',
+            'failed'             => 'bg-red-100 text-red-800',
+            'refunded'           => 'bg-purple-100 text-purple-800',
+            'partially_refunded' => 'bg-orange-100 text-orange-800',
+            'expired'            => 'bg-gray-100 text-gray-800',
+            default              => 'bg-gray-100 text-gray-800',
         };
     }
 

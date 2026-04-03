@@ -16,6 +16,7 @@ class BookingConfirmedMail extends Mailable
     {
         return $this
             ->subject("Booking Confirmed — {$this->booking['reference']}")
-            ->view('emails.booking-confirmed');
+            ->view('emails.booking-confirmed')
+            ->with(['email' => $this->booking['email'] ?? null]);
     }
 }

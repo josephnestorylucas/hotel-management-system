@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\StoreNotification;
 use App\Models\StockLevel;
 use App\Models\StockLocation;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +17,10 @@ use Illuminate\View\View;
 
 class StockTransferController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
+
     // GET /store/transfers
     public function index(Request $request): View
     {
@@ -60,18 +64,19 @@ class StockTransferController extends Controller
             'requested_by'     => auth()->id(),
         ]);
 
-        User::whereHas('role', fn ($q) => $q->whereIn('name', ['store_keeper', 'store_manager']))
-            ->get()
-            ->each(fn ($m) => StoreNotification::create([
-                'user_id'        => $m->id,
-                'type'           => 'pending_transfer',
-                'title'          => 'Stock Transfer Requested',
-                'body'           => "{$transfer->product->name} × {$transfer->quantity} requested for {$toLocation->name}",
-                'reference_type' => 'stock_transfer',
-                'reference_id'   => $transfer->id,
-                'action_url'     => route('store.transfers.index'),
-                'created_at'     => now(),
-            ]));
+        // Notify store keepers and managers
+        $userIds = User::whereHas('role', fn ($q) => $q->whereIn('name', ['store_keeper', 'store_manager']))
+            ->pluck('id')
+            ->toArray();
+
+        $this->notificationService->createForUsers($userIds, [
+            'type'           => 'pending_transfer',
+            'title'          => 'Stock Transfer Requested',
+            'body'           => "{$transfer->product->name} × {$transfer->quantity} requested for {$toLocation->name}",
+            'reference_type' => 'stock_transfer',
+            'reference_id'   => $transfer->id,
+            'action_url'     => route('store.transfers.index'),
+        ]);
 
         return redirect()
             ->route('store.transfers.index')

@@ -1,16 +1,16 @@
 {{-- resources/views/rooms/edit.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Edit Room')
-@section('page-title', 'Rooms')
+@section('title', __('rooms.edit_room'))
+@section('page-title', __('rooms.title'))
 
 @section('content')
 <div class="max-w-2xl mx-auto">
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
-            <h2 class="text-xl font-extrabold text-secondary">Edit Room</h2>
-            <p class="text-sm text-gray-500 mt-1">Update room information</p>
+            <h2 class="text-xl font-extrabold text-secondary">{{ __('rooms.edit_room') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('rooms.update_subtitle') }}</p>
         </div>
 
         <!-- Form -->
@@ -22,14 +22,14 @@
                 <!-- Floor -->
                 <div>
                     <label for="floor_id" class="block text-sm font-semibold text-secondary mb-2">
-                        Floor <span class="text-red-500">*</span>
+                        {{ __('rooms.fields.floor') }} <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="floor_id" 
                         id="floor_id"
                         class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('floor_id') border-red-500 @enderror"
                         required>
-                        <option value="">Select a floor</option>
+                        <option value="">{{ __('rooms.filters.select_floor') }}</option>
                         @foreach($floors as $floor)
                         <option value="{{ $floor->id }}" {{ old('floor_id', $room->floor_id) == $floor->id ? 'selected' : '' }}>
                             {{ $floor->building->name }} - {{ $floor->name }}
@@ -49,14 +49,14 @@
                 <!-- Room Type -->
                 <div>
                     <label for="room_type_id" class="block text-sm font-semibold text-secondary mb-2">
-                        Room Type <span class="text-red-500">*</span>
+                        {{ __('rooms.fields.room_type') }} <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="room_type_id" 
                         id="room_type_id"
                         class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_type_id') border-red-500 @enderror"
                         required>
-                        <option value="">Select a room type</option>
+                        <option value="">{{ __('rooms.filters.select_room_type') }}</option>
                         @foreach($roomTypes as $roomType)
                         <option value="{{ $roomType->id }}" {{ old('room_type_id', $room->room_type_id) == $roomType->id ? 'selected' : '' }}>
                             {{ $roomType->name }} ({{ $roomType->code }}) - ${{ number_format($roomType->base_rate, 2) }}
@@ -76,7 +76,7 @@
                 <!-- Room Number -->
                 <div>
                     <label for="room_number" class="block text-sm font-semibold text-secondary mb-2">
-                        Room Number <span class="text-red-500">*</span>
+                        {{ __('rooms.fields.room_number') }} <span class="text-red-500">*</span>
                     </label>
                     <input 
                         type="text" 
@@ -98,18 +98,18 @@
                 <!-- Status -->
                 <div>
                     <label for="status" class="block text-sm font-semibold text-secondary mb-2">
-                        Status <span class="text-red-500">*</span>
+                        {{ __('rooms.fields.status') }} <span class="text-red-500">*</span>
                     </label>
                     <select 
                         name="status" 
                         id="status"
                         class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('status') border-red-500 @enderror"
                         required>
-                        <option value="available" {{ old('status', $room->status) == 'available' ? 'selected' : '' }}>Available</option>
-                        <option value="occupied" {{ old('status', $room->status) == 'occupied' ? 'selected' : '' }}>Occupied</option>
-                        <option value="reserved" {{ old('status', $room->status) == 'reserved' ? 'selected' : '' }}>Reserved</option>
-                        <option value="dirty" {{ old('status', $room->status) == 'dirty' ? 'selected' : '' }}>Needs Cleaning</option>
-                        <option value="out_of_order" {{ old('status', $room->status) == 'out_of_order' ? 'selected' : '' }}>Out of Order</option>
+                        <option value="available" {{ old('status', $room->status) == 'available' ? 'selected' : '' }}>{{ __('rooms.status.available') }}</option>
+                        <option value="occupied" {{ old('status', $room->status) == 'occupied' ? 'selected' : '' }}>{{ __('rooms.status.occupied') }}</option>
+                        <option value="reserved" {{ old('status', $room->status) == 'reserved' ? 'selected' : '' }}>{{ __('rooms.status.reserved') }}</option>
+                        <option value="dirty" {{ old('status', $room->status) == 'dirty' ? 'selected' : '' }}>{{ __('rooms.status.needs_cleaning') }}</option>
+                        <option value="out_of_order" {{ old('status', $room->status) == 'out_of_order' ? 'selected' : '' }}>{{ __('rooms.status.out_of_order') }}</option>
                     </select>
                     @error('status')
                         <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -131,28 +131,28 @@
                         {{ old('is_active', $room->is_active) ? 'checked' : '' }}
                         class="w-5 h-5 text-primary border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     <label for="is_active" class="text-sm font-semibold text-secondary cursor-pointer">
-                        Active
+                        {{ __('rooms.fields.active') }}
                     </label>
                 </div>
 
                 <!-- Room Info -->
                 <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 border border-blue-100">
-                    <h4 class="text-sm font-bold text-secondary mb-3">Room Information</h4>
+                    <h4 class="text-sm font-bold text-secondary mb-3">{{ __('rooms.info.room_information') }}</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500">Location:</span>
+                            <span class="text-gray-500">{{ __('rooms.fields.location') }}:</span>
                             <span class="text-secondary font-semibold ml-2">{{ $room->floor->building->name }} - {{ $room->floor->name }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Type:</span>
+                            <span class="text-gray-500">{{ __('rooms.fields.type') }}:</span>
                             <span class="text-secondary font-semibold ml-2">{{ $room->roomType->name }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Base Rate:</span>
+                            <span class="text-gray-500">{{ __('rooms.fields.base_rate') }}:</span>
                             <span class="text-secondary font-semibold ml-2">${{ number_format($room->roomType->base_rate, 2) }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Created:</span>
+                            <span class="text-gray-500">{{ __('rooms.fields.created') }}:</span>
                             <span class="text-secondary font-semibold ml-2">{{ $room->created_at->format('M d, Y') }}</span>
                         </div>
                     </div>
@@ -168,8 +168,8 @@
                             </svg>
                         </div>
                         <div class="text-sm">
-                            <p class="font-bold text-yellow-800">Room is currently {{ $room->status }}</p>
-                            <p class="mt-1 text-yellow-700">Please ensure there are no active reservations before changing the status.</p>
+                            <p class="font-bold text-yellow-800">{{ __('rooms.messages.room_currently') }} {{ __('rooms.status.' . $room->status) }}</p>
+                            <p class="mt-1 text-yellow-700">{{ __('rooms.messages.status_warning') }}</p>
                         </div>
                     </div>
                 </div>
@@ -180,20 +180,20 @@
             <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
                 <button 
                     type="button"
-                    onclick="if(confirm('Are you sure you want to delete this room?')) { document.getElementById('delete-form').submit(); }"
+                    onclick="if(confirm(&quot;{{ __('rooms.actions.confirm_delete_room') }}&quot;)) { document.getElementById('delete-form').submit(); }"
                     class="px-6 py-2.5 text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all">
-                    Delete Room
+                    {{ __('rooms.delete_room') }}
                 </button>
                 
                 <div class="flex items-center gap-3">
                     <a href="{{ route('rooms.index') }}" 
                        class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
-                        Cancel
+                        {{ __('rooms.actions.cancel') }}
                     </a>
                     <button 
                         type="submit"
                         class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                        Update Room
+                        {{ __('rooms.update_room') }}
                     </button>
                 </div>
             </div>

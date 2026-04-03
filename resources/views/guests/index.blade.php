@@ -1,23 +1,23 @@
 {{-- resources/views/guests/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Guests')
-@section('page-title', 'Guests')
+@section('title', __('guests.title'))
+@section('page-title', __('guests.title'))
 
 @section('content')
 <div class="space-y-6">
     <!-- Header Actions -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Guests</h2>
-            <p class="text-sm text-gray-500 mt-1">Manage hotel guests and their information</p>
+            <h2 class="text-2xl font-extrabold text-secondary">{{ __('guests.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('guests.subtitle') }}</p>
         </div>
         <a href="{{ route('guests.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            New Guest
+            {{ __('guests.new_guest') }}
         </a>
     </div>
 
@@ -34,17 +34,17 @@
                     type="text" 
                     name="search" 
                     value="{{ request('search') }}"
-                    placeholder="Search by name, email, phone, or ID number..."
+                    placeholder="{{ __('guests.filters.search_placeholder') }}"
                     class="w-full pl-12 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
             </div>
             <button type="submit" 
                     class="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
-                Search
+                {{ __('guests.actions.search') }}
             </button>
             @if(request('search'))
             <a href="{{ route('guests.index') }}" 
                class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
-                Clear
+                {{ __('guests.actions.clear') }}
             </a>
             @endif
         </form>
@@ -61,7 +61,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $guests->total() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Total Guests</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('guests.stats.total_guests') }}</div>
                 </div>
             </div>
         </div>
@@ -73,12 +73,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gradient-to-r from-blue-50 to-white">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Guest</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Contact</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">ID Number</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Nationality</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Reservations</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.guest') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.contact') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.id_number') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.nationality') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.reservations') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -97,14 +97,14 @@
                                 <div class="ml-3">
                                     <div class="text-sm font-semibold text-secondary">{{ $guest->full_name }}</div>
                                     @if($guest->date_of_birth)
-                                    <div class="text-xs text-gray-500">DOB: {{ $guest->date_of_birth->format('M d, Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ __('guests.fields.dob_short') }}: {{ $guest->date_of_birth->format('M d, Y') }}</div>
                                     @endif
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-secondary">{{ $guest->phone_number }}</div>
-                            <div class="text-xs text-gray-500">{{ $guest->email ?? 'No email' }}</div>
+                            <div class="text-xs text-gray-500">{{ $guest->email ?? __('guests.messages.no_email') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm text-secondary">{{ $guest->id_number ?? '-' }}</span>
@@ -114,22 +114,22 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gradient-to-br from-blue-50 to-blue-100 text-primary">
-                                {{ $guest->reservations_count }} reservations
+                                {{ $guest->reservations_count }} {{ __('guests.table.reservations') }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('guests.show', $guest) }}" 
                                    class="text-gray-600 hover:text-gray-800 font-semibold">
-                                    View
+                                    {{ __('guests.actions.view') }}
                                 </a>
                                 <a href="{{ route('guests.edit', $guest) }}" 
                                    class="text-primary hover:text-blue-700 font-semibold">
-                                    Edit
+                                    {{ __('guests.actions.edit') }}
                                 </a>
                                 <a href="{{ route('reservations.create', ['guest_id' => $guest->id]) }}" 
                                    class="text-green-600 hover:text-green-700 font-semibold">
-                                    New Booking
+                                    {{ __('guests.actions.new_booking') }}
                                 </a>
                             </div>
                         </td>
@@ -143,8 +143,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                     </svg>
                                 </div>
-                                <p class="text-gray-500 font-medium">No guests found</p>
-                                <p class="text-gray-400 text-sm mt-1">Create a new guest to get started</p>
+                                <p class="text-gray-500 font-medium">{{ __('guests.messages.no_guests') }}</p>
+                                <p class="text-gray-400 text-sm mt-1">{{ __('guests.messages.no_guests_subtitle') }}</p>
                             </div>
                         </td>
                     </tr>

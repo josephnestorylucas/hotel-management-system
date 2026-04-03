@@ -95,7 +95,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="text-2xl font-extrabold text-secondary">${{ number_format($grns->sum('grand_total'), 2) }}</div>
+                    <div class="text-2xl font-extrabold text-secondary"><x-money :amount="$grns->sum('grand_total')" /></div>
                     <div class="text-xs text-gray-500 font-medium">Total Value</div>
                 </div>
             </div>
@@ -142,7 +142,7 @@
                         <span class="text-sm text-gray-600">{{ $grn->received_date->format('M d, Y') }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-sm font-bold text-secondary">${{ number_format($grn->grand_total, 2) }}</span>
+                        <span class="text-sm font-bold text-secondary"><x-money :amount="$grn->grand_total" /></span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @include('components.grn-status-badge', ['status' => $grn->status])

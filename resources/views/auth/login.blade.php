@@ -1,10 +1,10 @@
 {{-- resources/views/auth/login.blade.php --}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Portal - MRK Hotel & Resort</title>
+    <title>{{ __('auth.login.staff_portal') }} - MRK Hotel & Resort</title>
     <link rel="icon" type="image/png" href="{{ asset('images/header.png') }}">
     <meta name="description" content="Staff login portal for MRK Hotel management system.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -48,40 +48,39 @@
                 <div class="max-w-md">
                     <span class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-sm font-semibold rounded-full mb-6 border border-white/20">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path></svg>
-                        Staff Portal
+                        {{ __('auth.login.staff_portal') }}
                     </span>
                     <h1 class="text-4xl font-extrabold text-white mb-6 leading-tight">
-                        Hotel Management<br/>
-                        <span class="bg-gradient-to-r from-blue-300 via-blue-200 to-white bg-clip-text text-transparent">System</span>
+                        {{ __('auth.login.hotel_management_system') }}
                     </h1>
                     <p class="text-lg text-gray-200 leading-relaxed mb-8">
-                        Access the management dashboard to handle reservations, manage rooms, and oversee hotel operations efficiently.
+                        {{ __('auth.login.system_description') }}
                     </p>
                     <div class="flex items-center gap-6 flex-wrap">
                         <div class="flex items-center gap-2 text-gray-200">
                             <svg class="w-5 h-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span class="text-sm font-medium">Reservations</span>
+                            <span class="text-sm font-medium">{{ __('auth.login.reservations') }}</span>
                         </div>
                         <div class="flex items-center gap-2 text-gray-200">
                             <svg class="w-5 h-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span class="text-sm font-medium">Room Management</span>
+                            <span class="text-sm font-medium">{{ __('auth.login.room_management') }}</span>
                         </div>
                         <div class="flex items-center gap-2 text-gray-200">
                             <svg class="w-5 h-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span class="text-sm font-medium">Reports</span>
+                            <span class="text-sm font-medium">{{ __('auth.login.reports') }}</span>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Footer -->
                 <p class="text-gray-300 text-sm">
-                    &copy; {{ date('Y') }} MRK Hotel & Resort. All rights reserved.
+                    &copy; {{ date('Y') }} MRK Hotel & Resort. {{ __('auth.login.all_rights_reserved') }}
                 </p>
             </div>
         </div>
@@ -89,6 +88,18 @@
         <!-- Right Side - Login Form -->
         <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 via-white to-blue-50">
             <div class="w-full max-w-md">
+                <!-- Language Switcher -->
+                <div class="flex justify-end mb-4">
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="{{ url('language/en') }}" class="flex items-center gap-1 px-2 py-1 rounded {{ app()->getLocale() === 'en' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <span>🇬🇧</span> EN
+                        </a>
+                        <a href="{{ url('language/sw') }}" class="flex items-center gap-1 px-2 py-1 rounded {{ app()->getLocale() === 'sw' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <span>🇹🇿</span> SW
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Mobile Logo -->
                 <div class="lg:hidden text-center mb-8">
                     <a href="{{ url('/') }}" class="inline-flex items-center gap-3">
@@ -102,10 +113,10 @@
                 
                 <div class="text-center mb-10">
                     <span class="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-4 border border-primary/20">
-                        Welcome Back
+                        {{ __('auth.login.welcome_back') }}
                     </span>
-                    <h2 class="text-3xl font-extrabold text-secondary mb-2">Staff Sign In</h2>
-                    <p class="text-gray-600">Enter your credentials to access the management system</p>
+                    <h2 class="text-3xl font-extrabold text-secondary mb-2">{{ __('auth.login.staff_sign_in') }}</h2>
+                    <p class="text-gray-600">{{ __('auth.login.enter_credentials') }}</p>
                 </div>
 
                 @if(session('success'))
@@ -130,10 +141,10 @@
                     @csrf
 
                     <div>
-                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('auth.login.email') }}</label>
                         <input id="email" name="email" type="email" value="{{ old('email') }}" required 
                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-gray-900 placeholder-gray-400" 
-                               placeholder="your.email@example.com">
+                               placeholder="{{ __('auth.login.email_placeholder') }}">
                         @error('email')
                             <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -143,10 +154,10 @@
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('auth.login.password') }}</label>
                         <input id="password" name="password" type="password" required 
                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-gray-900 placeholder-gray-400" 
-                               placeholder="Enter your password">
+                               placeholder="{{ __('auth.login.password_placeholder') }}">
                         @error('password')
                             <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -160,17 +171,17 @@
                             <input id="remember" name="remember" type="checkbox" 
                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
                             <label for="remember" class="ml-2 block text-sm text-gray-700">
-                                Remember me
+                                {{ __('auth.login.remember_me') }}
                             </label>
                         </div>
                         <a href="{{ route('password.request') }}" class="text-sm font-semibold text-primary hover:text-blue-700 transition-colors">
-                            Forgot password?
+                            {{ __('auth.login.forgot_password') }}
                         </a>
                     </div>
 
                     <button type="submit" 
                             class="w-full px-6 py-3.5 text-base font-semibold rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-700 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all">
-                        Sign In
+                        {{ __('auth.login.sign_in') }}
                     </button>
                 </form>
 
@@ -183,10 +194,10 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="font-semibold text-secondary mb-1">Looking to book a room?</p>
-                            <p class="text-sm text-gray-600 mb-2">Visit our guest booking page to check availability and make a reservation.</p>
+                            <p class="font-semibold text-secondary mb-1">{{ __('auth.guest_booking.title') }}</p>
+                            <p class="text-sm text-gray-600 mb-2">{{ __('auth.guest_booking.description') }}</p>
                             <a href="{{ url('/booking') }}" class="inline-flex items-center text-sm font-semibold text-primary hover:text-blue-700 transition-colors">
-                                Go to Guest Booking
+                                {{ __('auth.guest_booking.link') }}
                                 <svg class="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
@@ -196,10 +207,10 @@
                 </div>
 
                 <p class="mt-6 text-center text-xs text-gray-500">
-                    By signing in, you agree to our 
-                    <a href="{{ url('/terms') }}" class="text-primary hover:underline font-medium">Terms of Service</a> 
-                    and 
-                    <a href="{{ url('/privacy') }}" class="text-primary hover:underline font-medium">Privacy Policy</a>.
+                    {{ __('auth.terms.by_signing_in') }} 
+                    <a href="{{ url('/terms') }}" class="text-primary hover:underline font-medium">{{ __('auth.terms.terms_of_service') }}</a> 
+                    {{ __('auth.terms.and') }} 
+                    <a href="{{ url('/privacy') }}" class="text-primary hover:underline font-medium">{{ __('auth.terms.privacy_policy') }}</a>.
                 </p>
             </div>
         </div>

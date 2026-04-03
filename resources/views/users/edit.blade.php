@@ -1,8 +1,8 @@
 {{-- resources/views/users/edit.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Edit User')
-@section('page-title', 'Users')
+@section('title', __('users.edit_user'))
+@section('page-title', __('users.title'))
 
 @section('content')
 <div class="max-w-2xl mx-auto">
@@ -11,11 +11,11 @@
         <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-extrabold text-secondary">Edit User</h2>
-                    <p class="text-sm text-gray-500 mt-1">Update user information</p>
+                    <h2 class="text-xl font-extrabold text-secondary">{{ __('users.edit_user') }}</h2>
+                    <p class="text-sm text-gray-500 mt-1">{{ __('users.edit_subtitle') }}</p>
                 </div>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                    {{ $user->is_active ? 'Active' : 'Inactive' }}
+                    {{ $user->is_active ? __('users.active') : __('users.inactive') }}
                 </span>
             </div>
         </div>
@@ -34,13 +34,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>
-                        User Profile
+                        {{ __('users.sections.user_profile') }}
                     </h3>
 
                     <!-- Name -->
                     <div class="mb-6">
                         <label for="name" class="block text-sm font-semibold text-secondary mb-2">
-                            Full Name <span class="text-red-500">*</span>
+                            {{ __('users.fields.full_name') }} <span class="text-red-500">*</span>
                         </label>
                         <input 
                             type="text" 
@@ -62,7 +62,7 @@
                     <!-- Email -->
                     <div class="mb-6">
                         <label for="email" class="block text-sm font-semibold text-secondary mb-2">
-                            Email Address <span class="text-red-500">*</span>
+                            {{ __('users.fields.email_address') }} <span class="text-red-500">*</span>
                         </label>
                         <input 
                             type="email" 
@@ -92,21 +92,21 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                             </svg>
                         </div>
-                        Change Password <span class="text-gray-400 text-xs ml-2">(Leave blank to keep current)</span>
+                        {{ __('users.sections.change_password') }} <span class="text-gray-400 text-xs ml-2">{{ __('users.sections.change_password_hint') }}</span>
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Password -->
                         <div>
                             <label for="password" class="block text-sm font-semibold text-secondary mb-2">
-                                New Password
+                                {{ __('users.fields.new_password') }}
                             </label>
                             <input 
                                 type="password" 
                                 name="password" 
                                 id="password"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('password') border-red-500 @enderror"
-                                placeholder="••••••••">
+                                placeholder="{{ __('users.placeholders.password') }}">
                             @error('password')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -120,14 +120,14 @@
                         <!-- Confirm Password -->
                         <div>
                             <label for="password_confirmation" class="block text-sm font-semibold text-secondary mb-2">
-                                Confirm Password
+                                {{ __('users.fields.confirm_password') }}
                             </label>
                             <input 
                                 type="password" 
                                 name="password_confirmation" 
                                 id="password_confirmation"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                                placeholder="••••••••">
+                                placeholder="{{ __('users.placeholders.password') }}">
                         </div>
                     </div>
                 </div>
@@ -142,23 +142,23 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                             </svg>
                         </div>
-                        Permissions
+                        {{ __('users.sections.permissions') }}
                     </h3>
 
                     <!-- Role -->
                     <div class="mb-6">
                         <label for="role_id" class="block text-sm font-semibold text-secondary mb-2">
-                            User Role <span class="text-red-500">*</span>
+                            {{ __('users.fields.user_role') }} <span class="text-red-500">*</span>
                         </label>
                         <select 
                             name="role_id" 
                             id="role_id"
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('role_id') border-red-500 @enderror"
                             required>
-                            <option value="">Select a role</option>
+                            <option value="">{{ __('users.placeholders.select_role') }}</option>
                             @foreach($roles as $role)
                             <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
-                                {{ $role->description }}
+                                {{ ucwords(str_replace('_', ' ', $role->name)) }} - {{ $role->description }}
                             </option>
                             @endforeach
                         </select>
@@ -182,31 +182,31 @@
                             {{ old('is_active', $user->is_active) ? 'checked' : '' }}
                             class="w-5 h-5 text-primary border-gray-200 rounded focus:ring-2 focus:ring-primary">
                         <label for="is_active" class="text-sm font-semibold text-secondary cursor-pointer">
-                            Active Account
+                            {{ __('users.fields.active_account') }}
                         </label>
                     </div>
                 </div>
 
                 <!-- User Info -->
                 <div class="bg-gradient-to-br from-primary/5 to-blue-50 rounded-xl p-4 border border-primary/20">
-                    <h4 class="text-sm font-bold text-secondary mb-3">Account Information</h4>
+                    <h4 class="text-sm font-bold text-secondary mb-3">{{ __('users.sections.account_info') }}</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500">Current Role:</span>
-                            <span class="text-secondary font-semibold ml-2">{{ $user->role->description }}</span>
+                            <span class="text-gray-500">{{ __('users.labels.current_role') }}</span>
+                            <span class="text-secondary font-semibold ml-2">{{ ucwords(str_replace('_', ' ', $user->role->name)) }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Member Since:</span>
+                            <span class="text-gray-500">{{ __('users.labels.member_since') }}</span>
                             <span class="text-secondary font-semibold ml-2">{{ $user->created_at->format('M d, Y') }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Last Updated:</span>
+                            <span class="text-gray-500">{{ __('users.labels.last_updated') }}</span>
                             <span class="text-secondary font-semibold ml-2">{{ $user->updated_at->format('M d, Y') }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Status:</span>
+                            <span class="text-gray-500">{{ __('users.labels.status') }}</span>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ml-2 {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $user->is_active ? 'Active' : 'Inactive' }}
+                                {{ $user->is_active ? __('users.active') : __('users.inactive') }}
                             </span>
                         </div>
                     </div>
@@ -222,8 +222,8 @@
                             </svg>
                         </div>
                         <div class="text-sm">
-                            <p class="font-bold text-secondary">You are editing your own account</p>
-                            <p class="mt-1 text-gray-600">Be careful when changing your role or deactivating your account as this may affect your access to the system.</p>
+                            <p class="font-bold text-secondary">{{ __('users.messages.editing_own_account') }}</p>
+                            <p class="mt-1 text-gray-600">{{ __('users.messages.editing_own_warning') }}</p>
                         </div>
                     </div>
                 </div>
@@ -235,9 +235,9 @@
                 @if($user->id !== auth()->id())
                 <button 
                     type="button"
-                    onclick="if(confirm('Are you sure you want to delete this user?')) { document.getElementById('delete-form').submit(); }"
+                    onclick="if(confirm('{{ __('users.messages.confirm_delete') }}')) { document.getElementById('delete-form').submit(); }"
                     class="px-6 py-2.5 text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all">
-                    Delete User
+                    {{ __('users.actions.delete_user') }}
                 </button>
                 @else
                 <div></div>
@@ -246,12 +246,12 @@
                 <div class="flex items-center gap-3">
                     <a href="{{ route('users.index') }}" 
                        class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
-                        Cancel
+                        {{ __('users.actions.cancel') }}
                     </a>
                     <button 
                         type="submit"
                         class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                        Update User
+                        {{ __('users.actions.update_user') }}
                     </button>
                 </div>
             </div>

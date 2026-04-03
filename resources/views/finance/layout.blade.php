@@ -9,10 +9,11 @@
 <body class="bg-gray-100 min-h-screen">
 
 <nav class="bg-white shadow px-6 py-4 flex items-center justify-between">
-    <div class="font-bold text-lg text-gray-800">💳 Finance</div>
+    <div class="font-bold text-lg text-gray-800">Finance</div>
     <div class="flex gap-4 text-sm">
-        <a href="{{ route('finance.dashboard') }}"        class="text-gray-600 hover:text-blue-600">Dashboard</a>
-        <a href="{{ route('finance.payments.index') }}"   class="text-gray-600 hover:text-blue-600">Payments</a>
+        <a href="{{ route('finance.dashboard') }}"        class="text-gray-600 hover:text-blue-600 {{ request()->routeIs('finance.dashboard') ? 'text-blue-600 font-medium' : '' }}">Dashboard</a>
+        <a href="{{ route('finance.payments.index') }}"   class="text-gray-600 hover:text-blue-600 {{ request()->routeIs('finance.payments.*') ? 'text-blue-600 font-medium' : '' }}">Payments</a>
+        <a href="{{ route('finance.refunds.index') }}"    class="text-gray-600 hover:text-blue-600 {{ request()->routeIs('finance.refunds.*') ? 'text-blue-600 font-medium' : '' }}">Refunds</a>
     </div>
     <div class="flex items-center gap-3">
         @include('partials.notification-bell')
@@ -24,6 +25,11 @@
     @if(session('success'))
     <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-4">
         {{ session('success') }}
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
+        {{ session('error') }}
     </div>
     @endif
     @if($errors->any())
@@ -39,5 +45,6 @@
     @yield('content')
 </main>
 
+@stack('scripts')
 </body>
 </html>

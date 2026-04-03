@@ -217,7 +217,7 @@ class Booking extends Model
      * Check if a room is available for the given date range.
      * Checks both bookings and reservations tables.
      */
-    public static function isRoomAvailable(string $roomId, string $checkIn, string $checkOut, ?string $excludeBookingId = null, bool $lock = false): bool
+    public static function isRoomAvailable(string $roomId, string $checkIn, string $checkOut, ?string $excludeBookingId = null, bool $lock = false, ?string $excludeReservationId = null): bool
     {
         // Check against existing bookings
         $bookingQuery = static::where('room_id', $roomId)
@@ -241,7 +241,8 @@ class Booking extends Model
         $reservationQuery = Reservation::where('room_id', $roomId)
             ->whereIn('status', ['pending', 'confirmed'])
             ->where('check_in_date', '<', $checkOut)
-            ->where('check_out_date', '>', $checkIn);
+            ->where('check_out_date', '>', $checkIn)
+            ->when($excludeReservationId, fn($q) => $q->where('id', '!=', $excludeReservationId));
 
         if ($lock) {
             $reservationQuery->lockForUpdate();
@@ -253,11 +254,12 @@ class Booking extends Model
     /**
      * Create a Booking from a confirmed Reservation (check-in).
      */
-    public static function createFromReservation(Reservation $reservation, ?int $createdBy = null): self
+    public static function createFromReservation(Reservation $reservation, ?string $createdBy = null): self
     {
         return DB::transaction(function () use ($reservation, $createdBy) {
             // Re-check availability with lock to prevent race conditions
-            if (!static::isRoomAvailable($reservation->room_id, $reservation->check_in_date, $reservation->check_out_date, null, true)) {
+            // Exclude the current reservation from the check since we're converting it
+            if (!static::isRoomAvailable($reservation->room_id, $reservation->check_in_date, $reservation->check_out_date, null, true, $reservation->id)) {
                 throw new \RuntimeException('Room is no longer available for the selected dates.');
             }
 

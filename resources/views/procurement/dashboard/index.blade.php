@@ -149,7 +149,7 @@
                         <span class="text-sm text-gray-600">{{ $lpo->order_date->format('M d, Y') }}</span>
                     </td>
                     <td class="px-6 py-3 whitespace-nowrap">
-                        <span class="text-sm font-bold text-secondary">${{ number_format($lpo->grand_total, 2) }}</span>
+                        <span class="text-sm font-bold text-secondary"><x-money :amount="$lpo->grand_total" /></span>
                     </td>
                     <td class="px-6 py-3 whitespace-nowrap">
                         @include('components.lpo-status-badge', ['status' => $lpo->status])
@@ -199,7 +199,7 @@
                         <span class="text-sm text-gray-600">{{ $grn->received_date->format('M d, Y') }}</span>
                     </td>
                     <td class="px-6 py-3 whitespace-nowrap">
-                        <span class="text-sm font-bold text-secondary">${{ number_format($grn->grand_total, 2) }}</span>
+                        <span class="text-sm font-bold text-secondary"><x-money :amount="$grn->grand_total" /></span>
                     </td>
                     <td class="px-6 py-3 whitespace-nowrap">
                         @include('components.grn-status-badge', ['status' => $grn->status])

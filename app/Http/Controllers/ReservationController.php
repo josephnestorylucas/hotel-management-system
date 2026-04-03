@@ -112,6 +112,24 @@ class ReservationController extends Controller
             'created_by' => auth()->id(),
         ]);
 
+        // Load room relationship for notification
+        $reservation->load('room.roomType');
+
+        // Dispatch reservation confirmation notification (email + SMS)
+        \App\Jobs\SendReservationConfirmationJob::dispatch([
+            'reference'       => $reservation->reservation_number,
+            'guest_name'      => $guest->full_name,
+            'email'           => $guest->email,
+            'phone'           => $guest->phone_number,
+            'room_number'     => $reservation->room?->room_number ?? '',
+            'room_type'       => $reservation->room?->roomType?->name ?? '',
+            'check_in'        => $reservation->check_in_date->format('Y-m-d'),
+            'check_out'       => $reservation->check_out_date->format('Y-m-d'),
+            'nights'          => $reservation->nights,
+            'guests'          => $reservation->number_of_guests,
+            'estimated_total' => $reservation->estimated_amount,
+        ])->onQueue('notifications');
+
         return redirect()->route('reservations.index')
             ->with('success', 'Reservation created successfully.');
     }
@@ -242,6 +260,24 @@ class ReservationController extends Controller
 
         $reservation->update(['status' => 'confirmed']);
 
+        // Load relationships for notification
+        $reservation->load(['guest', 'room.roomType']);
+
+        // Dispatch confirmation notification (email + SMS)
+        \App\Jobs\SendReservationConfirmationJob::dispatch([
+            'reference'       => $reservation->reservation_number,
+            'guest_name'      => $reservation->guest_display_name,
+            'email'           => $reservation->guest_display_email,
+            'phone'           => $reservation->guest_display_phone,
+            'room_number'     => $reservation->room?->room_number ?? '',
+            'room_type'       => $reservation->room?->roomType?->name ?? '',
+            'check_in'        => $reservation->check_in_date->format('Y-m-d'),
+            'check_out'       => $reservation->check_out_date->format('Y-m-d'),
+            'nights'          => $reservation->nights,
+            'guests'          => $reservation->number_of_guests,
+            'estimated_total' => $reservation->estimated_amount,
+        ])->onQueue('notifications');
+
         return back()->with('success', 'Reservation confirmed successfully.');
     }
 
@@ -257,6 +293,24 @@ class ReservationController extends Controller
 
         // Create Booking from this reservation (handles status + room via observer)
         $booking = Booking::createFromReservation($reservation, auth()->id());
+
+        // Load relationships for notification
+        $booking->load(['guest', 'room.roomType']);
+
+        // Dispatch booking confirmation notification (email + SMS)
+        \App\Jobs\SendBookingConfirmationJob::dispatch([
+            'reference'   => $booking->booking_number,
+            'guest_name'  => $booking->guest_display_name,
+            'email'       => $booking->guest_display_email,
+            'phone'       => $booking->guest_display_phone,
+            'room_number' => $booking->room?->room_number ?? '',
+            'room_type'   => $booking->room?->roomType?->name ?? '',
+            'check_in'    => $booking->check_in_date->format('Y-m-d'),
+            'check_out'   => $booking->check_out_date->format('Y-m-d'),
+            'nights'      => $booking->nights,
+            'rate'        => $booking->room?->roomType?->base_rate ?? 0,
+            'total'       => $booking->total_amount ?? 0,
+        ])->onQueue('notifications');
 
         return redirect()->route('bookings.show', $booking)
             ->with('success', 'Guest checked in successfully. Booking #' . $booking->booking_number . ' created.');

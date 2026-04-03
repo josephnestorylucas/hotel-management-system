@@ -63,6 +63,11 @@ class User extends Authenticatable
         return $this->role && $this->role->name === Role::SUPERVISOR;
     }
 
+    public function isGeneralManager(): bool
+    {
+        return $this->role && $this->role->name === Role::MANAGER;
+    }
+
     public function isFrontDesk(): bool
     {
         return $this->role && $this->role->name === Role::FRONT_DESK;

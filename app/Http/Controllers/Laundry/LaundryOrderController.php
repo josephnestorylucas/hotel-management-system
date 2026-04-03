@@ -11,17 +11,21 @@ use App\Models\LaundryOrder;
 use App\Models\LaundryOrderItem;
 use App\Models\LaundryService;
 use App\Models\LaundryServiceItem;
-use App\Models\StoreNotification;
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Services\AccountingService;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use App\Services\AccountingService;
 
 class LaundryOrderController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
+
     // GET /laundry/orders
     public function index(Request $request): View
     {
@@ -128,23 +132,23 @@ class LaundryOrderController extends Controller
         });
 
         // Notify SUPERVISOR and LAUNDRY_MANAGER
-        User::whereHas('role', fn ($q) => $q->whereIn('name', ['supervisor', 'laundry_manager']))
-            ->get()
-            ->each(fn ($u) => StoreNotification::create([
-                'user_id'        => $u->id,
-                'type'           => 'new_laundry_order',
-                'title'          => 'New Laundry Order Received',
-                'body'           => "Order {$order->order_number} — " .
-                                    ($order->customer_type === 'guest'
-                                        ? "Room {$order->room_number}"
-                                        : $order->customer_name) .
-                                    " — {$order->items->count()} item(s). Ready by: " .
-                                    $order->expected_ready_at->format('d M H:i'),
-                'reference_type' => 'laundry_order',
-                'reference_id'   => $order->id,
-                'action_url'     => route('laundry.orders.show', $order->id),
-                'created_at'     => now(),
-            ]));
+        $userIds = User::whereHas('role', fn ($q) => $q->whereIn('name', ['supervisor', 'laundry_manager']))
+            ->pluck('id')
+            ->toArray();
+
+        $this->notificationService->createForUsers($userIds, [
+            'type'           => 'new_laundry_order',
+            'title'          => 'New Laundry Order Received',
+            'body'           => "Order {$order->order_number} — " .
+                                ($order->customer_type === 'guest'
+                                    ? "Room {$order->room_number}"
+                                    : $order->customer_name) .
+                                " — {$order->items->count()} item(s). Ready by: " .
+                                $order->expected_ready_at->format('d M H:i'),
+            'reference_type' => 'laundry_order',
+            'reference_id'   => $order->id,
+            'action_url'     => route('laundry.orders.show', $order->id),
+        ]);
 
         return redirect()
             ->route('laundry.orders.show', $order)
@@ -190,26 +194,26 @@ class LaundryOrderController extends Controller
 
         // Notify FRONT_DESK for guest orders
         if ($laundryOrder->customer_type === 'guest') {
-            User::whereHas('role', fn ($q) => $q->where('name', 'front_desk'))
-                ->get()
-                ->each(fn ($u) => StoreNotification::create([
-                    'user_id'        => $u->id,
-                    'type'           => 'laundry_ready',
-                    'title'          => 'Laundry Ready for Delivery',
-                    'body'           => "Order {$laundryOrder->order_number} — Room {$laundryOrder->room_number} is ready.",
-                    'reference_type' => 'laundry_order',
-                    'reference_id'   => $laundryOrder->id,
-                    'action_url'     => route('laundry.orders.show', $laundryOrder->id),
-                    'created_at'     => now(),
-                ]));
+            $frontDeskIds = User::whereHas('role', fn ($q) => $q->where('name', 'front_desk'))
+                ->pluck('id')
+                ->toArray();
+
+            $this->notificationService->createForUsers($frontDeskIds, [
+                'type'           => 'laundry_ready',
+                'title'          => 'Laundry Ready for Delivery',
+                'body'           => "Order {$laundryOrder->order_number} — Room {$laundryOrder->room_number} is ready.",
+                'reference_type' => 'laundry_order',
+                'reference_id'   => $laundryOrder->id,
+                'action_url'     => route('laundry.orders.show', $laundryOrder->id),
+            ]);
         }
 
         // Send SMS/Email notification to guest/walk-in that laundry is ready
-        $guest = $laundryOrder->guest;
+        $guest = $laundryOrder->booking?->guest;
         \App\Jobs\SendLaundryReadyJob::dispatch([
             'order_number' => $laundryOrder->order_number,
             'email'        => $guest?->email ?? null,
-            'phone'        => $guest?->phone_number ?? $laundryOrder->walkin_phone ?? null,
+            'phone'        => $guest?->phone_number ?? $laundryOrder->customer_phone ?? null,
             'room_number'  => $laundryOrder->room_number ?? null,
             'total'        => $laundryOrder->total ?? 0,
         ])->onQueue('notifications');
@@ -252,111 +256,98 @@ class LaundryOrderController extends Controller
             ->with('success', "Order {$laundryOrder->order_number} collected by {$laundryOrder->customer_name}.");
     }
 
-    // POST /laundry/orders/{laundryOrder}/settle
+    /**
+     * POST /laundry/orders/{laundryOrder}/settle
+     * 
+     * UNIFIED CHECKOUT FLOW:
+     * - Guest orders: Create BookingCharge and redirect to Finance Checkout
+     * - Walk-in orders: Use WalkinPaymentController (direct payment modal)
+     */
     public function settle(Request $request, LaundryOrder $laundryOrder): RedirectResponse
     {
-        abort_if($laundryOrder->status === 'settled',   422, 'Order already settled.');
+        // Prevent re-settlement of already charged or settled orders
+        abort_if(in_array($laundryOrder->status, ['charged', 'settled']), 422, 'Order already charged or settled.');
         abort_if($laundryOrder->status === 'cancelled', 422, 'Cannot settle a cancelled order.');
 
-        $request->validate([
-            'payment_method' => 'required|in:cash,card,charge_to_booking',
-            'discount'       => 'nullable|numeric|min:0',
-            'booking_id'     => 'required_if:payment_method,charge_to_booking|nullable|uuid',
-        ]);
+        // For guest orders, we ONLY allow charge_to_booking (enforces checkout flow)
+        // Walk-in direct payments are handled by WalkinPaymentController
+        if ($laundryOrder->customer_type === 'guest') {
+            $request->validate([
+                'discount'   => 'nullable|numeric|min:0',
+                'booking_id' => 'nullable|uuid|exists:bookings,id',
+            ]);
+            
+            $bookingId = $request->booking_id ?? $laundryOrder->booking_id;
+            abort_if(!$bookingId, 422, 'Booking ID is required for guest laundry orders.');
+        } else {
+            // Walk-in orders can settle directly (handled by WalkinPaymentController)
+            // This path should NOT be used for walk-ins - they use the modal
+            abort(422, 'Walk-in orders must be settled through the payment modal.');
+        }
 
-        DB::transaction(function () use ($request, $laundryOrder) {
+        DB::transaction(function () use ($request, $laundryOrder, $bookingId) {
 
             // Apply discount if provided
+            // ROLE RESTRICTION: Only LAUNDRY_MANAGER and MANAGER can apply discounts
             if ($request->filled('discount') && $request->discount > 0) {
+                // Check if user has permission to apply discount
+                $user = auth()->user();
+                $canApplyDiscount = $user->hasAnyRole(['laundry_manager', 'manager']);
+                
+                if (!$canApplyDiscount) {
+                    abort(403, 'Only Laundry Manager or Manager can apply discounts to laundry orders.');
+                }
+                
                 $laundryOrder->update(['discount' => $request->discount]);
                 $laundryOrder->load('items');
                 $laundryOrder->recalculate();
                 $laundryOrder->refresh();
             }
 
+            // Mark order as charged (NOT settled - will be settled at checkout)
             $laundryOrder->update([
-                'status'         => 'settled',
-                'payment_method' => $request->payment_method,
-                'settled_by'     => auth()->id(),
-                'settled_at'     => now(),
-                'booking_id'     => $request->booking_id ?? $laundryOrder->booking_id,
+                'status'         => 'charged',
+                'payment_method' => 'charge_to_booking',
+                'booking_id'     => $bookingId,
             ]);
 
-            // Post to accounting journal (if cash/card settlement)
-            if (in_array($request->payment_method, ['cash', 'card'])) {
-                app(AccountingService::class)->postLaundrySettlement(
-                    orderNo: $laundryOrder->order_number,
-                    orderId: $laundryOrder->id,
-                    amount: (float) $laundryOrder->total,
-                    paymentMethod: $request->payment_method,
-                    actorId: auth()->id()
-                );
-            }
+            // Create BookingCharge — payment will happen at Finance Checkout
+            // Store amount in USD (converted from TZS) and also store TZS amount
+            $exchangeRate = (float) (DB::table('system_settings')
+                ->where('key', 'tzs_exchange_rate')->value('value') ?? 2500);
+            $amountUsd = round($laundryOrder->total / $exchangeRate, 2);
 
-            // Guest charge to booking → create BookingCharge
-            if ($request->payment_method === 'charge_to_booking') {
-                $bookingId = $request->booking_id ?? $laundryOrder->booking_id;
-                abort_if(!$bookingId, 422, 'Booking ID is required to charge to booking.');
-
-                BookingCharge::create([
-                    'booking_id'   => $bookingId,
-                    'charge_type'  => 'laundry',
-                    'source'       => 'laundry',
-                    'reference_id' => $laundryOrder->id,
-                    'description'  => "Laundry Order {$laundryOrder->order_number} — " .
-                                      $laundryOrder->items->count() . " item(s)",
-                    'amount'       => $laundryOrder->total,
-                    'currency'     => 'TZS',
-                    'status'       => 'unpaid',
-                    'created_by'   => auth()->id(),
-                ]);
-            }
-
-            // Walk-in cash/card → create FinancePayment + FinancialTransaction
-            if (in_array($request->payment_method, ['cash', 'card'])) {
-                $exchangeRate = (float) (SystemSetting::where('key', 'tzs_exchange_rate')->value('value') ?? 2500);
-                $amountUsd    = FinancePayment::toUsd($laundryOrder->total, 'TZS', $exchangeRate);
-
-                $payment = FinancePayment::create([
-                    'type'            => 'walkin',
-                    'checkout_id'     => null,
-                    'order_id'        => null,
-                    'method'          => $request->payment_method,
-                    'currency'        => 'TZS',
-                    'amount_tendered' => $laundryOrder->total,
-                    'amount_usd'      => $amountUsd,
-                    'exchange_rate'   => $exchangeRate,
-                    'status'          => 'completed',
-                    'note'            => "Laundry Order {$laundryOrder->order_number}",
-                    'created_by'      => auth()->id(),
-                ]);
-
-                FinancialTransaction::record([
-                    'finance_payment_id' => $payment->id,
-                    'type'               => 'income',
-                    'category'           => 'laundry',
-                    'description'        => "Laundry walk-in payment — {$laundryOrder->order_number}",
-                    'amount_usd'         => $amountUsd,
-                    'currency'           => 'TZS',
-                    'amount_original'    => $laundryOrder->total,
-                    'exchange_rate'      => $exchangeRate,
-                ], auth()->id());
-            }
+            BookingCharge::create([
+                'booking_id'   => $bookingId,
+                'charge_type'  => 'laundry',
+                'source'       => 'laundry',
+                'reference_id' => $laundryOrder->id,
+                'description'  => "Laundry Order {$laundryOrder->order_number} — " .
+                                  $laundryOrder->items->count() . " item(s)",
+                'amount'       => $amountUsd,
+                'currency'     => 'USD',
+                'amount_tzs'   => $laundryOrder->total,
+                'status'       => 'unpaid',
+                'created_by'   => auth()->id(),
+            ]);
         });
 
         // Award loyalty points for laundry (30 points per 10,000 TZS)
         $freshOrder = $laundryOrder->fresh();
-        if ($freshOrder->guest_id && $freshOrder->guest) {
-            $pointsEarned = (int) floor(($freshOrder->total ?? 0) / 10000) * 30;
-            if ($pointsEarned > 0) {
-                $freshOrder->guest->addPoints($pointsEarned, 'laundry', $freshOrder->id);
+        if ($freshOrder->booking_id) {
+            $booking = Booking::with('guest')->find($freshOrder->booking_id);
+            if ($booking && $booking->guest) {
+                $pointsEarned = (int) floor(($freshOrder->total ?? 0) / 10000) * 30;
+                if ($pointsEarned > 0) {
+                    $booking->guest->addPoints($pointsEarned, 'laundry', $freshOrder->id);
+                }
             }
         }
 
+        // Redirect to Finance Checkout page
         return redirect()
-            ->route('laundry.orders.show', $laundryOrder)
-            ->with('success', "Order {$laundryOrder->order_number} settled. Total: " .
-                              number_format($freshOrder->total, 2) . ' TZS');
+            ->route('finance.checkout.show', $bookingId)
+            ->with('success', "Laundry order {$laundryOrder->order_number} charged to booking. Please complete payment at checkout.");
     }
 
     // POST /laundry/orders/{laundryOrder}/cancel

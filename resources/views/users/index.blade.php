@@ -1,23 +1,23 @@
 {{-- resources/views/users/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Users')
-@section('page-title', 'Users')
+@section('title', __('users.title'))
+@section('page-title', __('users.title'))
 
 @section('content')
 <div class="space-y-6">
     <!-- Header Actions -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Users</h2>
-            <p class="text-sm text-gray-500 mt-1">Manage system users and permissions</p>
+            <h2 class="text-2xl font-extrabold text-secondary">{{ __('users.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('users.manage_subtitle') }}</p>
         </div>
         <a href="{{ route('users.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Add User
+            {{ __('users.actions.add_user') }}
         </a>
     </div>
 
@@ -32,7 +32,7 @@
                 </div>
                 <div>
                     <div class="text-3xl font-extrabold text-secondary">{{ $users->total() }}</div>
-                    <div class="text-sm text-gray-500 font-medium">Total Users</div>
+                    <div class="text-sm text-gray-500 font-medium">{{ __('users.stats.total_users') }}</div>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <div class="text-3xl font-extrabold text-secondary">{{ $users->where('is_active', true)->count() }}</div>
-                    <div class="text-sm text-gray-500 font-medium">Active</div>
+                    <div class="text-sm text-gray-500 font-medium">{{ __('users.stats.active') }}</div>
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <div class="text-3xl font-extrabold text-secondary">{{ $users->filter(fn($u) => $u->role->name === 'admin')->count() }}</div>
-                    <div class="text-sm text-gray-500 font-medium">Administrators</div>
+                    <div class="text-sm text-gray-500 font-medium">{{ __('users.stats.administrators') }}</div>
                 </div>
             </div>
         </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div>
                     <div class="text-3xl font-extrabold text-secondary">{{ $users->where('is_active', false)->count() }}</div>
-                    <div class="text-sm text-gray-500 font-medium">Inactive</div>
+                    <div class="text-sm text-gray-500 font-medium">{{ __('users.stats.inactive') }}</div>
                 </div>
             </div>
         </div>
@@ -85,12 +85,12 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gradient-to-r from-blue-50 to-white">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">User</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Created</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('users.table.user') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('users.table.email') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('users.table.role') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('users.table.status') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('users.table.created') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('users.table.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
@@ -105,7 +105,7 @@
                                 <div class="text-sm font-semibold text-secondary flex items-center gap-2">
                                     {{ $user->name }}
                                     @if($user->id === auth()->id())
-                                        <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">You</span>
+                                        <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">{{ __('users.labels.you') }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -116,12 +116,12 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
-                            {{ $user->role->description }}
+                            {{ ucwords(str_replace('_', ' ', $user->role->name)) }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $user->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                            {{ $user->is_active ? 'Active' : 'Inactive' }}
+                            {{ $user->is_active ? __('users.active') : __('users.inactive') }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -131,14 +131,14 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <div class="flex items-center gap-3">
                             <a href="{{ route('users.edit', $user) }}" class="text-primary hover:text-blue-700 font-semibold">
-                                Edit
+                                {{ __('users.actions.edit') }}
                             </a>
                             @if($user->id !== auth()->id())
                                 <form method="POST" action="{{ route('users.destroy', $user) }}" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('Are you sure you want to delete this user?')">
-                                        Delete
+                                    <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('{{ __('users.messages.confirm_delete') }}')">
+                                        {{ __('users.actions.delete') }}
                                     </button>
                                 </form>
                             @endif
@@ -153,15 +153,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
                         </div>
-                        <h3 class="text-lg font-bold text-secondary">No users yet</h3>
-                        <p class="mt-2 text-sm text-gray-500">Get started by creating your first user.</p>
+                        <h3 class="text-lg font-bold text-secondary">{{ __('users.messages.no_users') }}</h3>
+                        <p class="mt-2 text-sm text-gray-500">{{ __('users.messages.no_users_subtitle') }}</p>
                         <div class="mt-6">
                             <a href="{{ route('users.create') }}" 
                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                Add User
+                                {{ __('users.actions.add_user') }}
                             </a>
                         </div>
                     </td>

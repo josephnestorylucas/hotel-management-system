@@ -16,6 +16,9 @@ use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\InternalUsageRequest;
 use App\Models\StoreNotification;
+use App\Models\LocalPurchaseOrder;
+use App\Models\GoodsReceivedNote;
+use App\Models\Supplier;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +33,8 @@ class DashboardController extends Controller {
         
         if ($user->isAdmin()) {
             return $this->adminDashboard();
+        } elseif ($user->isGeneralManager()) {
+            return $this->managerDashboard();
         } elseif ($user->isStoreManager()) {
             return $this->storeManagerDashboard();
         } elseif ($user->isSupervisor()) {
@@ -108,6 +113,87 @@ class DashboardController extends Controller {
             'recentReservations',
             'recentUsers',
             'buildingStats'
+        ));
+    }
+
+    private function managerDashboard() {
+        $stats = [
+            'total_buildings' => Building::count(),
+            'total_rooms' => Room::count(),
+            'active_rooms' => Room::where('is_active', true)->count(),
+            'total_users' => User::where('is_active', true)->count(),
+            'occupied_rooms' => Room::where('status', 'occupied')->count(),
+            'available_rooms' => Room::where('status', 'available')->where('is_active', true)->count(),
+            'reserved_rooms' => Room::where('status', 'reserved')->count(),
+            'dirty_rooms' => Room::where('status', 'dirty')->count(),
+            // Expected arrivals today (Reservation)
+            'today_checkins' => Reservation::whereDate('check_in_date', today())->whereIn('status', ['confirmed', 'pending'])->count(),
+            // Guests who need to check out today (Booking)
+            'today_checkouts' => Booking::whereDate('check_out_date', today())->where('status', 'checked_in')->count(),
+            'total_reservations' => Reservation::count(),
+            'pending_reservations' => Reservation::where('status', 'pending')->count(),
+            'active_bookings' => Booking::where('status', 'checked_in')->count(),
+        ];
+
+        // Occupancy rate
+        $stats['occupancy_rate'] = $stats['total_rooms'] > 0
+            ? round(($stats['occupied_rooms'] / $stats['total_rooms']) * 100, 1)
+            : 0;
+
+        // Revenue stats — computed from Booking
+        $stats['today_revenue'] = Booking::whereDate('created_at', today())
+            ->whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
+        $stats['week_revenue'] = Booking::whereBetween('check_in_date', [now()->startOfWeek(), now()->endOfWeek()])
+            ->whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
+        $stats['month_revenue'] = Booking::whereMonth('check_in_date', now()->month)
+            ->whereYear('check_in_date', now()->year)
+            ->whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
+        $stats['total_revenue'] = Booking::whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
+
+        // Pending approvals count (procurement, internal usage requests, etc.)
+        $stats['pending_approvals'] = InternalUsageRequest::where('status', 'pending')->count();
+
+        $roomStatusCounts = Room::where('is_active', true)
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $reservationStatusCounts = Reservation::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // Recent reservations
+        $recentReservations = Reservation::with(['room', 'creator'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        $buildingStats = Building::withCount(['floors', 'rooms'])->get();
+
+        // Staff by role
+        $staffByRole = User::with('role')
+            ->where('is_active', true)
+            ->get()
+            ->groupBy(fn($user) => ucwords(str_replace('_', ' ', $user->role->name ?? 'Unknown')))
+            ->map->count();
+
+        // Pending internal usage requests for approval
+        $pendingApprovals = InternalUsageRequest::with(['requester', 'location'])
+            ->where('status', 'pending')
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        return view('dashboards.manager', compact(
+            'stats',
+            'roomStatusCounts',
+            'reservationStatusCounts',
+            'recentReservations',
+            'buildingStats',
+            'staffByRole',
+            'pendingApprovals'
         ));
     }
 
@@ -280,72 +366,106 @@ class DashboardController extends Controller {
     }
 
     private function storeManagerDashboard() {
+        // Procurement-focused statistics
         $stats = [
-            'total_buildings' => Building::count(),
-            'total_rooms' => Room::count(),
-            'active_rooms' => Room::where('is_active', true)->count(),
-            'total_users' => User::where('is_active', true)->count(),
-            'occupied_rooms' => Room::where('status', 'occupied')->count(),
-            'available_rooms' => Room::where('status', 'available')->where('is_active', true)->count(),
-            'reserved_rooms' => Room::where('status', 'reserved')->count(),
-            'dirty_rooms' => Room::where('status', 'dirty')->count(),
-            'out_of_order_rooms' => Room::where('status', 'out_of_order')->count(),
-            // Expected arrivals (Reservation)
-            'today_checkins' => Reservation::whereDate('check_in_date', today())->whereIn('status', ['confirmed', 'pending'])->count(),
-            // Guests due to depart (Booking)
-            'today_checkouts' => Booking::whereDate('check_out_date', today())->where('status', 'checked_in')->count(),
-            'total_reservations' => Reservation::count(),
-            'pending_reservations' => Reservation::where('status', 'pending')->count(),
-            'active_bookings' => Booking::where('status', 'checked_in')->count(),
+            // Supplier stats
+            'total_suppliers' => Supplier::count(),
+            'active_suppliers' => Supplier::where('is_active', true)->count(),
+            
+            // Purchase Order stats
+            'total_lpos' => LocalPurchaseOrder::count(),
+            'pending_lpos' => LocalPurchaseOrder::where('status', 'pending')->count(),
+            'approved_lpos' => LocalPurchaseOrder::where('status', 'approved')->count(),
+            'sent_lpos' => LocalPurchaseOrder::where('status', 'sent')->count(),
+            
+            // GRN stats
+            'total_grns' => GoodsReceivedNote::count(),
+            'pending_grns' => GoodsReceivedNote::where('status', 'pending')->count(),
+            'confirmed_grns' => GoodsReceivedNote::where('status', 'confirmed')->count(),
+            
+            // Product & Stock stats
+            'total_products' => Product::count(),
+            'low_stock_items' => StockLevel::whereColumn('quantity', '<=', 'reserved_qty')->count(),
+            
+            // Today's activity
+            'today_lpos' => LocalPurchaseOrder::whereDate('created_at', today())->count(),
+            'today_grns' => GoodsReceivedNote::whereDate('created_at', today())->count(),
+            
+            // Financial summary (procurement spending)
+            'month_spending' => GoodsReceivedNote::whereMonth('received_date', now()->month)
+                ->whereYear('received_date', now()->year)
+                ->where('status', 'confirmed')
+                ->sum('grand_total'),
+            'pending_orders_value' => LocalPurchaseOrder::whereIn('status', ['pending', 'approved', 'sent'])
+                ->sum('grand_total'),
         ];
 
-        // Occupancy rate
-        $stats['occupancy_rate'] = $stats['total_rooms'] > 0
-            ? round(($stats['occupied_rooms'] / $stats['total_rooms']) * 100, 1)
-            : 0;
-
-        // Revenue stats — from Booking
-        $stats['today_revenue'] = Booking::whereDate('created_at', today())
-            ->whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
-        $stats['week_revenue'] = Booking::whereBetween('check_in_date', [now()->startOfWeek(), now()->endOfWeek()])
-            ->whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
-        $stats['month_revenue'] = Booking::whereMonth('check_in_date', now()->month)
-            ->whereYear('check_in_date', now()->year)
-            ->whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
-        $stats['total_revenue'] = Booking::whereIn('status', ['checked_in', 'checked_out'])->sum('total_amount');
-
-        $roomStatusCounts = Room::where('is_active', true)
-            ->select('status', DB::raw('count(*) as count'))
+        // LPO status distribution
+        $lpoStatusCounts = LocalPurchaseOrder::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        $reservationStatusCounts = Reservation::select('status', DB::raw('count(*) as count'))
+        // GRN status distribution
+        $grnStatusCounts = GoodsReceivedNote::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        // Recent reservations
-        $recentReservations = Reservation::with(['room', 'creator'])
+        // Recent Purchase Orders
+        $recentLpos = LocalPurchaseOrder::with(['supplier', 'creator'])
             ->latest()
             ->limit(10)
             ->get();
 
-        $buildingStats = Building::withCount(['floors', 'rooms'])->get();
+        // Recent Goods Received Notes
+        $recentGrns = GoodsReceivedNote::with(['supplier', 'lpo', 'receiver'])
+            ->latest()
+            ->limit(10)
+            ->get();
 
-        $staffByRole = User::with('role')
+        // Pending approvals (LPOs awaiting approval)
+        $pendingApprovals = LocalPurchaseOrder::with(['supplier', 'creator'])
+            ->where('status', 'pending')
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        // Pending GRN confirmations
+        $pendingGrnConfirmations = GoodsReceivedNote::with(['supplier', 'lpo', 'receiver'])
+            ->where('status', 'pending')
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        // Top suppliers (by order count this month)
+        $topSuppliers = Supplier::withCount(['purchaseOrders' => function ($query) {
+                $query->whereMonth('created_at', now()->month)
+                      ->whereYear('created_at', now()->year);
+            }])
             ->where('is_active', true)
-            ->get()
-            ->groupBy(fn($user) => $user->role->description ?? 'Unknown')
-            ->map->count();
+            ->orderByDesc('purchase_orders_count')
+            ->limit(5)
+            ->get();
+
+        // Low stock products needing reorder
+        $lowStockProducts = Product::with(['stockLevels'])
+            ->whereHas('stockLevels', function ($query) {
+                $query->whereColumn('quantity', '<=', 'reserved_qty');
+            })
+            ->limit(10)
+            ->get();
 
         return view('dashboards.store-manager', compact(
             'stats',
-            'roomStatusCounts',
-            'reservationStatusCounts',
-            'recentReservations',
-            'buildingStats',
-            'staffByRole'
+            'lpoStatusCounts',
+            'grnStatusCounts',
+            'recentLpos',
+            'recentGrns',
+            'pendingApprovals',
+            'pendingGrnConfirmations',
+            'topSuppliers',
+            'lowStockProducts'
         ));
     }
 

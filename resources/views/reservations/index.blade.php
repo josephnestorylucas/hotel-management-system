@@ -1,23 +1,23 @@
 {{-- resources/views/reservations/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Reservations')
-@section('page-title', 'Reservations')
+@section('title', __('reservations.title'))
+@section('page-title', __('reservations.title'))
 
 @section('content')
 <div class="space-y-6">
     <!-- Header Actions -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Reservations</h2>
-            <p class="text-sm text-gray-500 mt-1">Manage guest bookings and check-ins</p>
+            <h2 class="text-2xl font-extrabold text-secondary">{{ __('reservations.reservations') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('reservations.manage_subtitle') }}</p>
         </div>
         <a href="{{ route('reservations.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            New Reservation
+            {{ __('reservations.new_reservation') }}
         </a>
     </div>
 
@@ -32,7 +32,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $reservations->where('status', 'pending')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Pending</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('reservations.status.pending') }}</div>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $reservations->where('status', 'confirmed')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Confirmed</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('reservations.status.confirmed') }}</div>
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $reservations->where('status', 'converted')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Converted</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('reservations.status.converted') }}</div>
                 </div>
             </div>
         </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $reservations->where('status', 'cancelled')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Cancelled</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('reservations.status.cancelled') }}</div>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $reservations->where('status', 'no_show')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">No Show</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('reservations.status.no_show') }}</div>
                 </div>
             </div>
         </div>
@@ -100,14 +100,14 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gradient-to-r from-blue-50 to-white">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Reservation</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Guest</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Room</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-In</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-Out</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Amount</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.reservation') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.guest') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.room') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.check_in') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.check_out') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.amount') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.status') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('reservations.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -140,7 +140,7 @@
                                 <div class="text-sm font-medium text-secondary">{{ $reservation->room->room_number }}</div>
                                 <div class="text-xs text-primary">{{ $reservation->room->roomType->name }}</div>
                             @else
-                                <span class="text-xs text-red-600 font-semibold">Not Assigned</span>
+                                <span class="text-xs text-red-600 font-semibold">{{ __('reservations.labels.not_assigned') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -149,7 +149,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-secondary">{{ $reservation->check_out_date->format('M d, Y') }}</div>
-                            <div class="text-xs text-primary">{{ $reservation->check_in_date->diffInDays($reservation->check_out_date) }} nights</div>
+                            <div class="text-xs text-primary">{{ $reservation->check_in_date->diffInDays($reservation->check_out_date) }} {{ __('reservations.labels.nights') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-secondary">${{ number_format($reservation->estimated_amount, 2) }}</span>
@@ -161,14 +161,14 @@
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('reservations.edit', $reservation) }}" 
                                    class="text-primary hover:text-blue-700 font-semibold">
-                                    Edit
+                                    {{ __('reservations.actions.edit') }}
                                 </a>
                                 
                                 @if($reservation->status === 'pending')
                                     <form method="POST" action="{{ route('reservations.confirm', $reservation) }}" class="inline">
                                         @csrf
                                         <button type="submit" class="text-green-600 hover:text-green-700 font-semibold">
-                                            Confirm
+                                            {{ __('reservations.actions.confirm') }}
                                         </button>
                                     </form>
                                 @endif
@@ -177,7 +177,7 @@
                                     <form method="POST" action="{{ route('reservations.check-in', $reservation) }}" class="inline">
                                         @csrf
                                         <button type="submit" class="text-blue-600 hover:text-blue-700 font-semibold">
-                                            Check In
+                                            {{ __('reservations.actions.check_in') }}
                                         </button>
                                     </form>
                                 @endif
@@ -185,8 +185,8 @@
                                 @if(in_array($reservation->status, ['pending', 'confirmed']))
                                     <form method="POST" action="{{ route('reservations.cancel', $reservation) }}" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('Are you sure you want to cancel this reservation?')">
-                                            Cancel
+                                        <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('{{ __('reservations.messages.confirm_cancel') }}')">
+                                            {{ __('reservations.actions.cancel') }}
                                         </button>
                                     </form>
                                 @endif
@@ -201,15 +201,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-bold text-secondary">No reservations yet</h3>
-                            <p class="mt-2 text-sm text-gray-500">Get started by creating your first reservation.</p>
+                            <h3 class="text-lg font-bold text-secondary">{{ __('reservations.messages.no_reservations') }}</h3>
+                            <p class="mt-2 text-sm text-gray-500">{{ __('reservations.messages.no_reservations_subtitle') }}</p>
                             <div class="mt-6">
                                 <a href="{{ route('reservations.create') }}" 
                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
-                                    New Reservation
+                                    {{ __('reservations.new_reservation') }}
                                 </a>
                             </div>
                         </td>

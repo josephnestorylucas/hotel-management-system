@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\NotificationService;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -93,20 +94,20 @@ class StockMovement extends Model
 
     private static function sendLowStockAlert(Product $product, StockLocation $location, float $qty): void
     {
-        User::whereHas('role', fn ($q) => $q->where('name', 'store_manager'))
-            ->get()
-            ->each(function ($manager) use ($product, $location, $qty) {
-                StoreNotification::create([
-                    'user_id'        => $manager->id,
-                    'type'           => 'low_stock',
-                    'title'          => 'Low Stock Alert',
-                    'body'           => "{$product->name} at {$location->name} is low: {$qty} {$product->unit} remaining.",
-                    'reference_type' => 'product',
-                    'reference_id'   => $product->id,
-                    'action_url'     => route('store.products.show', $product->id),
-                    'created_at'     => now(),
-                ]);
-            });
+        $notificationService = app(NotificationService::class);
+        
+        $managerIds = User::whereHas('role', fn ($q) => $q->where('name', 'store_manager'))
+            ->pluck('id')
+            ->toArray();
+
+        $notificationService->createForUsers($managerIds, [
+            'type'           => 'low_stock',
+            'title'          => 'Low Stock Alert',
+            'body'           => "{$product->name} at {$location->name} is low: {$qty} {$product->unit} remaining.",
+            'reference_type' => 'product',
+            'reference_id'   => $product->id,
+            'action_url'     => route('store.products.show', $product->id),
+        ]);
     }
 
     public function product()

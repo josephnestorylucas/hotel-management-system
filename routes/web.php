@@ -39,7 +39,8 @@ use App\Http\Controllers\Restaurant\OrderController;
 use App\Http\Controllers\Restaurant\ReportController as RestaurantReportController;
 use App\Http\Controllers\Finance\CheckoutController as FinanceCheckoutController;
 use App\Http\Controllers\Finance\FinancePaymentController;
-use App\Http\Controllers\Finance\ReceiptController;
+use App\Http\Controllers\Finance\ReceiptController as FinanceReceiptController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\Finance\FinancialDashboardController;
 use App\Http\Controllers\Procurement\DashboardController as ProcurementDashboardController;
 use App\Http\Controllers\Procurement\SupplierController;
@@ -56,6 +57,12 @@ use App\Http\Controllers\Finance\PettyCashController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\BroadcastController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\LanguageController;
+
+// Language Switch Route (accessible to everyone)
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+
 // Public welcome page (accessible to everyone)
 Route::get('/', function () {
     return view('welcome');
@@ -132,10 +139,10 @@ Route::middleware(['auth'])->group(function () {
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
-    // Reservations, Bookings, Guests — restricted to authorized roles
-    Route::middleware(['role:admin,supervisor,front_desk,manager'])->group(function () {
+    // Reservations, Bookings, Guests — restricted to authorized roles (NO admin - admin is system only)
+    Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
         Route::resource('reservations', ReservationController::class);
         Route::post('reservations/{reservation}/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
         Route::post('reservations/{reservation}/check-in', [ReservationController::class, 'checkIn'])->name('reservations.check-in');
@@ -161,68 +168,70 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('guests/{guest}/media/{media}', [GuestController::class, 'removeMedia'])->name('guests.media.destroy');
     });
 
-    // ═══ LAUNDRY MODULE ═══
+    // ═══ LAUNDRY MODULE ═══ (NO admin - admin is system only; manager has oversight)
     Route::prefix('laundry')->name('laundry.')->group(function () {
 
         // ── Price List ────────────────────────────────────────────────────────
         Route::get('services', [LaundryServiceController::class, 'index'])
              ->name('services.index')
-             ->middleware('role:laundry_manager,supervisor,store_manager,admin');
+             ->middleware('role:laundry_manager,supervisor,manager');
         Route::post('services/{service}/items', [LaundryServiceController::class, 'addItem'])
              ->name('services.add-item')
-             ->middleware('role:laundry_manager,store_manager,admin');
+             ->middleware('role:laundry_manager,manager');
         Route::put('services/{service}/items/{item}', [LaundryServiceController::class, 'updateItem'])
              ->name('services.update-item')
-             ->middleware('role:laundry_manager,store_manager,admin');
+             ->middleware('role:laundry_manager,manager');
         Route::delete('services/{service}/items/{item}', [LaundryServiceController::class, 'removeItem'])
              ->name('services.remove-item')
-             ->middleware('role:laundry_manager,store_manager,admin');
+             ->middleware('role:laundry_manager,manager');
 
         // ── Orders ────────────────────────────────────────────────────────────
         Route::get('orders', [NewLaundryOrderController::class, 'index'])
-             ->name('orders.index');
+             ->name('orders.index')
+             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager,cashier');
         Route::get('orders/create', [NewLaundryOrderController::class, 'create'])
              ->name('orders.create')
-             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,admin');
+             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager');
         Route::post('orders', [NewLaundryOrderController::class, 'store'])
              ->name('orders.store')
-             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,admin');
+             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager');
         Route::get('orders/{laundryOrder}', [NewLaundryOrderController::class, 'show'])
-             ->name('orders.show');
+             ->name('orders.show')
+             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager,cashier');
         Route::post('orders/{laundryOrder}/process', [NewLaundryOrderController::class, 'process'])
              ->name('orders.process')
-             ->middleware('role:house_help,supervisor,laundry_manager,admin');
+             ->middleware('role:house_help,supervisor,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/ready', [NewLaundryOrderController::class, 'markReady'])
              ->name('orders.ready')
-             ->middleware('role:house_help,supervisor,laundry_manager,admin');
+             ->middleware('role:house_help,supervisor,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/deliver', [NewLaundryOrderController::class, 'deliver'])
              ->name('orders.deliver')
-             ->middleware('role:house_help,supervisor,laundry_manager,admin');
+             ->middleware('role:house_help,supervisor,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/collected', [NewLaundryOrderController::class, 'collected'])
              ->name('orders.collected')
-             ->middleware('role:house_help,cashier,supervisor,laundry_manager,admin');
+             ->middleware('role:house_help,cashier,supervisor,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/settle', [NewLaundryOrderController::class, 'settle'])
              ->name('orders.settle')
-             ->middleware('role:cashier,front_desk,laundry_manager,supervisor,admin');
+             ->middleware('role:cashier,front_desk,laundry_manager,supervisor,manager');
         Route::post('orders/{laundryOrder}/cancel', [NewLaundryOrderController::class, 'cancel'])
              ->name('orders.cancel')
-             ->middleware('role:supervisor,laundry_manager,admin');
+             ->middleware('role:supervisor,laundry_manager,manager');
 
         // ── Reports ───────────────────────────────────────────────────────────
         Route::get('reports/daily', [LaundryReportController::class, 'daily'])
              ->name('reports.daily')
-             ->middleware('role:laundry_manager,supervisor,store_manager,admin');
+             ->middleware('role:laundry_manager,supervisor,manager');
     });
 
-    // Booking Charges
-    Route::middleware(['role:admin,supervisor,front_desk,store_manager'])->group(function () {
+    // Booking Charges (NO admin - admin is system only)
+    Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
         Route::get('bookings/{booking}/charges', [BookingChargeController::class, 'index'])->name('booking-charges.index');
         Route::post('booking-charges/{bookingCharge}/mark-paid', [BookingChargeController::class, 'markPaid'])->name('booking-charges.mark-paid');
         Route::post('bookings/{booking}/charges/mark-all-paid', [BookingChargeController::class, 'markAllPaid'])->name('booking-charges.mark-all-paid');
     });
 
-    // ═══ PAYMENTS ═══
-    Route::middleware(['role:admin,supervisor,front_desk,store_manager'])->group(function () {
+    // ═══ PAYMENTS ═══ (NO admin - admin is system only)
+    Route::middleware(['role:supervisor,front_desk,manager,cashier'])->group(function () {
         Route::get('bookings/{booking}/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('bookings/{booking}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('bookings/{booking}/payments', [PaymentController::class, 'store'])->name('payments.store');
@@ -233,12 +242,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('payments/{payment}/refund', [PaymentController::class, 'refund'])->name('payments.refund');
     });
 
-    // Conference Management Routes (Front Desk, Admin, Supervisor)
-    Route::middleware(['role:admin,supervisor,front_desk'])->group(function () {
-        // Conference Halls
-        Route::resource('conference-halls', ConferenceHallController::class);
-        
-        // Conference Bookings
+    // Conference Management Routes (Manager has hall booking/conference access but NOT hall management)
+    Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
+        // Conference Bookings (Hall Bookings) - Manager has full access
         Route::get('conference-bookings', [ConferenceBookingController::class, 'index'])->name('conference-bookings.index');
         Route::get('conference-bookings/create', [ConferenceBookingController::class, 'create'])->name('conference-bookings.create');
         Route::post('conference-bookings', [ConferenceBookingController::class, 'store'])->name('conference-bookings.store');
@@ -250,7 +256,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('conference-bookings/{conferenceBooking}/cancel', [ConferenceBookingController::class, 'cancel'])->name('conference-bookings.cancel');
         Route::get('conference-bookings/check-availability', [ConferenceBookingController::class, 'checkAvailability'])->name('conference-bookings.check-availability');
         
-        // Conferences
+        // Conferences - Manager has full access
         Route::get('conferences', [ConferenceController::class, 'index'])->name('conferences.index');
         Route::get('conferences/create', [ConferenceController::class, 'create'])->name('conferences.create');
         Route::post('conferences', [ConferenceController::class, 'store'])->name('conferences.store');
@@ -271,6 +277,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('conferences/{conference}/check-in', [ConferenceParticipantController::class, 'checkInDashboard'])->name('conferences.check-in');
         Route::post('conference-check-in/scan', [ConferenceParticipantController::class, 'checkInByScan'])->name('conference-check-in.scan');
         Route::post('conference-check-in/manual', [ConferenceParticipantController::class, 'checkInByCode'])->name('conference-check-in.manual');
+    });
+
+    // Conference Halls CRUD (Admin only - infrastructure management)
+    // NOTE: Create route must come BEFORE the {conferenceHall} wildcard route
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('conference-halls/create', [ConferenceHallController::class, 'create'])->name('conference-halls.create');
+        Route::post('conference-halls', [ConferenceHallController::class, 'store'])->name('conference-halls.store');
+        Route::get('conference-halls/{conferenceHall}/edit', [ConferenceHallController::class, 'edit'])->name('conference-halls.edit');
+        Route::put('conference-halls/{conferenceHall}', [ConferenceHallController::class, 'update'])->name('conference-halls.update');
+        Route::delete('conference-halls/{conferenceHall}', [ConferenceHallController::class, 'destroy'])->name('conference-halls.destroy');
+    });
+
+    // Conference Halls - View access for manager/supervisor/front_desk/admin
+    Route::middleware(['role:admin,supervisor,front_desk,manager'])->group(function () {
+        Route::get('conference-halls', [ConferenceHallController::class, 'index'])->name('conference-halls.index');
+        Route::get('conference-halls/{conferenceHall}', [ConferenceHallController::class, 'show'])->name('conference-halls.show');
     });
 
     // ═══ STORE MODULE ═══
@@ -397,98 +419,125 @@ Route::middleware(['auth'])->group(function () {
 
         // ── Dashboard ─────────────────────────────────────────────────────────────
         Route::get('dashboard', [FinancialDashboardController::class, 'index'])->name('dashboard')
-             ->middleware('role:store_manager,cashier,front_desk,admin');
+             ->middleware('role:store_manager,cashier,front_desk,manager');
 
         // ── Checkout ──────────────────────────────────────────────────────────────
         Route::get('checkout/{booking}',              [FinanceCheckoutController::class, 'show'])->name('checkout.show')
-             ->middleware('role:front_desk,cashier,admin');
+             ->middleware('role:front_desk,cashier,manager');
         Route::post('checkout/{checkout}/process',    [FinanceCheckoutController::class, 'process'])->name('checkout.process')
-             ->middleware('role:cashier,front_desk,admin');
+             ->middleware('role:cashier,front_desk,manager');
         Route::post('checkout/{checkout}/add-charge', [FinanceCheckoutController::class, 'addCharge'])->name('checkout.add-charge')
-             ->middleware('role:front_desk,cashier,admin');
+             ->middleware('role:front_desk,cashier,manager');
 
         // ── Walk-in Payments ──────────────────────────────────────────────────────
         Route::get('payments',         [FinancePaymentController::class, 'index'])->name('payments.index')
-             ->middleware('role:cashier,store_manager,admin');
+             ->middleware('role:cashier,store_manager');
         Route::post('payments/walkin', [FinancePaymentController::class, 'storeWalkin'])->name('payments.walkin')
-             ->middleware('role:cashier,bar_tender,restaurant_manager,admin');
+             ->middleware('role:cashier,bar_tender,restaurant_manager');
+        
+        // ── Walk-in Payment Processing (unified for laundry/restaurant/bar) ──────
+        Route::post('walkin-payment/process', [\App\Http\Controllers\Finance\WalkinPaymentController::class, 'process'])
+             ->name('walkin-payment.process')
+             ->middleware('role:cashier,front_desk,laundry_manager,supervisor,bar_tender,restaurant_manager,manager,admin');
+        Route::get('walkin-payment/status/{reference}', [\App\Http\Controllers\Finance\WalkinPaymentController::class, 'status'])
+             ->name('walkin-payment.status')
+             ->middleware('role:cashier,front_desk,laundry_manager,supervisor,bar_tender,restaurant_manager,manager,admin');
+        Route::get('walkin-payment/callback/{transaction}', [\App\Http\Controllers\Finance\WalkinPaymentController::class, 'callback'])
+             ->name('walkin-payment.callback');
 
         // ── Receipts ──────────────────────────────────────────────────────────────
-        Route::get('receipts/guest/{checkout}', [ReceiptController::class, 'guest'])->name('receipt.guest');
-        Route::get('receipts/walkin',           [ReceiptController::class, 'walkin'])->name('receipt.walkin');
+        Route::get('receipts/guest/{checkout}', [FinanceReceiptController::class, 'guest'])->name('receipt.guest');
+        Route::get('receipts/walkin',           [FinanceReceiptController::class, 'walkin'])->name('receipt.walkin');
         // ── Petty Cash ──────────────────────────────────────────────────────
         Route::post('petty-cash/{pettyCash}/approve', [PettyCashController::class, 'approve'])->name('petty-cash.approve')
-             ->middleware('role:store_manager,admin');
+             ->middleware('role:store_manager');
         Route::post('petty-cash/{pettyCash}/reject',  [PettyCashController::class, 'reject'])->name('petty-cash.reject')
-             ->middleware('role:store_manager,admin');
+             ->middleware('role:store_manager');
+
+        // ── Refunds ─────────────────────────────────────────────────────────
+        Route::get('refunds', [\App\Http\Controllers\Finance\RefundController::class, 'index'])->name('refunds.index')
+             ->middleware('role:manager,cashier,store_manager');
+        Route::get('refunds/payment/{payment}', [\App\Http\Controllers\Finance\RefundController::class, 'showPayment'])->name('refunds.payment')
+             ->middleware('role:manager,cashier,store_manager');
+        Route::post('refunds/payment/{payment}', [\App\Http\Controllers\Finance\RefundController::class, 'processPaymentRefund'])->name('refunds.payment.process')
+             ->middleware('role:manager');
+        Route::get('refunds/walkin/{transaction}', [\App\Http\Controllers\Finance\RefundController::class, 'showWalkin'])->name('refunds.walkin')
+             ->middleware('role:manager,cashier,store_manager');
+        Route::post('refunds/walkin/{transaction}', [\App\Http\Controllers\Finance\RefundController::class, 'processWalkinRefund'])->name('refunds.walkin.process')
+             ->middleware('role:manager');
+        // API endpoints for validation
+        Route::get('refunds/payment/{payment}/validate', [\App\Http\Controllers\Finance\RefundController::class, 'validatePaymentRefund'])->name('refunds.payment.validate')
+             ->middleware('role:manager,cashier,store_manager');
+        Route::get('refunds/walkin/{transaction}/validate', [\App\Http\Controllers\Finance\RefundController::class, 'validateWalkinRefund'])->name('refunds.walkin.validate')
+             ->middleware('role:manager,cashier,store_manager');
     });
 
-    // ═══ PROCUREMENT MODULE ═══
+    // ═══ PROCUREMENT MODULE ═══ (Store Manager exclusive - per Task 8 requirements)
     Route::prefix('procurement')->name('procurement.')->group(function () {
 
         // Dashboard
         Route::get('/', [ProcurementDashboardController::class, 'index'])->name('dashboard')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
 
         // ── Suppliers ─────────────────────────────────────────────────────
         Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('suppliers/{supplier}/edit', [SupplierController::class, 'edit'])->name('suppliers.edit')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy')
-             ->middleware('role:store_manager,admin');
+             ->middleware('role:store_manager');
 
         // ── Local Purchase Orders ─────────────────────────────────────────
         Route::get('lpo', [LocalPurchaseOrderController::class, 'index'])->name('lpo.index')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('lpo/create', [LocalPurchaseOrderController::class, 'create'])->name('lpo.create')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::post('lpo', [LocalPurchaseOrderController::class, 'store'])->name('lpo.store')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'show'])->name('lpo.show')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('lpo/{localPurchaseOrder}/edit', [LocalPurchaseOrderController::class, 'edit'])->name('lpo.edit')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::put('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'update'])->name('lpo.update')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::delete('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'destroy'])->name('lpo.destroy')
-             ->middleware('role:store_manager,admin');
+             ->middleware('role:store_manager');
         Route::post('lpo/{localPurchaseOrder}/submit', [LocalPurchaseOrderController::class, 'submitForApproval'])->name('lpo.submit')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::post('lpo/{localPurchaseOrder}/approve', [LocalPurchaseOrderController::class, 'approve'])->name('lpo.approve')
-             ->middleware('role:store_manager,supervisor,admin');
+             ->middleware('role:store_manager');
         Route::post('lpo/{localPurchaseOrder}/reject', [LocalPurchaseOrderController::class, 'reject'])->name('lpo.reject')
-             ->middleware('role:store_manager,supervisor,admin');
+             ->middleware('role:store_manager');
         Route::post('lpo/{localPurchaseOrder}/sent', [LocalPurchaseOrderController::class, 'markSent'])->name('lpo.sent')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
 
         // ── Goods Received Notes ──────────────────────────────────────────
         Route::get('grn', [GoodsReceivedNoteController::class, 'index'])->name('grn.index')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('grn/create', [GoodsReceivedNoteController::class, 'create'])->name('grn.create')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::post('grn', [GoodsReceivedNoteController::class, 'store'])->name('grn.store')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::get('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'show'])->name('grn.show')
-             ->middleware('role:store_manager,store_keeper,supervisor,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::delete('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'destroy'])->name('grn.destroy')
-             ->middleware('role:store_manager,admin');
+             ->middleware('role:store_manager');
         Route::post('grn/{goodsReceivedNote}/receipt', [GoodsReceivedNoteController::class, 'uploadReceipt'])->name('grn.upload-receipt')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::post('grn/{goodsReceivedNote}/submit', [GoodsReceivedNoteController::class, 'submitForConfirmation'])->name('grn.submit')
-             ->middleware('role:store_manager,store_keeper,admin');
+             ->middleware('role:store_manager,store_keeper');
         Route::post('grn/{goodsReceivedNote}/confirm', [GoodsReceivedNoteController::class, 'confirm'])->name('grn.confirm')
-             ->middleware('role:store_manager,supervisor,admin');
+             ->middleware('role:store_manager');
         Route::post('grn/{goodsReceivedNote}/reject', [GoodsReceivedNoteController::class, 'reject'])->name('grn.reject')
-             ->middleware('role:store_manager,supervisor,admin');
+             ->middleware('role:store_manager');
     });
 
     // ═══ NOTIFICATIONS ═══
@@ -496,8 +545,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('notifications/unread-count',             [NotificationController::class, 'unreadCount'])->name('notifications.count');
     Route::post('notifications/{notification}/read',     [NotificationController::class, 'markRead'])->name('notifications.read');
 
+    // ═══ UNIFIED RECEIPTS ═══
+    Route::prefix('receipts')->name('receipts.')->group(function () {
+        Route::get('search',                    [ReceiptController::class, 'search'])->name('search');
+        Route::get('laundry/{laundryOrder}',    [ReceiptController::class, 'laundry'])->name('laundry');
+        Route::get('order/{order}',             [ReceiptController::class, 'order'])->name('order');
+        Route::get('checkout/{checkout}',       [ReceiptController::class, 'checkout'])->name('checkout');
+        Route::get('walkin/{walkinTransaction}',[ReceiptController::class, 'walkin'])->name('walkin');
+        Route::get('reprint/{receiptNumber}',   [ReceiptController::class, 'reprint'])->name('reprint');
+        Route::post('{uuid}/refresh',           [ReceiptController::class, 'refresh'])->name('refresh');
+        Route::post('{uuid}/printed',           [ReceiptController::class, 'markPrinted'])->name('printed');
+        Route::get('{uuid}',                    [ReceiptController::class, 'show'])->name('show');
+    });
+
     // ═══ ADMIN — Broadcasts & Offers ═══
-    Route::middleware(['role:admin,store_manager,supervisor,laundry_manager'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:admin,manager,supervisor,laundry_manager'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('broadcasts',                       [BroadcastController::class, 'index'])->name('broadcasts.index');
         Route::get('broadcasts/create',                [BroadcastController::class, 'create'])->name('broadcasts.create');
         Route::post('broadcasts',                      [BroadcastController::class, 'store'])->name('broadcasts.store');
@@ -505,9 +567,16 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ═══ ADMIN — Discount Audit ═══
-    Route::middleware(['role:admin,store_manager,supervisor'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:admin,manager,supervisor'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('audit/discounts',                  [AuditController::class, 'discounts'])->name('audit.discounts');
         Route::post('bookings/{booking}/discount',     [AuditController::class, 'applyDiscount'])->name('audit.apply-discount');
+    });
+
+    // ═══ ADMIN — System Settings ═══
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('settings',                         [SettingsController::class, 'index'])->name('settings.index');
+        Route::post('settings',                        [SettingsController::class, 'updateSettings'])->name('settings.update');
+        Route::post('settings/password',               [SettingsController::class, 'updatePassword'])->name('settings.password');
     });
 
     // ═══ ACCOUNTING MODULE ═══

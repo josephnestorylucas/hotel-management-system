@@ -166,18 +166,37 @@ class OrderController extends Controller
     /**
      * POST /restaurant/orders/{order}/settle
      * This is where stock is deducted.
+     * 
+     * UNIFIED CHECKOUT FLOW:
+     * - Guest orders: Create BookingCharge and redirect to Finance Checkout
+     * - Walk-in orders: Use WalkinPaymentController (direct payment modal)
      */
     public function settle(Request $request, Order $order): RedirectResponse
     {
+        // Prevent re-settlement of already charged or settled orders
+        abort_if(in_array($order->status, ['charged', 'settled']), 422, 'Order already charged or settled.');
+        abort_if($order->status === 'cancelled', 422, 'Cannot settle a cancelled order.');
         abort_if(!in_array($order->status, ['served', 'ready', 'sent', 'open']), 422, 'Order cannot be settled.');
-        abort_if($order->status === 'settled', 422, 'Order already settled.');
 
-        $request->validate([
-            'payment_method' => 'required|in:cash,card,charge_to_booking',
-            'booking_id'     => 'required_if:payment_method,charge_to_booking|nullable|uuid',
-        ]);
+        // For guest orders, we ONLY allow charge_to_booking (enforces checkout flow)
+        // Walk-in direct payments are handled by WalkinPaymentController
+        if ($order->order_type === 'guest') {
+            $request->validate([
+                'booking_id' => 'required|uuid|exists:bookings,id',
+            ]);
+            
+            // Force charge_to_booking for guest orders
+            $paymentMethod = 'charge_to_booking';
+        } else {
+            // Walk-in orders can settle directly (handled by WalkinPaymentController)
+            // This path should NOT be used for walk-ins - they use the modal
+            abort(422, 'Walk-in orders must be settled through the payment modal.');
+        }
 
-        DB::transaction(function () use ($request, $order) {
+        $bookingId = $request->booking_id ?? $order->booking_id;
+        abort_if(!$bookingId, 422, 'Booking ID is required for guest orders.');
+
+        DB::transaction(function () use ($order, $bookingId) {
 
             // 1. Deduct stock for every order item that has ingredients
             $order->load('items.menuItem.ingredients');
@@ -199,42 +218,34 @@ class OrderController extends Controller
                 }
             }
 
-            // 2. Mark order as settled
+            // 2. Mark order as charged (NOT settled - will be settled at checkout)
             $order->update([
-                'status'         => 'settled',
-                'payment_method' => $request->payment_method,
-                'settled_by'     => auth()->id(),
-                'settled_at'     => now(),
-                'booking_id'     => $request->booking_id ?? $order->booking_id,
+                'status'         => 'charged',
+                'payment_method' => 'charge_to_booking',
+                'booking_id'     => $bookingId,
             ]);
 
-            // 3. Post to accounting journal (if cash/card settlement)
-            if (in_array($request->payment_method, ['cash', 'card'])) {
-                app(AccountingService::class)->postRestaurantSettlement(
-                    orderNo: $order->order_number,
-                    orderId: $order->id,
-                    amount: (float) $order->total,
-                    paymentMethod: $request->payment_method,
-                    actorId: auth()->id()
-                );
-            }
+            // 3. Create BookingCharge — payment will happen at Finance Checkout
+            // Store amount in USD (converted from TZS) and also store TZS amount
+            $exchangeRate = (float) (DB::table('system_settings')
+                ->where('key', 'tzs_exchange_rate')->value('value') ?? 2500);
+            $amountUsd = round($order->total / $exchangeRate, 2);
 
-            // 4. If charge to booking — create booking charge record
-            if ($request->payment_method === 'charge_to_booking') {
-                $bookingId = $request->booking_id ?? $order->booking_id;
-                BookingCharge::create([
-                    'booking_id'   => $bookingId,
-                    'order_id'     => $order->id,
-                    'charge_type'  => 'restaurant',
-                    'reference_id' => $order->id,
-                    'description'  => "Restaurant order {$order->order_number}",
-                    'amount'       => $order->total,
-                    'status'       => 'unpaid',
-                    'created_by'   => auth()->id(),
-                ]);
-            }
+            BookingCharge::create([
+                'booking_id'   => $bookingId,
+                'order_id'     => $order->id,
+                'charge_type'  => 'restaurant',
+                'source'       => 'restaurant',
+                'reference_id' => $order->id,
+                'description'  => "Restaurant order {$order->order_number}",
+                'amount'       => $amountUsd,
+                'currency'     => 'USD',
+                'amount_tzs'   => $order->total,
+                'status'       => 'unpaid',
+                'created_by'   => auth()->id(),
+            ]);
 
-            // 5. Free up the table
+            // 4. Free up the table
             if ($order->table_id) {
                 Table::where('id', $order->table_id)->update(['status' => 'available']);
             }
@@ -252,9 +263,10 @@ class OrderController extends Controller
             }
         }
 
+        // Redirect to Finance Checkout page
         return redirect()
-            ->route('restaurant.orders.show', $order)
-            ->with('success', "Order {$order->order_number} settled successfully.");
+            ->route('finance.checkout.show', $bookingId)
+            ->with('success', "Order {$order->order_number} charged to booking. Please complete payment at checkout.");
     }
 
     /**

@@ -20,6 +20,7 @@ class SnippeProvider implements PaymentProvider
     protected string $apiKey;
     protected ?string $webhookSecret;
     protected int $timeout;
+    protected bool $useWebhooks;
 
     public function __construct()
     {
@@ -27,6 +28,7 @@ class SnippeProvider implements PaymentProvider
         $this->apiKey        = config('payment.providers.snippe.api_key', '');
         $this->webhookSecret = config('payment.providers.snippe.webhook_secret');
         $this->timeout       = config('payment.providers.snippe.timeout', 30);
+        $this->useWebhooks   = config('payment.providers.snippe.use_webhooks', false);
     }
 
     public function name(): string
@@ -48,6 +50,26 @@ class SnippeProvider implements PaymentProvider
     {
         $idempotencyKey = $metadata['idempotency_key'] ?? Str::uuid()->toString();
 
+        // Build customer details - all fields required by Snippe API
+        // Use empty() check instead of ?? because empty string '' is not null
+        $firstName = !empty($metadata['guest_first_name']) 
+            ? $metadata['guest_first_name'] 
+            : (!empty($metadata['customer']['firstname']) ? $metadata['customer']['firstname'] : 'Guest');
+        
+        $lastName = !empty($metadata['guest_last_name']) 
+            ? $metadata['guest_last_name'] 
+            : (!empty($metadata['customer']['lastname']) ? $metadata['customer']['lastname'] : 'Customer');
+        
+        $email = !empty($metadata['guest_email']) 
+            ? $metadata['guest_email'] 
+            : (!empty($metadata['customer']['email']) ? $metadata['customer']['email'] : 'guest@example.com');
+
+        $customer = [
+            'firstname' => $firstName,
+            'lastname'  => $lastName,
+            'email'     => $email,
+        ];
+
         // Build request payload
         $payload = [
             'payment_type' => $method, // mobile, card, dynamic-qr
@@ -55,7 +77,7 @@ class SnippeProvider implements PaymentProvider
                 'amount'   => (int) $amount, // Snippe expects integer (smallest unit)
                 'currency' => $currency,
             ],
-            'webhook_url' => route('payments.webhook.snippe'),
+            'customer' => $customer,
             'metadata' => [
                 'booking_id' => $metadata['booking_id'] ?? null,
                 'charge_id'  => $metadata['charge_id'] ?? null,
@@ -63,20 +85,35 @@ class SnippeProvider implements PaymentProvider
             ],
         ];
 
-        // Add phone number for mobile payments
-        if (!empty($metadata['phone_number'])) {
-            $payload['phone_number'] = $metadata['phone_number'];
+        // Only include webhook_url if webhooks are enabled (requires HTTPS in production)
+        // When disabled, use polling via GET /v1/payments/{reference} to check status
+        if ($this->useWebhooks) {
+            $payload['webhook_url'] = route('payments.webhook.snippe');
         }
 
-        // Add customer details
-        if (!empty($metadata['customer'])) {
-            $payload['customer'] = $metadata['customer'];
-        } else {
-            $payload['customer'] = [
-                'firstname' => $metadata['guest_first_name'] ?? 'Guest',
-                'lastname'  => $metadata['guest_last_name'] ?? '',
-                'email'     => $metadata['guest_email'] ?? '',
-            ];
+        // Phone number is REQUIRED for mobile payments - must be at root level
+        // Format: 255XXXXXXXXX (no + prefix, 12 digits for Tanzania)
+        if ($method === 'mobile') {
+            $phone = $metadata['phone_number'] ?? $metadata['mobile_phone'] ?? null;
+            if (empty($phone)) {
+                Log::error('Snippe mobile payment requires phone_number', ['metadata' => $metadata]);
+                return [
+                    'success'   => false,
+                    'reference' => null,
+                    'status'    => 'failed',
+                    'error'     => 'Phone number is required for mobile payments',
+                    'raw'       => [],
+                ];
+            }
+            // Normalize phone number: remove +, spaces, dashes
+            $phone = preg_replace('/[^0-9]/', '', $phone);
+            // Ensure it starts with 255 for Tanzania
+            if (str_starts_with($phone, '0')) {
+                $phone = '255' . substr($phone, 1);
+            } elseif (!str_starts_with($phone, '255')) {
+                $phone = '255' . $phone;
+            }
+            $payload['phone_number'] = $phone;
         }
 
         // Card payments require redirect URLs
@@ -85,6 +122,18 @@ class SnippeProvider implements PaymentProvider
                 ?? route('payments.callback', ['provider' => 'snippe', 'status' => 'success']);
             $payload['details']['cancel_url'] = $metadata['cancel_url']
                 ?? route('payments.callback', ['provider' => 'snippe', 'status' => 'cancel']);
+            
+            // Phone number is optional for card/QR but useful if available
+            $phone = $metadata['phone_number'] ?? $metadata['mobile_phone'] ?? null;
+            if (!empty($phone)) {
+                $phone = preg_replace('/[^0-9]/', '', $phone);
+                if (str_starts_with($phone, '0')) {
+                    $phone = '255' . substr($phone, 1);
+                } elseif (!str_starts_with($phone, '255')) {
+                    $phone = '255' . $phone;
+                }
+                $payload['phone_number'] = $phone;
+            }
         }
 
         // Card payments require billing details
@@ -97,6 +146,13 @@ class SnippeProvider implements PaymentProvider
                 'country'  => $metadata['billing_country'] ?? 'TZ',
             ]);
         }
+
+        // Log the payload for debugging (remove sensitive data in production)
+        Log::debug('Snippe payment request payload', [
+            'method'  => $method,
+            'amount'  => $amount,
+            'payload' => array_merge($payload, ['customer' => '[REDACTED]']),
+        ]);
 
         try {
             $response = Http::withHeaders([

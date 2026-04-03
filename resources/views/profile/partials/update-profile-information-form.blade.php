@@ -7,12 +7,12 @@
                 </svg>
             </div>
             <h2 class="text-lg font-bold text-secondary">
-                {{ __('Profile Information') }}
+                {{ __('profile.sections.profile_information') }}
             </h2>
         </div>
 
         <p class="text-sm text-gray-500">
-            {{ __("Update your account's profile information and email address.") }}
+            {{ __('profile.subtitles.profile_info') }}
         </p>
     </header>
 
@@ -25,7 +25,7 @@
         @method('patch')
 
         <div>
-            <label for="name" class="block text-sm font-semibold text-secondary mb-2">{{ __('Name') }}</label>
+            <label for="name" class="block text-sm font-semibold text-secondary mb-2">{{ __('profile.fields.name') }}</label>
             <input id="name" name="name" type="text" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" />
             @error('name')
                 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -33,7 +33,7 @@
         </div>
 
         <div>
-            <label for="email" class="block text-sm font-semibold text-secondary mb-2">{{ __('Email') }}</label>
+            <label for="email" class="block text-sm font-semibold text-secondary mb-2">{{ __('profile.fields.email') }}</label>
             <input id="email" name="email" type="email" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="{{ old('email', $user->email) }}" required autocomplete="username" />
             @error('email')
                 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -42,16 +42,16 @@
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div class="mt-3">
                     <p class="text-sm text-gray-600">
-                        {{ __('Your email address is unverified.') }}
+                        {{ __('profile.messages.email_unverified') }}
 
                         <button form="send-verification" class="underline text-sm text-primary hover:text-primary/80 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                            {{ __('Click here to re-send the verification email.') }}
+                            {{ __('profile.messages.resend_verification') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
                         <p class="mt-2 font-semibold text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
+                            {{ __('profile.messages.verification_sent') }}
                         </p>
                     @endif
                 </div>
@@ -60,7 +60,7 @@
 
         <div class="flex items-center gap-4 pt-4">
             <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                {{ __('Save') }}
+                {{ __('profile.actions.save') }}
             </button>
 
             @if (session('status') === 'profile-updated')
@@ -70,7 +70,7 @@
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
                     class="text-sm text-green-600 font-semibold"
-                >{{ __('Saved.') }}</p>
+                >{{ __('profile.messages.saved') }}</p>
             @endif
         </div>
     </form>

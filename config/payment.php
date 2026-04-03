@@ -35,6 +35,7 @@ return [
             'api_key'        => env('SNIPPE_API_KEY', ''),
             'webhook_secret' => env('SNIPPE_WEBHOOK_SECRET', ''),
             'timeout'        => env('SNIPPE_TIMEOUT', 30),
+            'use_webhooks'   => env('SNIPPE_USE_WEBHOOKS', false), // Set to true in production with HTTPS
         ],
 
     ],

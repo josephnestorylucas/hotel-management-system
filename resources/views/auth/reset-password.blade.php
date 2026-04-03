@@ -1,10 +1,10 @@
 {{-- resources/views/auth/reset-password.blade.php --}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - MRK Hotel & Resort</title>
+    <title>{{ __('auth.reset.reset_password') }} - MRK Hotel & Resort</title>
     <link rel="icon" type="image/png" href="{{ asset('images/header.png') }}">
     <meta name="description" content="Set a new password for your MRK Hotel staff account.">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 <body class="bg-gray-50 font-sans antialiased min-h-screen">
     <div class="min-h-screen flex flex-col">
         <!-- Header -->
-        <header class="py-6 px-8">
+        <header class="py-6 px-8 flex justify-between items-center">
             <a href="{{ url('/') }}" class="inline-flex items-center gap-3">
                 <img src="{{ asset('images/header.png') }}" alt="MRK Hotel" class="h-12 w-auto" onerror="this.style.display='none'">
                 <div>
@@ -40,6 +40,15 @@
                     <span class="text-xs text-gray-500 tracking-wider uppercase">& Resort</span>
                 </div>
             </a>
+            <!-- Language Switcher -->
+            <div class="flex items-center gap-2 text-sm">
+                <a href="{{ url('language/en') }}" class="flex items-center gap-1 px-2 py-1 rounded {{ app()->getLocale() === 'en' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <span>🇬🇧</span> EN
+                </a>
+                <a href="{{ url('language/sw') }}" class="flex items-center gap-1 px-2 py-1 rounded {{ app()->getLocale() === 'sw' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <span>🇹🇿</span> SW
+                </a>
+            </div>
         </header>
 
         <!-- Main Content -->
@@ -52,8 +61,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
-                    <h2 class="text-3xl font-serif font-bold text-dark mb-2">Set a new password</h2>
-                    <p class="text-gray-600">Create a strong password to secure your account.</p>
+                    <h2 class="text-3xl font-serif font-bold text-dark mb-2">{{ __('auth.reset.reset_password') }}</h2>
+                    <p class="text-gray-600">{{ __('auth.reset.create_new_password') }}</p>
                 </div>
 
                 <!-- Card -->
@@ -65,7 +74,7 @@
 
                         <!-- Email (Read Only) -->
                         <div>
-                            <label for="email_display" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <label for="email_display" class="block text-sm font-medium text-gray-700 mb-2">{{ __('auth.login.email') }}</label>
                             <input id="email_display" type="email" value="{{ $email }}" readonly 
                                    class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed">
                             @error('email')
@@ -75,10 +84,10 @@
 
                         <!-- New Password -->
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('auth.reset.new_password') }}</label>
                             <input id="password" name="password" type="password" required autocomplete="new-password"
                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-gray-900 placeholder-gray-400" 
-                                   placeholder="Enter new password">
+                                   placeholder="{{ __('auth.login.password_placeholder') }}">
                             @error('password')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -86,34 +95,15 @@
 
                         <!-- Confirm Password -->
                         <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">{{ __('auth.reset.confirm_password') }}</label>
                             <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-gray-900 placeholder-gray-400" 
-                                   placeholder="Confirm new password">
-                        </div>
-
-                        <!-- Password Requirements -->
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <p class="text-sm font-medium text-gray-700 mb-2">Password requirements:</p>
-                            <ul class="text-sm text-gray-600 space-y-1">
-                                <li class="flex items-center gap-2">
-                                    <svg class="h-4 w-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                    </svg>
-                                    At least 8 characters
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg class="h-4 w-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Mix of letters and numbers
-                                </li>
-                            </ul>
+                                   placeholder="{{ __('auth.reset.confirm_password') }}">
                         </div>
 
                         <button type="submit" 
                                 class="w-full px-6 py-3 text-base font-semibold rounded-lg bg-primary hover:bg-primary-light text-white transition-colors">
-                            Reset Password
+                            {{ __('auth.reset.reset_password') }}
                         </button>
                     </form>
                 </div>
@@ -124,7 +114,7 @@
                         <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back to Staff Login
+                        {{ __('auth.reset.back_to_login') }}
                     </a>
                 </div>
             </div>
@@ -133,7 +123,7 @@
         <!-- Footer -->
         <footer class="py-6 px-8 text-center">
             <p class="text-sm text-gray-500">
-                &copy; {{ date('Y') }} MRK Hotel & Resort. All rights reserved.
+                &copy; {{ date('Y') }} MRK Hotel & Resort. {{ __('auth.login.all_rights_reserved') }}
             </p>
         </footer>
     </div>

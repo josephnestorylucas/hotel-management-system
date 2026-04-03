@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Store;
 use App\Http\Controllers\Controller;
 use App\Models\InternalUsageRequest;
 use App\Models\Product;
-use App\Models\StoreNotification;
 use App\Models\StockLocation;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +16,10 @@ use Illuminate\View\View;
 
 class InternalRequestController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
+
     // GET /store/internal-requests
     public function index(Request $request): View
     {
@@ -55,18 +59,19 @@ class InternalRequestController extends Controller
             'requested_by' => auth()->id(),
         ]);
 
-        User::whereHas('role', fn ($q) => $q->where('name', 'supervisor'))
-            ->get()
-            ->each(fn ($sup) => StoreNotification::create([
-                'user_id'        => $sup->id,
-                'type'           => 'pending_request',
-                'title'          => 'New Internal Usage Request',
-                'body'           => "{$req->department} needs: {$req->product->name} × {$req->quantity} {$req->product->unit}",
-                'reference_type' => 'internal_usage_request',
-                'reference_id'   => $req->id,
-                'action_url'     => route('store.internal-requests.index'),
-                'created_at'     => now(),
-            ]));
+        // Notify supervisors using the service (with caching and broadcasting)
+        $supervisorIds = User::whereHas('role', fn ($q) => $q->where('name', 'supervisor'))
+            ->pluck('id')
+            ->toArray();
+
+        $this->notificationService->createForUsers($supervisorIds, [
+            'type'           => 'pending_request',
+            'title'          => 'New Internal Usage Request',
+            'body'           => "{$req->department} needs: {$req->product->name} × {$req->quantity} {$req->product->unit}",
+            'reference_type' => 'internal_usage_request',
+            'reference_id'   => $req->id,
+            'action_url'     => route('store.internal-requests.index'),
+        ]);
 
         return redirect()
             ->route('store.internal-requests.index')
@@ -84,18 +89,19 @@ class InternalRequestController extends Controller
             'approved_at' => now(),
         ]);
 
-        User::whereHas('role', fn ($q) => $q->where('name', 'store_keeper'))
-            ->get()
-            ->each(fn ($k) => StoreNotification::create([
-                'user_id'        => $k->id,
-                'type'           => 'request_approved',
-                'title'          => 'Request Ready to Fulfill',
-                'body'           => "{$internalUsageRequest->product->name} × {$internalUsageRequest->quantity} for {$internalUsageRequest->department}",
-                'reference_type' => 'internal_usage_request',
-                'reference_id'   => $internalUsageRequest->id,
-                'action_url'     => route('store.internal-requests.index'),
-                'created_at'     => now(),
-            ]));
+        // Notify store keepers
+        $storeKeeperIds = User::whereHas('role', fn ($q) => $q->where('name', 'store_keeper'))
+            ->pluck('id')
+            ->toArray();
+
+        $this->notificationService->createForUsers($storeKeeperIds, [
+            'type'           => 'request_approved',
+            'title'          => 'Request Ready to Fulfill',
+            'body'           => "{$internalUsageRequest->product->name} × {$internalUsageRequest->quantity} for {$internalUsageRequest->department}",
+            'reference_type' => 'internal_usage_request',
+            'reference_id'   => $internalUsageRequest->id,
+            'action_url'     => route('store.internal-requests.index'),
+        ]);
 
         return redirect()
             ->route('store.internal-requests.index')
@@ -115,7 +121,8 @@ class InternalRequestController extends Controller
             'rejected_reason' => $request->reason,
         ]);
 
-        StoreNotification::create([
+        // Notify the requester
+        $this->notificationService->create([
             'user_id'        => $internalUsageRequest->requested_by,
             'type'           => 'request_rejected',
             'title'          => 'Your Request Was Rejected',
@@ -123,7 +130,6 @@ class InternalRequestController extends Controller
             'reference_type' => 'internal_usage_request',
             'reference_id'   => $internalUsageRequest->id,
             'action_url'     => route('store.internal-requests.index'),
-            'created_at'     => now(),
         ]);
 
         return redirect()
@@ -160,7 +166,8 @@ class InternalRequestController extends Controller
             ]);
         });
 
-        StoreNotification::create([
+        // Notify the requester
+        $this->notificationService->create([
             'user_id'        => $internalUsageRequest->requested_by,
             'type'           => 'request_fulfilled',
             'title'          => 'Your Request Has Been Fulfilled',
@@ -168,7 +175,6 @@ class InternalRequestController extends Controller
             'reference_type' => 'internal_usage_request',
             'reference_id'   => $internalUsageRequest->id,
             'action_url'     => route('store.internal-requests.index'),
-            'created_at'     => now(),
         ]);
 
         return redirect()

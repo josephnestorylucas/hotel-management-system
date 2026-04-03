@@ -1,4 +1,5 @@
 {{-- resources/views/conference-bookings/create.blade.php --}}
+@php use App\Helpers\CurrencyHelper; @endphp
 @extends('layouts.app')
 
 @section('title', 'Create Hall Booking')
@@ -75,7 +76,7 @@
                             <option value="{{ $hall->id }}" 
                                     data-rate="{{ $hall->hourly_rate }}"
                                     {{ old('conference_hall_id') == $hall->id ? 'selected' : '' }}>
-                                {{ $hall->name }} - {{ $hall->location }} (Capacity: {{ $hall->capacity }}, ${{ number_format($hall->hourly_rate, 2) }}/hr)
+                                {{ $hall->name }} - {{ $hall->location }} (Capacity: {{ $hall->capacity }}, {{ CurrencyHelper::formatCurrency($hall->hourly_rate) }}/hr)
                             </option>
                             @endforeach
                         </select>
@@ -141,7 +142,7 @@
                     <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <div class="flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-700">Estimated Cost:</span>
-                            <span id="cost-preview" class="text-lg font-bold text-primary">$0.00</span>
+                            <span id="cost-preview" class="text-lg font-bold text-primary">{{ CurrencyHelper::formatCurrency(0) }}</span>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Based on hourly rate and duration</p>
                     </div>
@@ -187,6 +188,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const startTime = document.getElementById('start_time');
     const endTime = document.getElementById('end_time');
     const costPreview = document.getElementById('cost-preview');
+    
+    const currencySymbol = '{{ CurrencyHelper::getCurrencySymbol() }}';
+    const currencyPosition = '{{ CurrencyHelper::CURRENCIES[CurrencyHelper::getDefaultCurrency()]["position"] ?? "before" }}';
+    
+    function formatMoney(amount) {
+        const formatted = amount.toFixed(2);
+        if (currencyPosition === 'before') {
+            return currencySymbol + formatted;
+        }
+        return formatted + ' ' + currencySymbol;
+    }
 
     function calculateCost() {
         const selectedHall = hallSelect.options[hallSelect.selectedIndex];
@@ -199,9 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (hours > 0) {
                 const cost = hours * rate;
-                costPreview.textContent = `$${cost.toFixed(2)}`;
+                costPreview.textContent = formatMoney(cost);
             } else {
-                costPreview.textContent = '$0.00';
+                costPreview.textContent = formatMoney(0);
             }
         }
     }

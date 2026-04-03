@@ -1,16 +1,16 @@
 {{-- resources/views/reservations/create.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Create Reservation')
-@section('page-title', 'Reservations')
+@section('title', __('reservations.create_reservation'))
+@section('page-title', __('reservations.reservations'))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
-            <h2 class="text-xl font-extrabold text-secondary">Create Reservation</h2>
-            <p class="text-sm text-gray-500 mt-1">Add a new guest reservation</p>
+            <h2 class="text-xl font-extrabold text-secondary">{{ __('reservations.create_reservation') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('reservations.create_subtitle') }}</p>
         </div>
 
         <!-- Form -->
@@ -26,18 +26,18 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>
-                        Guest Information
+                        {{ __('reservations.sections.guest_information') }}
                     </h3>
 
                     <!-- Guest Type Toggle -->
                     <div class="flex gap-4 mb-6">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="guest_type" value="existing" x-model="guestType" class="text-primary focus:ring-primary">
-                            <span class="text-sm font-semibold text-secondary">Select Existing Guest</span>
+                            <span class="text-sm font-semibold text-secondary">{{ __('reservations.guest_type.existing') }}</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="guest_type" value="new" x-model="guestType" class="text-primary focus:ring-primary">
-                            <span class="text-sm font-semibold text-secondary">Create New Guest</span>
+                            <span class="text-sm font-semibold text-secondary">{{ __('reservations.guest_type.new') }}</span>
                         </label>
                     </div>
 
@@ -47,7 +47,7 @@
                         
                         <div>
                             <label for="guest_id" class="block text-sm font-semibold text-secondary mb-2">
-                                Select Guest <span class="text-red-500">*</span>
+                                {{ __('reservations.fields.guest_id') }} <span class="text-red-500">*</span>
                             </label>
                             <select 
                                 name="guest_id" 
@@ -55,7 +55,7 @@
                                 x-model="selectedGuestId"
                                 @change="updateSelectedGuest()"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id') border-red-500 @enderror">
-                                <option value="">-- Select a guest --</option>
+                                <option value="">{{ __('reservations.placeholders.select_guest') }}</option>
                                 @foreach($guests as $guest)
                                 <option value="{{ $guest->id }}" 
                                     data-name="{{ $guest->full_name }}"
@@ -84,22 +84,22 @@
                                 </div>
                                 <div>
                                     <p class="font-bold text-secondary" x-text="selectedGuestName"></p>
-                                    <p class="text-sm text-gray-600"><span x-text="selectedGuestPhone"></span> • <span x-text="selectedGuestEmail || 'No email'"></span></p>
+                                    <p class="text-sm text-gray-600"><span x-text="selectedGuestPhone"></span> • <span x-text="selectedGuestEmail || '{{ __('reservations.labels.no_email') }}'"></span></p>
                                 </div>
                                 <a :href="'/guests/' + selectedGuestId" target="_blank" class="ml-auto text-sm text-primary hover:underline font-medium">
-                                    View Profile →
+                                    {{ __('reservations.labels.view_profile') }} →
                                 </a>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-2 text-sm text-gray-500">
-                            <span>Can't find the guest?</span>
+                            <span>{{ __('reservations.info.cant_find_guest') }}</span>
                             <button type="button" @click="guestType = 'new'" class="text-primary hover:underline font-semibold">
-                                Create a new guest
+                                {{ __('reservations.info.create_new_guest') }}
                             </button>
-                            <span>or</span>
+                            <span>{{ __('reservations.info.or') }}</span>
                             <a href="{{ route('guests.create', ['return_to_reservation' => 1]) }}" class="text-primary hover:underline font-semibold">
-                                Add full guest profile
+                                {{ __('reservations.info.add_full_profile') }}
                             </a>
                         </div>
                     </div>
@@ -110,7 +110,7 @@
                             <!-- First Name -->
                             <div>
                                 <label for="guest_first_name" class="block text-sm font-semibold text-secondary mb-2">
-                                    First Name <span class="text-red-500">*</span>
+                                    {{ __('reservations.fields.guest_first_name') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -118,7 +118,7 @@
                                     id="guest_first_name"
                                     value="{{ old('guest_first_name') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_first_name') border-red-500 @enderror"
-                                    placeholder="Enter first name"
+                                    placeholder="{{ __('reservations.placeholders.enter_first_name') }}"
                                     x-bind:required="guestType === 'new'">
                                 @error('guest_first_name')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -133,7 +133,7 @@
                             <!-- Last Name -->
                             <div>
                                 <label for="guest_last_name" class="block text-sm font-semibold text-secondary mb-2">
-                                    Last Name <span class="text-red-500">*</span>
+                                    {{ __('reservations.fields.guest_last_name') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -141,7 +141,7 @@
                                     id="guest_last_name"
                                     value="{{ old('guest_last_name') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_last_name') border-red-500 @enderror"
-                                    placeholder="Enter last name"
+                                    placeholder="{{ __('reservations.placeholders.enter_last_name') }}"
                                     x-bind:required="guestType === 'new'">
                                 @error('guest_last_name')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -156,7 +156,7 @@
                             <!-- Phone -->
                             <div>
                                 <label for="guest_phone" class="block text-sm font-semibold text-secondary mb-2">
-                                    Phone Number <span class="text-red-500">*</span>
+                                    {{ __('reservations.fields.phone_number') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -164,7 +164,7 @@
                                     id="guest_phone"
                                     value="{{ old('guest_phone') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_phone') border-red-500 @enderror"
-                                    placeholder="+1 (555) 123-4567"
+                                    placeholder="{{ __('reservations.placeholders.phone') }}"
                                     x-bind:required="guestType === 'new'">
                                 @error('guest_phone')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -179,7 +179,7 @@
                             <!-- Email -->
                             <div>
                                 <label for="guest_email" class="block text-sm font-semibold text-secondary mb-2">
-                                    Email Address <span class="text-red-500">*</span>
+                                    {{ __('reservations.fields.email') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="email" 
@@ -187,7 +187,7 @@
                                     id="guest_email"
                                     value="{{ old('guest_email') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_email') border-red-500 @enderror"
-                                    placeholder="guest@example.com"
+                                    placeholder="{{ __('reservations.placeholders.email') }}"
                                     x-bind:required="guestType === 'new'">
                                 @error('guest_email')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -202,7 +202,7 @@
                             <!-- ID Number -->
                             <div>
                                 <label for="guest_id_number" class="block text-sm font-semibold text-secondary mb-2">
-                                    ID/Passport Number <span class="text-red-500">*</span>
+                                    {{ __('reservations.fields.id_number') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -210,7 +210,7 @@
                                     id="guest_id_number"
                                     value="{{ old('guest_id_number') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id_number') border-red-500 @enderror"
-                                    placeholder="Enter ID number"
+                                    placeholder="{{ __('reservations.placeholders.enter_id_number') }}"
                                     x-bind:required="guestType === 'new'">
                                 @error('guest_id_number')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -225,7 +225,7 @@
                             <!-- Nationality -->
                             <div>
                                 <label for="guest_nationality" class="block text-sm font-semibold text-secondary mb-2">
-                                    Nationality <span class="text-red-500">*</span>
+                                    {{ __('reservations.fields.nationality') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -233,7 +233,7 @@
                                     id="guest_nationality"
                                     value="{{ old('guest_nationality') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_nationality') border-red-500 @enderror"
-                                    placeholder="e.g., American, British"
+                                    placeholder="{{ __('reservations.placeholders.nationality') }}"
                                     x-bind:required="guestType === 'new'">
                                 @error('guest_nationality')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -249,7 +249,7 @@
                         <!-- Guest Photo Upload -->
                         <div class="mt-4">
                             <label for="guest_photo" class="block text-sm font-semibold text-secondary mb-2">
-                                Guest Photo <span class="text-gray-400 text-xs font-normal">(Optional, max 2MB, JPG/PNG)</span>
+                                {{ __('reservations.fields.guest_photo') }} <span class="text-gray-400 text-xs font-normal">({{ __('reservations.labels.photo_optional') }})</span>
                             </label>
                             <input 
                                 type="file" 
@@ -273,7 +273,7 @@
                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                 </svg>
                                 <p class="text-sm text-yellow-800">
-                                    A new guest record will be created automatically. You can add additional details (ID documents, address) by editing the guest profile later.
+                                    {{ __('reservations.messages.new_guest_created') }}
                                 </p>
                             </div>
                         </div>
@@ -290,14 +290,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        Reservation Details
+                        {{ __('reservations.sections.reservation_details') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Check-In Date -->
                         <div>
                             <label for="check_in_date" class="block text-sm font-semibold text-secondary mb-2">
-                                Check-In Date <span class="text-red-500">*</span>
+                                {{ __('reservations.fields.check_in_date') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="date" 
@@ -320,7 +320,7 @@
                         <!-- Check-Out Date -->
                         <div>
                             <label for="check_out_date" class="block text-sm font-semibold text-secondary mb-2">
-                                Check-Out Date <span class="text-red-500">*</span>
+                                {{ __('reservations.fields.check_out_date') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="date" 
@@ -343,7 +343,7 @@
                         <!-- Number of Guests -->
                         <div>
                             <label for="number_of_guests" class="block text-sm font-semibold text-secondary mb-2">
-                                Number of Guests <span class="text-red-500">*</span>
+                                {{ __('reservations.fields.number_of_guests') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="number" 
@@ -366,7 +366,7 @@
                         <!-- Estimated Amount -->
                         <div>
                             <label for="estimated_amount" class="block text-sm font-semibold text-secondary mb-2">
-                                Estimated Amount ($) <span class="text-red-500">*</span>
+                                {{ __('reservations.fields.estimated_amount') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="number" 
@@ -376,7 +376,7 @@
                                 step="0.01"
                                 min="0"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('estimated_amount') border-red-500 @enderror"
-                                placeholder="0.00"
+                                placeholder="{{ __('reservations.placeholders.amount') }}"
                                 required>
                             @error('estimated_amount')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -392,13 +392,13 @@
                     <!-- Room Assignment -->
                     <div class="mt-6">
                         <label for="room_id" class="block text-sm font-semibold text-secondary mb-2">
-                            Assign Room <span class="text-gray-400 text-xs font-normal">(Optional - can be assigned later)</span>
+                            {{ __('reservations.fields.assigned_room') }} <span class="text-gray-400 text-xs font-normal">({{ __('reservations.labels.room_optional') }})</span>
                         </label>
                         <select 
                             name="room_id" 
                             id="room_id"
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_id') border-red-500 @enderror">
-                            <option value="">Select a room (optional)</option>
+                            <option value="">{{ __('reservations.placeholders.select_room') }}</option>
                             @foreach($availableRooms as $room)
                             <option value="{{ $room->id }}" {{ old('room_id') == $room->id ? 'selected' : '' }}>
                                 {{ $room->room_number }} - {{ $room->roomType->name }} (${{ number_format($room->roomType->base_rate, 2) }}/night)
@@ -418,15 +418,15 @@
                     <!-- Status -->
                     <div class="mt-6">
                         <label for="status" class="block text-sm font-semibold text-secondary mb-2">
-                            Reservation Status <span class="text-red-500">*</span>
+                            {{ __('reservations.fields.status') }} <span class="text-red-500">*</span>
                         </label>
                         <select 
                             name="status" 
                             id="status"
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('status') border-red-500 @enderror"
                             required>
-                            <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="confirmed" {{ old('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                            <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>{{ __('reservations.status.pending') }}</option>
+                            <option value="confirmed" {{ old('status') == 'confirmed' ? 'selected' : '' }}>{{ __('reservations.status.confirmed') }}</option>
                         </select>
                         @error('status')
                             <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -448,12 +448,12 @@
                             </svg>
                         </div>
                         <div class="text-sm">
-                            <p class="font-bold text-secondary mb-1">Reservation Tips:</p>
+                            <p class="font-bold text-secondary mb-1">{{ __('reservations.info.reservation_tips') }}</p>
                             <ul class="list-disc list-inside space-y-1 text-gray-600">
-                                <li>Select an existing guest or create a new one for this reservation</li>
-                                <li>Room can be assigned now or later based on availability</li>
-                                <li>Total amount can be calculated based on room rate and stay duration</li>
-                                <li>A unique reservation number will be generated automatically</li>
+                                <li>{{ __('reservations.info.tip_select_guest') }}</li>
+                                <li>{{ __('reservations.info.tip_room_assignment') }}</li>
+                                <li>{{ __('reservations.info.tip_amount') }}</li>
+                                <li>{{ __('reservations.info.tip_auto_number') }}</li>
                             </ul>
                         </div>
                     </div>
@@ -464,12 +464,12 @@
             <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
                 <a href="{{ route('reservations.index') }}" 
                    class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
-                    Cancel
+                    {{ __('reservations.actions.cancel') }}
                 </a>
                 <button 
                     type="submit"
                     class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                    Create Reservation
+                    {{ __('reservations.actions.create') }}
                 </button>
             </div>
         </form>

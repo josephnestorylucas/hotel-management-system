@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class Order extends Model
+class Order extends Model implements ReceiptPrintable
 {
     use HasUuid;
 
@@ -56,4 +58,72 @@ class Order extends Model
     public function creator()   { return $this->belongsTo(User::class, 'created_by'); }
     public function settler()   { return $this->belongsTo(User::class, 'settled_by'); }
     public function charge()    { return $this->hasOne(BookingCharge::class); }
+    public function booking()   { return $this->belongsTo(Booking::class); }
+
+    // ── Receipt Relationship ─────────────────────────────────────────────────
+
+    public function receipt(): MorphOne
+    {
+        return $this->morphOne(Receipt::class, 'receiptable');
+    }
+
+    // ── ReceiptPrintable Implementation ──────────────────────────────────────
+
+    public function toReceiptData(): array
+    {
+        $this->loadMissing(['items.menuItem', 'settler', 'location', 'table', 'booking']);
+
+        $items = $this->items->where('status', '!=', 'cancelled')->map(function ($item) {
+            return [
+                'name'       => $item->menuItem?->name ?? 'Item',
+                'details'    => null,
+                'quantity'   => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'amount'     => $item->subtotal,
+            ];
+        })->toArray();
+
+        $module = $this->location?->slug === 'bar' ? 'bar' : 'restaurant';
+        $customerName = $this->customer_name ?? $this->booking?->guest_name ?? null;
+
+        return [
+            'receipt_no'            => $this->order_number,
+            'issued_at'             => $this->settled_at ?? $this->created_at,
+            'module'                => $module,
+            'customer_name'         => $customerName,
+            'customer_phone'        => $this->booking?->guest?->phone ?? null,
+            'items'                 => $items,
+            'subtotal'              => (float) $this->subtotal,
+            'discount'              => (float) $this->discount,
+            'tax'                   => (float) $this->tax,
+            'total'                 => (float) $this->total,
+            'amount_paid'           => $this->isPaid() ? (float) $this->total : 0.0,
+            'balance'               => $this->isPaid() ? 0.0 : (float) $this->total,
+            'currency'              => 'TZS',
+            'payment_method'        => $this->payment_method,
+            'payment_status'        => $this->getPaymentStatus(),
+            'transaction_reference' => null,
+            'cashier'               => $this->settler?->name,
+            'notes'                 => $this->notes,
+        ];
+    }
+
+    public function getReceiptModule(): string
+    {
+        return $this->location?->slug === 'bar' ? 'bar' : 'restaurant';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'settled' && $this->settled_at !== null;
+    }
+
+    protected function getPaymentStatus(): string
+    {
+        if ($this->status === 'cancelled') {
+            return 'cancelled';
+        }
+
+        return $this->isPaid() ? 'paid' : 'unpaid';
+    }
 }

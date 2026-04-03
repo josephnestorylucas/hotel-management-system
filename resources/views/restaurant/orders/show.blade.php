@@ -16,19 +16,39 @@
                 &middot; {{ $order->created_at->format('d M Y H:i') }}
             </p>
         </div>
-        @php
-            $colors = [
-                'open'      => 'bg-yellow-100 text-yellow-700',
-                'sent'      => 'bg-blue-100 text-blue-700',
-                'ready'     => 'bg-indigo-100 text-indigo-700',
-                'served'    => 'bg-green-100 text-green-700',
-                'settled'   => 'bg-gray-200 text-gray-600',
-                'cancelled' => 'bg-red-100 text-red-700',
-            ];
-        @endphp
-        <span class="text-sm px-4 py-1.5 rounded-full font-semibold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-600' }}">
-            {{ ucfirst($order->status) }}
-        </span>
+        <div class="flex items-center gap-3">
+            @if($order->status === 'settled')
+                <a href="{{ route('receipts.order', $order) }}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    Print Receipt
+                </a>
+            @else
+                <a href="{{ route('receipts.order', $order) }}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 border-2 border-yellow-400 text-yellow-700 text-sm font-semibold rounded-lg hover:bg-yellow-50 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    View Receipt (Unpaid)
+                </a>
+            @endif
+            @php
+                $colors = [
+                    'open'      => 'bg-yellow-100 text-yellow-700',
+                    'sent'      => 'bg-blue-100 text-blue-700',
+                    'ready'     => 'bg-indigo-100 text-indigo-700',
+                    'served'    => 'bg-green-100 text-green-700',
+                    'charged'   => 'bg-purple-100 text-purple-700',
+                    'settled'   => 'bg-gray-200 text-gray-600',
+                    'cancelled' => 'bg-red-100 text-red-700',
+                ];
+            @endphp
+            <span class="text-sm px-4 py-1.5 rounded-full font-semibold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-600' }}">
+                {{ ucfirst($order->status) }}
+            </span>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -190,7 +210,7 @@
             </div>
 
             {{-- Workflow actions --}}
-            @if(!in_array($order->status, ['settled', 'cancelled']))
+            @if(!in_array($order->status, ['settled', 'charged', 'cancelled']))
             <div class="bg-white rounded-lg shadow p-5 space-y-3">
                 <h3 class="font-semibold text-gray-700 text-sm">Actions</h3>
 
@@ -221,35 +241,41 @@
                 </form>
                 @endif
 
-                {{-- Settle form --}}
-                <div x-data="{ showSettle: false }">
-                    <button @click="showSettle = !showSettle"
-                            class="w-full bg-primary text-white py-2 rounded text-sm hover:opacity-90">
-                        Settle Order
-                    </button>
-                    <form method="POST" action="{{ route('restaurant.orders.settle', $order) }}"
-                          x-show="showSettle" x-cloak class="mt-3 space-y-3 p-3 bg-gray-50 rounded">
-                        @csrf
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Payment Method *</label>
-                            <select name="payment_method" x-data="{ pm: '' }" x-model="pm" required
-                                    class="w-full border-gray-300 rounded px-3 py-2 text-sm">
-                                <option value="">— Select —</option>
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
-                                <option value="charge_to_booking">Charge to Booking</option>
-                            </select>
-                        </div>
-                        <div x-data x-show="$el.closest('form').querySelector('[name=payment_method]').value === 'charge_to_booking'">
-                            <label class="block text-xs text-gray-500 mb-1">Booking ID</label>
-                            <input type="text" name="booking_id" value="{{ $order->booking_id }}"
-                                   class="w-full border-gray-300 rounded px-3 py-2 text-sm" placeholder="Booking UUID">
-                        </div>
-                        <button type="submit" class="w-full bg-green-700 text-white py-2 rounded text-sm hover:bg-green-800">
-                            Confirm Settlement
+                {{-- Settlement/Checkout --}}
+                @if($order->order_type === 'walkin')
+                    {{-- Walk-in: Use unified payment modal (direct payment allowed) --}}
+                    <x-walkin-payment-modal 
+                        :amount="$order->total" 
+                        :order-id="$order->id"
+                        :order-number="$order->order_number"
+                        module="restaurant"
+                        :customer-name="$order->customer_name ?? ''"
+                        :customer-phone="$order->customer_phone ?? ''"
+                    />
+                @else
+                    {{-- Guest: Charge to Booking and Proceed to Checkout --}}
+                    <div x-data="{ showCharge: false }">
+                        <button @click="showCharge = !showCharge"
+                                class="w-full bg-primary text-white py-2 rounded text-sm hover:opacity-90">
+                            Charge to Guest Folio
                         </button>
-                    </form>
-                </div>
+                        <form method="POST" action="{{ route('restaurant.orders.settle', $order) }}"
+                              x-show="showCharge" x-cloak class="mt-3 space-y-3 p-3 bg-gray-50 rounded">
+                            @csrf
+                            <p class="text-xs text-gray-600">
+                                This will add the order to the guest's folio. Payment will be collected at checkout.
+                            </p>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Booking ID *</label>
+                                <input type="text" name="booking_id" value="{{ $order->booking_id }}" required
+                                       class="w-full border-gray-300 rounded px-3 py-2 text-sm" placeholder="Booking UUID">
+                            </div>
+                            <button type="submit" class="w-full bg-green-700 text-white py-2 rounded text-sm hover:bg-green-800">
+                                Charge to Booking & Proceed to Checkout
+                            </button>
+                        </form>
+                    </div>
+                @endif
 
                 {{-- Cancel --}}
                 <form method="POST" action="{{ route('restaurant.orders.cancel', $order) }}"
@@ -259,6 +285,18 @@
                         Cancel Order
                     </button>
                 </form>
+            </div>
+            @elseif($order->status === 'charged')
+            {{-- Order is charged but not yet settled at checkout --}}
+            <div class="bg-white rounded-lg shadow p-5 space-y-3">
+                <h3 class="font-semibold text-gray-700 text-sm">Order Charged to Folio</h3>
+                <p class="text-sm text-gray-600">
+                    This order has been added to the guest's folio. Payment pending at checkout.
+                </p>
+                <a href="{{ route('finance.checkout.show', $order->booking_id) }}"
+                   class="block w-full bg-primary text-white py-2 rounded text-sm text-center hover:opacity-90">
+                    View Guest Checkout
+                </a>
             </div>
             @endif
         </div>

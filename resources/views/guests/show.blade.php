@@ -1,8 +1,8 @@
 {{-- resources/views/guests/show.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Guest Profile')
-@section('page-title', 'Guests')
+@section('title', __('guests.guest_profile'))
+@section('page-title', __('guests.title'))
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
@@ -22,7 +22,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-extrabold text-secondary">{{ $guest->full_name }}</h2>
-                        <p class="text-sm text-gray-500 mt-1">Guest since {{ $guest->created_at->format('M d, Y') }}</p>
+                        <p class="text-sm text-gray-500 mt-1">{{ __('guests.info.guest_since') }} {{ $guest->created_at->format('M d, Y') }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -31,14 +31,14 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        New Booking
+                        {{ __('guests.actions.new_booking') }}
                     </a>
                     <a href="{{ route('guests.edit', $guest) }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                         </svg>
-                        Edit
+                        {{ __('guests.actions.edit') }}
                     </a>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        Contact Information
+                        {{ __('guests.sections.contact_information') }}
                     </h3>
                     <div class="space-y-3">
                         <div class="flex items-center gap-3">
@@ -68,7 +68,7 @@
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
-                            <span class="text-sm text-secondary font-medium">{{ $guest->email ?? 'No email provided' }}</span>
+                            <span class="text-sm text-secondary font-medium">{{ $guest->email ?? __('guests.messages.no_email_provided') }}</span>
                         </div>
                         @if($guest->address)
                         <div class="flex items-start gap-3">
@@ -90,30 +90,30 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>
-                        Personal Details
+                        {{ __('guests.sections.personal_details') }}
                     </h3>
                     <div class="space-y-3">
                         @if($guest->date_of_birth)
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-500">Date of Birth</span>
+                            <span class="text-sm text-gray-500">{{ __('guests.fields.date_of_birth') }}</span>
                             <span class="text-sm text-secondary font-medium">{{ $guest->date_of_birth->format('M d, Y') }}</span>
                         </div>
                         @endif
                         @if($guest->nationality)
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-500">Nationality</span>
+                            <span class="text-sm text-gray-500">{{ __('guests.fields.nationality') }}</span>
                             <span class="text-sm text-secondary font-medium">{{ $guest->nationality }}</span>
                         </div>
                         @endif
                         @if($guest->id_number)
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-500">ID/Passport</span>
+                            <span class="text-sm text-gray-500">{{ __('guests.fields.id_passport_number') }}</span>
                             <span class="text-sm text-secondary font-medium">{{ $guest->id_number }}</span>
                         </div>
                         @endif
                         @if($guest->hasIdDocuments())
                         <div class="mt-4">
-                            <span class="text-sm text-gray-500 block mb-2">ID Documents ({{ $guest->id_documents_count }})</span>
+                            <span class="text-sm text-gray-500 block mb-2">{{ __('guests.sections.id_documents') }} ({{ $guest->id_documents_count }})</span>
                             <div class="space-y-2">
                                 @foreach($guest->id_documents as $document)
                                 <div class="flex items-center justify-between bg-gray-50 rounded-lg p-2">
@@ -130,7 +130,7 @@
                                         <span class="text-xs text-gray-600">{{ $document->file_name }}</span>
                                     </div>
                                     <a href="{{ $document->getUrl() }}" target="_blank" class="text-xs text-primary hover:underline font-medium">
-                                        View
+                                        {{ __('guests.actions.view') }}
                                     </a>
                                 </div>
                                 @endforeach
@@ -146,8 +146,8 @@
     <!-- Reservation History -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
-            <h3 class="text-lg font-extrabold text-secondary">Reservation History</h3>
-            <p class="text-sm text-gray-500 mt-1">{{ $guest->reservations->count() }} total reservations</p>
+            <h3 class="text-lg font-extrabold text-secondary">{{ __('guests.sections.reservation_history') }}</h3>
+            <p class="text-sm text-gray-500 mt-1">{{ $guest->reservations->count() }} {{ __('guests.info.reservation_count') }}</p>
         </div>
 
         @if($guest->reservations->count() > 0)
@@ -155,12 +155,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Reservation</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Room</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-In</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-Out</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Amount</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.reservation') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.room') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.check_in') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.check_out') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.amount') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -177,7 +177,7 @@
                                 <div class="text-sm font-medium text-secondary">{{ $reservation->room->room_number }}</div>
                                 <div class="text-xs text-primary">{{ $reservation->room->roomType->name }}</div>
                             @else
-                                <span class="text-xs text-red-600 font-semibold">Not Assigned</span>
+                                <span class="text-xs text-red-600 font-semibold">{{ __('guests.messages.not_assigned') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -185,7 +185,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-secondary">{{ $reservation->check_out_date->format('M d, Y') }}</div>
-                            <div class="text-xs text-primary">{{ $reservation->check_in_date->diffInDays($reservation->check_out_date) }} nights</div>
+                            <div class="text-xs text-primary">{{ $reservation->check_in_date->diffInDays($reservation->check_out_date) }} {{ __('guests.info.nights') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-secondary">${{ number_format($reservation->estimated_amount, 2) }}</span>
@@ -206,14 +206,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                 </div>
-                <p class="text-gray-500 font-medium">No reservations yet</p>
-                <p class="text-gray-400 text-sm mt-1">Create a new booking for this guest</p>
+                <p class="text-gray-500 font-medium">{{ __('guests.messages.no_reservations') }}</p>
+                <p class="text-gray-400 text-sm mt-1">{{ __('guests.messages.no_reservations_subtitle') }}</p>
                 <a href="{{ route('reservations.create', ['guest_id' => $guest->id]) }}" 
                    class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Create Booking
+                    {{ __('guests.actions.create_booking') }}
                 </a>
             </div>
         </div>
@@ -227,7 +227,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            Back to Guests
+            {{ __('guests.actions.back_to_guests') }}
         </a>
     </div>
 </div>

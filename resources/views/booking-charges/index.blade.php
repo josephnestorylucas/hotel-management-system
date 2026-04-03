@@ -50,16 +50,16 @@
         </div>
     </div>
 
-    {{-- Mark All Paid --}}
+    {{-- Proceed to Checkout Button --}}
     @if($unpaidTotal > 0)
     <div class="flex justify-end">
-        <form action="{{ route('booking-charges.mark-all-paid', $booking) }}" method="POST" onsubmit="return confirm('Mark all unpaid charges as paid?');">
-            @csrf
-            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Mark All as Paid ({{ number_format($unpaidTotal) }})
-            </button>
-        </form>
+        <a href="{{ route('finance.checkout.show', $booking) }}" 
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Proceed to Checkout ({{ number_format($unpaidTotal) }} TZS)
+        </a>
     </div>
     @endif
 
@@ -74,7 +74,6 @@
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -85,6 +84,12 @@
                                 @switch($charge->charge_type)
                                     @case('laundry')
                                         <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        @break
+                                    @case('restaurant')
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        @break
+                                    @case('bar')
+                                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                                         @break
                                     @case('room_service')
                                         <span class="w-2 h-2 rounded-full bg-orange-500"></span>
@@ -117,20 +122,10 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm text-gray-500">{{ $charge->created_at->format('M d, H:i') }}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                            @if($charge->status === 'unpaid')
-                            <form action="{{ route('booking-charges.mark-paid', $charge) }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">Mark Paid</button>
-                            </form>
-                            @else
-                            <span class="text-gray-400 text-sm">-</span>
-                            @endif
-                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
                             <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
                             </svg>
@@ -140,6 +135,19 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    {{-- Info Box --}}
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="text-sm text-blue-800">
+                <p class="font-medium">Unified Checkout Flow</p>
+                <p class="mt-1">All charges are settled through the Finance Checkout. Click "Proceed to Checkout" to process payment for all unpaid charges at once.</p>
+            </div>
         </div>
     </div>
 </div>

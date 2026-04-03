@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\StoreNotification;
 use App\Models\StockAdjustment;
 use App\Models\StockLevel;
 use App\Models\StockLocation;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +17,10 @@ use Illuminate\View\View;
 
 class AdjustmentController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
+
     // GET /store/adjustments
     public function index(Request $request): View
     {
@@ -72,18 +76,19 @@ class AdjustmentController extends Controller
         ]);
 
         if ($needsApproval) {
-            User::whereHas('role', fn ($q) => $q->where('name', 'store_manager'))
-                ->get()
-                ->each(fn ($m) => StoreNotification::create([
-                    'user_id'        => $m->id,
-                    'type'           => 'pending_adjustment',
-                    'title'          => 'Large Adjustment Needs Approval',
-                    'body'           => abs($difference) . " unit adjustment pending. Reason: {$data['reason']}",
-                    'reference_type' => 'stock_adjustment',
-                    'reference_id'   => $adjustment->id,
-                    'action_url'     => route('store.adjustments.index'),
-                    'created_at'     => now(),
-                ]));
+            // Notify store managers
+            $managerIds = User::whereHas('role', fn ($q) => $q->where('name', 'store_manager'))
+                ->pluck('id')
+                ->toArray();
+
+            $this->notificationService->createForUsers($managerIds, [
+                'type'           => 'pending_adjustment',
+                'title'          => 'Large Adjustment Needs Approval',
+                'body'           => abs($difference) . " unit adjustment pending. Reason: {$data['reason']}",
+                'reference_type' => 'stock_adjustment',
+                'reference_id'   => $adjustment->id,
+                'action_url'     => route('store.adjustments.index'),
+            ]);
 
             return redirect()
                 ->route('store.adjustments.index')

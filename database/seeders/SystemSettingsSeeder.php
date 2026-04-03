@@ -26,6 +26,11 @@ class SystemSettingsSeeder extends Seeder
                 'value'       => '2500',
                 'description' => 'Current TZS per 1 USD — update daily',
             ],
+            [
+                'key'         => 'default_currency',
+                'value'       => 'USD',
+                'description' => 'System-wide default currency (USD or TZS)',
+            ],
         ];
 
         $now = now();

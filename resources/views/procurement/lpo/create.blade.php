@@ -1,4 +1,5 @@
 {{-- resources/views/procurement/lpo/create.blade.php --}}
+@php use App\Helpers\CurrencyHelper; @endphp
 @extends('layouts.app')
 
 @section('title', 'Create Purchase Order')
@@ -174,15 +175,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <div class="text-sm text-gray-600 mb-1">Subtotal</div>
-                            <div class="text-2xl font-bold text-secondary" id="subtotal-display">$0.00</div>
+                            <div class="text-2xl font-bold text-secondary" id="subtotal-display">{{ CurrencyHelper::formatCurrency(0) }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-600 mb-1">Tax (18%)</div>
-                            <div class="text-2xl font-bold text-secondary" id="tax-display">$0.00</div>
+                            <div class="text-2xl font-bold text-secondary" id="tax-display">{{ CurrencyHelper::formatCurrency(0) }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-600 mb-1">Grand Total</div>
-                            <div class="text-3xl font-extrabold text-primary" id="total-display">$0.00</div>
+                            <div class="text-3xl font-extrabold text-primary" id="total-display">{{ CurrencyHelper::formatCurrency(0) }}</div>
                         </div>
                     </div>
                 </div>
@@ -207,6 +208,8 @@
 <script>
 let itemIndex = 0;
 const products = @json($products);
+const currencySymbol = '{{ CurrencyHelper::getCurrencySymbol() }}';
+const currencyPosition = '{{ CurrencyHelper::CURRENCIES[CurrencyHelper::getDefaultCurrency()]["position"] ?? "before" }}';
 
 function addItem() {
     const container = document.getElementById('items-container');
@@ -301,6 +304,14 @@ function calculateItemTotal(index) {
     calculateGrandTotal();
 }
 
+function formatMoney(amount) {
+    const formatted = amount.toFixed(2);
+    if (currencyPosition === 'before') {
+        return currencySymbol + formatted;
+    }
+    return formatted + ' ' + currencySymbol;
+}
+
 function calculateGrandTotal() {
     let subtotal = 0;
     document.querySelectorAll('.item-row').forEach(row => {
@@ -312,9 +323,9 @@ function calculateGrandTotal() {
     const tax = subtotal * 0.18;
     const total = subtotal + tax;
     
-    document.getElementById('subtotal-display').textContent = '$' + subtotal.toFixed(2);
-    document.getElementById('tax-display').textContent = '$' + tax.toFixed(2);
-    document.getElementById('total-display').textContent = '$' + total.toFixed(2);
+    document.getElementById('subtotal-display').textContent = formatMoney(subtotal);
+    document.getElementById('tax-display').textContent = formatMoney(tax);
+    document.getElementById('total-display').textContent = formatMoney(total);
 }
 
 function removeItem(index) {

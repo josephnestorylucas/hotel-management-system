@@ -1,23 +1,23 @@
 {{-- resources/views/rooms/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Rooms')
-@section('page-title', 'Rooms')
+@section('title', __('rooms.title'))
+@section('page-title', __('rooms.title'))
 
 @section('content')
 <div class="space-y-6">
     <!-- Header Actions -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Rooms</h2>
-            <p class="text-sm text-gray-500 mt-1">Manage hotel rooms and availability</p>
+            <h2 class="text-2xl font-extrabold text-secondary">{{ __('rooms.rooms') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('rooms.manage_subtitle') }}</p>
         </div>
         <a href="{{ route('rooms.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Add Room
+            {{ __('rooms.add_room') }}
         </a>
     </div>
 
@@ -32,7 +32,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $rooms->where('status', 'available')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Available</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('rooms.status.available') }}</div>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $rooms->where('status', 'occupied')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Occupied</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('rooms.status.occupied') }}</div>
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $rooms->where('status', 'reserved')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Reserved</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('rooms.status.reserved') }}</div>
                 </div>
             </div>
         </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $rooms->where('status', 'dirty')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Dirty</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('rooms.status.dirty') }}</div>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $rooms->where('status', 'out_of_order')->count() }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Out of Order</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('rooms.status.out_of_order') }}</div>
                 </div>
             </div>
         </div>
@@ -99,13 +99,13 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gradient-to-r from-blue-50 to-white">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Room</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Location</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Rate</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Active</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.table.room') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.table.location') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.table.type') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.table.rate') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.table.status') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.fields.active') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('rooms.table.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
@@ -137,16 +137,16 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $room->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                            {{ $room->is_active ? 'Active' : 'Inactive' }}
+                            {{ $room->is_active ? __('rooms.fields.active') : __('rooms.fields.inactive') }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <div class="flex items-center gap-3">
-                            <a href="{{ route('rooms.edit', $room) }}" class="text-primary hover:text-blue-700 font-semibold">Edit</a>
+                            <a href="{{ route('rooms.edit', $room) }}" class="text-primary hover:text-blue-700 font-semibold">{{ __('rooms.actions.edit') }}</a>
                             <form method="POST" action="{{ route('rooms.destroy', $room) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('Are you sure?')">Delete</button>
+                                <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm(&quot;{{ __('rooms.actions.confirm_delete') }}&quot;)">{{ __('rooms.actions.delete') }}</button>
                             </form>
                         </div>
                     </td>
@@ -159,14 +159,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                             </svg>
                         </div>
-                        <h3 class="text-lg font-bold text-secondary">No rooms yet</h3>
-                        <p class="mt-2 text-sm text-gray-500">Get started by creating your first room.</p>
+                        <h3 class="text-lg font-bold text-secondary">{{ __('rooms.messages.no_rooms') }}</h3>
+                        <p class="mt-2 text-sm text-gray-500">{{ __('rooms.messages.no_rooms_subtitle') }}</p>
                         <div class="mt-6">
                             <a href="{{ route('rooms.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                Add Room
+                                {{ __('rooms.add_room') }}
                             </a>
                         </div>
                     </td>

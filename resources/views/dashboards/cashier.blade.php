@@ -1,20 +1,20 @@
 {{-- resources/views/dashboards/cashier.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Cashier Dashboard - MRK Hotel')
-@section('page-title', 'Cashier Dashboard')
+@section('title', __('dashboard.titles.cashier'))
+@section('page-title', __('dashboard.titles.cashier'))
 
 @section('content')
 <!-- Welcome Banner -->
 <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 mb-8 text-white shadow-xl">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold mb-2">Welcome, {{ auth()->user()->name }}!</h2>
-            <p class="text-green-100">Payment & checkout overview for today.</p>
+            <h2 class="text-2xl font-extrabold mb-2">{{ __('dashboard.welcome.greeting', ['name' => auth()->user()->name]) }}</h2>
+            <p class="text-green-100">{{ __('dashboard.welcome.cashier_message') }}</p>
         </div>
         <div class="hidden md:block text-right">
-            <p class="text-sm text-green-200">{{ now()->format('l, F d, Y') }}</p>
-            <p class="text-3xl font-extrabold">{{ now()->format('h:i A') }}</p>
+            <p id="liveDate" class="text-sm text-green-200"></p>
+            <p id="liveTime" class="text-3xl font-extrabold"></p>
         </div>
     </div>
 </div>
@@ -24,8 +24,8 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Today's Revenue</p>
-                <p class="text-2xl font-extrabold text-green-600 mt-1">{{ number_format($stats['today_revenue'], 0) }} <span class="text-sm">TZS</span></p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.cashier.today_revenue') }}</p>
+                <p class="text-2xl font-extrabold text-green-600 mt-1">@currency($stats['today_revenue'], 'TZS')</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
                 <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +38,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Active Bookings</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.cashier.active_bookings') }}</p>
                 <p class="text-3xl font-extrabold text-secondary mt-1">{{ $stats['active_bookings'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
@@ -52,7 +52,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Today's Checkouts</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.cashier.today_checkouts') }}</p>
                 <p class="text-3xl font-extrabold text-secondary mt-1">{{ $stats['today_checkouts'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center">
@@ -66,7 +66,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Pending Payments</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.cashier.pending_payments') }}</p>
                 <p class="text-3xl font-extrabold text-red-600 mt-1">{{ $stats['pending_payments'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center">
@@ -99,7 +99,7 @@
                     <td class="px-4 py-3 font-medium">{{ $booking->room->room_number ?? '—' }}</td>
                     <td class="px-4 py-3">{{ $booking->guest_name ?? $booking->guest_display_name ?? '—' }}</td>
                     <td class="px-4 py-3 text-gray-400 text-xs">{{ $booking->check_out_date->format('h:i A') }}</td>
-                    <td class="px-4 py-3 text-right font-medium">{{ number_format($booking->total_amount, 0) }} TZS</td>
+                    <td class="px-4 py-3 text-right font-medium">@currency($booking->total_amount, 'TZS')</td>
                     <td class="px-4 py-3 text-center">
                         <span class="px-2 py-0.5 rounded-full text-xs font-medium
                             {{ $booking->payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">

@@ -1,20 +1,20 @@
 {{-- resources/views/dashboards/restaurant-manager.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Restaurant Manager Dashboard - MRK Hotel')
-@section('page-title', 'Restaurant Manager Dashboard')
+@section('title', __('dashboard.titles.restaurant_manager'))
+@section('page-title', __('dashboard.titles.restaurant_manager'))
 
 @section('content')
 <!-- Welcome Banner -->
 <div class="bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl p-6 mb-8 text-white shadow-xl">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold mb-2">Welcome, {{ auth()->user()->name }}!</h2>
-            <p class="text-violet-100">Bar & Kitchen inventory overview for today.</p>
+            <h2 class="text-2xl font-extrabold mb-2">{{ __('dashboard.welcome.greeting', ['name' => auth()->user()->name]) }}</h2>
+            <p class="text-violet-100">{{ __('dashboard.welcome.restaurant_manager_message') }}</p>
         </div>
         <div class="hidden md:block text-right">
-            <p class="text-sm text-violet-200">{{ now()->format('l, F d, Y') }}</p>
-            <p class="text-3xl font-extrabold">{{ now()->format('h:i A') }}</p>
+            <p id="liveDate" class="text-sm text-violet-200"></p>
+            <p id="liveTime" class="text-3xl font-extrabold"></p>
         </div>
     </div>
 </div>
@@ -24,7 +24,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Bar Products</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.restaurant.bar_products') }}</p>
                 <p class="text-3xl font-extrabold text-amber-600 mt-1">{{ $stats['total_bar_products'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center">
@@ -38,7 +38,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Kitchen Products</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.restaurant.kitchen_products') }}</p>
                 <p class="text-3xl font-extrabold text-emerald-600 mt-1">{{ $stats['total_kitchen_products'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center">
@@ -52,7 +52,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Low Stock Items</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stock.low_stock_items') }}</p>
                 <p class="text-3xl font-extrabold text-yellow-600 mt-1">{{ $stats['low_stock_items'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl flex items-center justify-center">
@@ -66,7 +66,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Pending Transfers</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stock.pending_transfers') }}</p>
                 <p class="text-3xl font-extrabold text-blue-600 mt-1">{{ $stats['pending_transfers'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
@@ -80,7 +80,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Today's Movements</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stock.today_movements') }}</p>
                 <p class="text-3xl font-extrabold text-green-600 mt-1">{{ $stats['today_movements'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
@@ -96,8 +96,8 @@
     <!-- Recent Movements -->
     <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-extrabold text-secondary">Recent Bar & Kitchen Movements</h3>
-            <a href="{{ route('store.reports.movements') }}" class="text-primary text-sm hover:underline">View all</a>
+            <h3 class="text-lg font-extrabold text-secondary">{{ __('dashboard.sections.recent_bar_kitchen_movements') }}</h3>
+            <a href="{{ route('store.reports.movements') }}" class="text-primary text-sm hover:underline">{{ __('dashboard.actions.view_all') }}</a>
         </div>
         <div class="space-y-3">
             @forelse($recentMovements as $m)
@@ -115,14 +115,14 @@
                 </span>
             </div>
             @empty
-            <p class="text-gray-400 text-sm text-center py-4">No recent movements</p>
+            <p class="text-gray-400 text-sm text-center py-4">{{ __('dashboard.messages.no_recent_movements') }}</p>
             @endforelse
         </div>
     </div>
 
     <!-- Notifications -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <h3 class="text-lg font-extrabold text-secondary mb-4">Notifications</h3>
+        <h3 class="text-lg font-extrabold text-secondary mb-4">{{ __('dashboard.sections.notifications') }}</h3>
         <div class="space-y-3">
             @forelse($notifications as $note)
             <a href="{{ $note->action_url ?? '#' }}" class="block p-3 bg-violet-50 rounded-xl hover:bg-violet-100 transition">
@@ -130,7 +130,7 @@
                 <p class="text-xs text-gray-500 mt-1">{{ Str::limit($note->message, 60) }}</p>
             </a>
             @empty
-            <p class="text-gray-400 text-sm text-center py-4">No new notifications</p>
+            <p class="text-gray-400 text-sm text-center py-4">{{ __('dashboard.messages.no_new_notifications') }}</p>
             @endforelse
         </div>
     </div>
@@ -146,8 +146,8 @@
                 </svg>
             </div>
             <div>
-                <p class="font-bold text-secondary">Request Transfer</p>
-                <p class="text-xs text-gray-500">Request stock from main store</p>
+                <p class="font-bold text-secondary">{{ __('dashboard.actions.request_transfer') }}</p>
+                <p class="text-xs text-gray-500">{{ __('dashboard.actions.request_stock_from_store') }}</p>
             </div>
         </div>
     </a>
@@ -159,8 +159,8 @@
                 </svg>
             </div>
             <div>
-                <p class="font-bold text-secondary">View Stock</p>
-                <p class="text-xs text-gray-500">Check bar & kitchen inventory</p>
+                <p class="font-bold text-secondary">{{ __('dashboard.actions.view_stock') }}</p>
+                <p class="text-xs text-gray-500">{{ __('dashboard.actions.check_bar_kitchen_inventory') }}</p>
             </div>
         </div>
     </a>
@@ -172,8 +172,8 @@
                 </svg>
             </div>
             <div>
-                <p class="font-bold text-secondary">Report Damage</p>
-                <p class="text-xs text-gray-500">Record damaged bar or kitchen items</p>
+                <p class="font-bold text-secondary">{{ __('dashboard.actions.report_damage') }}</p>
+                <p class="text-xs text-gray-500">{{ __('dashboard.actions.record_damaged_items') }}</p>
             </div>
         </div>
     </a>

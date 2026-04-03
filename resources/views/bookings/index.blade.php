@@ -1,23 +1,23 @@
 {{-- resources/views/bookings/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Bookings')
-@section('page-title', 'Bookings')
+@section('title', __('bookings.title'))
+@section('page-title', __('bookings.title'))
 
 @section('content')
 <div class="space-y-6">
     <!-- Header Actions -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Bookings</h2>
-            <p class="text-sm text-gray-500 mt-1">Manage guest bookings, check-ins and check-outs</p>
+            <h2 class="text-2xl font-extrabold text-secondary">{{ __('bookings.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('bookings.subtitle') }}</p>
         </div>
         <a href="{{ route('bookings.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            New Booking
+            {{ __('bookings.new_booking') }}
         </a>
     </div>
 
@@ -32,7 +32,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $stats['total'] }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Total</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('bookings.stats.total') }}</div>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $stats['checked_in'] }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Checked In</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('bookings.stats.checked_in') }}</div>
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $stats['checked_out'] }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Checked Out</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('bookings.stats.checked_out') }}</div>
                 </div>
             </div>
         </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $stats['today_checkins'] }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Today Check-ins</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('bookings.stats.today_checkins') }}</div>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
                 </div>
                 <div>
                     <div class="text-2xl font-extrabold text-secondary">{{ $stats['today_checkouts'] }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Today Check-outs</div>
+                    <div class="text-xs text-gray-500 font-medium">{{ __('bookings.stats.today_checkouts') }}</div>
                 </div>
             </div>
         </div>
@@ -98,36 +98,36 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
         <form method="GET" action="{{ route('bookings.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, booking #..."
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('bookings.filters.search_placeholder') }}"
                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all">
             </div>
             <div>
                 <select name="status" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all">
-                    <option value="">All Statuses</option>
-                    <option value="checked_in" {{ request('status') === 'checked_in' ? 'selected' : '' }}>Checked In</option>
-                    <option value="checked_out" {{ request('status') === 'checked_out' ? 'selected' : '' }}>Checked Out</option>
-                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="">{{ __('bookings.filters.all_statuses') }}</option>
+                    <option value="checked_in" {{ request('status') === 'checked_in' ? 'selected' : '' }}>{{ __('bookings.status.checked_in') }}</option>
+                    <option value="checked_out" {{ request('status') === 'checked_out' ? 'selected' : '' }}>{{ __('bookings.status.checked_out') }}</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('bookings.status.cancelled') }}</option>
                 </select>
             </div>
             <div>
                 <select name="source" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all">
-                    <option value="">All Sources</option>
-                    <option value="online" {{ request('source') === 'online' ? 'selected' : '' }}>Online</option>
-                    <option value="frontdesk" {{ request('source') === 'frontdesk' ? 'selected' : '' }}>Front Desk</option>
-                    <option value="phone" {{ request('source') === 'phone' ? 'selected' : '' }}>Phone</option>
-                    <option value="walkin" {{ request('source') === 'walkin' ? 'selected' : '' }}>Walk-in</option>
+                    <option value="">{{ __('bookings.filters.all_sources') }}</option>
+                    <option value="online" {{ request('source') === 'online' ? 'selected' : '' }}>{{ __('bookings.sources.online') }}</option>
+                    <option value="frontdesk" {{ request('source') === 'frontdesk' ? 'selected' : '' }}>{{ __('bookings.sources.frontdesk') }}</option>
+                    <option value="phone" {{ request('source') === 'phone' ? 'selected' : '' }}>{{ __('bookings.sources.phone') }}</option>
+                    <option value="walkin" {{ request('source') === 'walkin' ? 'selected' : '' }}>{{ __('bookings.sources.walkin') }}</option>
                 </select>
             </div>
             <div>
-                <input type="date" name="date_from" value="{{ request('date_from') }}" placeholder="From date"
+                <input type="date" name="date_from" value="{{ request('date_from') }}" placeholder="{{ __('bookings.filters.from_date') }}"
                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all">
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
-                    Filter
+                    {{ __('bookings.filter') }}
                 </button>
                 <a href="{{ route('bookings.index') }}" class="px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all">
-                    Reset
+                    {{ __('bookings.reset') }}
                 </a>
             </div>
         </form>
@@ -139,15 +139,15 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gradient-to-r from-blue-50 to-white">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Booking</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Guest</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Room</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-In</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-Out</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Amount</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Source</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.booking') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.guest') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.room') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.check_in') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.check_out') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.amount') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.source') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.status') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('bookings.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -182,7 +182,7 @@
                                 <div class="text-sm font-medium text-secondary">{{ $booking->room->room_number }}</div>
                                 <div class="text-xs text-primary">{{ $booking->room->roomType->name ?? '' }}</div>
                             @else
-                                <span class="text-xs text-red-600 font-semibold">Not Assigned</span>
+                                <span class="text-xs text-red-600 font-semibold">{{ __('bookings.table.not_assigned') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -191,10 +191,10 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-secondary">{{ $booking->check_out_date->format('M d, Y') }}</div>
-                            <div class="text-xs text-primary">{{ $booking->nights }} nights</div>
+                            <div class="text-xs text-primary">{{ $booking->nights }} {{ __('bookings.table.nights') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-bold text-secondary">${{ number_format($booking->total_amount, 2) }}</span>
+                            <span class="text-sm font-bold text-secondary">@currency($booking->total_amount)</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php

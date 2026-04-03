@@ -1,20 +1,20 @@
 {{-- resources/views/dashboards/store-keeper.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Store Keeper Dashboard - MRK Hotel')
-@section('page-title', 'Store Keeper Dashboard')
+@section('title', __('dashboard.titles.store_keeper'))
+@section('page-title', __('dashboard.titles.store_keeper'))
 
 @section('content')
 <!-- Welcome Banner -->
 <div class="bg-gradient-to-r from-teal-500 to-teal-700 rounded-2xl p-6 mb-8 text-white shadow-xl">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold mb-2">Welcome, {{ auth()->user()->name }}!</h2>
-            <p class="text-teal-100">Here's your store & inventory overview for today.</p>
+            <h2 class="text-2xl font-extrabold mb-2">{{ __('dashboard.welcome.greeting', ['name' => auth()->user()->name]) }}</h2>
+            <p class="text-teal-100">{{ __('dashboard.welcome.store_keeper_message') }}</p>
         </div>
         <div class="hidden md:block text-right">
-            <p class="text-sm text-teal-200">{{ now()->format('l, F d, Y') }}</p>
-            <p class="text-3xl font-extrabold">{{ now()->format('h:i A') }}</p>
+            <p id="liveDate" class="text-sm text-teal-200"></p>
+            <p id="liveTime" class="text-3xl font-extrabold"></p>
         </div>
     </div>
 </div>
@@ -24,7 +24,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Pending Laundry</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.pending') }}</p>
                 <p class="text-3xl font-extrabold text-yellow-600 mt-1">{{ $stats['pending_laundry'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl flex items-center justify-center">
@@ -38,7 +38,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">In Progress</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.in_progress') }}</p>
                 <p class="text-3xl font-extrabold text-blue-600 mt-1">{{ $stats['inprogress_laundry'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
@@ -52,7 +52,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Completed</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.completed') }}</p>
                 <p class="text-3xl font-extrabold text-green-600 mt-1">{{ $stats['completed_laundry'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
@@ -66,7 +66,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Delivered</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.delivered') }}</p>
                 <p class="text-3xl font-extrabold text-teal-600 mt-1">{{ $stats['delivered_laundry'] }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl flex items-center justify-center">
@@ -82,14 +82,14 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <!-- Laundry Status Summary -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <h3 class="text-lg font-extrabold text-secondary mb-6">Laundry Summary</h3>
+        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.laundry_summary') }}</h3>
         <div class="space-y-4">
             @php
                 $laundryColors = [
-                    'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'bar' => 'bg-yellow-500', 'label' => 'Pending'],
-                    'in_progress' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-700', 'bar' => 'bg-blue-500', 'label' => 'In Progress'],
-                    'completed' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'bar' => 'bg-green-500', 'label' => 'Completed'],
-                    'delivered' => ['bg' => 'bg-teal-100', 'text' => 'text-teal-700', 'bar' => 'bg-teal-500', 'label' => 'Delivered'],
+                    'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'bar' => 'bg-yellow-500', 'label' => __('dashboard.laundry.pending')],
+                    'in_progress' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-700', 'bar' => 'bg-blue-500', 'label' => __('dashboard.laundry.in_progress')],
+                    'completed' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'bar' => 'bg-green-500', 'label' => __('dashboard.laundry.completed')],
+                    'delivered' => ['bg' => 'bg-teal-100', 'text' => 'text-teal-700', 'bar' => 'bg-teal-500', 'label' => __('dashboard.laundry.delivered')],
                 ];
                 $totalLaundry = array_sum($laundryStatusCounts);
             @endphp
@@ -107,31 +107,31 @@
             @endforeach
         </div>
         <div class="mt-6 p-3 bg-teal-50 rounded-xl text-center">
-            <p class="text-sm text-teal-600 font-medium">Today's Tasks</p>
+            <p class="text-sm text-teal-600 font-medium">{{ __('dashboard.laundry.today_tasks') }}</p>
             <p class="text-2xl font-extrabold text-teal-700">{{ $stats['today_laundry'] }}</p>
         </div>
     </div>
 
     <!-- Room Status -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 lg:col-span-2">
-        <h3 class="text-lg font-extrabold text-secondary mb-6">Room Status Overview</h3>
+        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.room_status_overview') }}</h3>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
                 <p class="text-3xl font-extrabold text-green-700">{{ $stats['available_rooms'] }}</p>
-                <p class="text-xs font-medium text-green-600 mt-1">Available</p>
+                <p class="text-xs font-medium text-green-600 mt-1">{{ __('dashboard.room_status.available') }}</p>
             </div>
             <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
                 <p class="text-3xl font-extrabold text-red-700">{{ $stats['occupied_rooms'] }}</p>
-                <p class="text-xs font-medium text-red-600 mt-1">Occupied</p>
+                <p class="text-xs font-medium text-red-600 mt-1">{{ __('dashboard.room_status.occupied') }}</p>
             </div>
             <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
                 <p class="text-3xl font-extrabold text-yellow-700">{{ $stats['dirty_rooms'] }}</p>
-                <p class="text-xs font-medium text-yellow-600 mt-1">Needs Cleaning</p>
+                <p class="text-xs font-medium text-yellow-600 mt-1">{{ __('dashboard.stats.needs_cleaning') }}</p>
             </div>
         </div>
 
         @if($roomsNeedingAttention->count() > 0)
-        <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Rooms Needing Attention</h4>
+        <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{{ __('dashboard.sections.rooms_needing_attention') }}</h4>
         <div class="space-y-2 max-h-64 overflow-y-auto">
             @foreach($roomsNeedingAttention as $room)
             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
@@ -157,7 +157,7 @@
             <svg class="w-12 h-12 mx-auto mb-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-green-500 font-medium">All rooms are in good condition!</p>
+            <p class="text-green-500 font-medium">{{ __('dashboard.messages.all_rooms_good_condition') }}</p>
         </div>
         @endif
     </div>
@@ -165,17 +165,17 @@
 
 <!-- Recent Laundry Orders -->
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-    <h3 class="text-lg font-extrabold text-secondary mb-6">Recent Laundry Orders</h3>
+    <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.recent_laundry_orders') }}</h3>
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                    <th class="pb-3 pr-4">Order #</th>
-                    <th class="pb-3 pr-4">Guest</th>
-                    <th class="pb-3 pr-4">Room</th>
-                    <th class="pb-3 pr-4">Total</th>
-                    <th class="pb-3 pr-4">Date</th>
-                    <th class="pb-3">Status</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.order_number') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.guest') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.room') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.total') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.date') }}</th>
+                    <th class="pb-3">{{ __('dashboard.table.status') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -213,7 +213,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="py-8 text-center text-gray-400">No laundry orders found.</td>
+                    <td colspan="6" class="py-8 text-center text-gray-400">{{ __('dashboard.messages.no_laundry_orders_found') }}</td>
                 </tr>
                 @endforelse
             </tbody>

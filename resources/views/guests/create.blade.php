@@ -1,16 +1,16 @@
 {{-- resources/views/guests/create.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Add Guest')
-@section('page-title', 'Guests')
+@section('title', __('guests.add_guest'))
+@section('page-title', __('guests.title'))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
         <!-- Header -->
         <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl">
-            <h2 class="text-xl font-extrabold text-secondary">Add New Guest</h2>
-            <p class="text-sm text-gray-500 mt-1">Create a new guest profile for hotel reservations</p>
+            <h2 class="text-xl font-extrabold text-secondary">{{ __('guests.add_new_guest') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ __('guests.create_subtitle') }}</p>
         </div>
 
         <!-- Form -->
@@ -20,20 +20,20 @@
             <div class="space-y-6">
                 <!-- Personal Information Section -->
                 <div>
-                    <h3 class="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+            <h3 class="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
                         <div class="w-8 h-8 bg-gradient-to-br from-primary/10 to-blue-100 rounded-lg flex items-center justify-center">
                             <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>
-                        Personal Information
+                        {{ __('guests.sections.personal_information') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- First Name -->
                         <div>
                             <label for="first_name" class="block text-sm font-semibold text-secondary mb-2">
-                                First Name <span class="text-red-500">*</span>
+                                {{ __('guests.fields.first_name') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -41,7 +41,7 @@
                                 id="first_name"
                                 value="{{ old('first_name') }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('first_name') border-red-500 @enderror"
-                                placeholder="Enter first name"
+                                placeholder="{{ __('guests.forms.first_name_placeholder') }}"
                                 required>
                             @error('first_name')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -56,7 +56,7 @@
                         <!-- Last Name -->
                         <div>
                             <label for="last_name" class="block text-sm font-semibold text-secondary mb-2">
-                                Last Name <span class="text-red-500">*</span>
+                                {{ __('guests.fields.last_name') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -64,7 +64,7 @@
                                 id="last_name"
                                 value="{{ old('last_name') }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('last_name') border-red-500 @enderror"
-                                placeholder="Enter last name"
+                                placeholder="{{ __('guests.forms.last_name_placeholder') }}"
                                 required>
                             @error('last_name')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -79,7 +79,7 @@
                         <!-- Date of Birth -->
                         <div>
                             <label for="date_of_birth" class="block text-sm font-semibold text-secondary mb-2">
-                                Date of Birth <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                {{ __('guests.fields.date_of_birth') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.optional') }})</span>
                             </label>
                             <input 
                                 type="date" 
@@ -101,7 +101,7 @@
                         <!-- Nationality -->
                         <div>
                             <label for="nationality" class="block text-sm font-semibold text-secondary mb-2">
-                                Nationality <span class="text-red-500">*</span>
+                                {{ __('guests.fields.nationality') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -109,7 +109,7 @@
                                 id="nationality"
                                 value="{{ old('nationality') }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('nationality') border-red-500 @enderror"
-                                placeholder="e.g., American, British"
+                                placeholder="{{ __('guests.forms.nationality_placeholder') }}"
                                 required>
                             @error('nationality')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -133,14 +133,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        Contact Information
+                        {{ __('guests.sections.contact_information') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Phone Number -->
                         <div>
                             <label for="phone_number" class="block text-sm font-semibold text-secondary mb-2">
-                                Phone Number <span class="text-red-500">*</span>
+                                {{ __('guests.fields.phone') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -148,7 +148,7 @@
                                 id="phone_number"
                                 value="{{ old('phone_number') }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('phone_number') border-red-500 @enderror"
-                                placeholder="+1 (555) 123-4567"
+                                placeholder="{{ __('guests.forms.phone_placeholder') }}"
                                 required>
                             @error('phone_number')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -163,7 +163,7 @@
                         <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-semibold text-secondary mb-2">
-                                Email Address <span class="text-red-500">*</span>
+                                {{ __('guests.fields.email_address') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="email" 
@@ -171,7 +171,7 @@
                                 id="email"
                                 value="{{ old('email') }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('email') border-red-500 @enderror"
-                                placeholder="guest@example.com"
+                                placeholder="{{ __('guests.forms.email_placeholder') }}"
                                 required>
                             @error('email')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -187,14 +187,14 @@
                     <!-- Address -->
                     <div class="mt-6">
                         <label for="address" class="block text-sm font-semibold text-secondary mb-2">
-                            Address <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                            {{ __('guests.fields.address') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.optional') }})</span>
                         </label>
                         <textarea 
                             name="address" 
                             id="address"
                             rows="3"
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('address') border-red-500 @enderror"
-                            placeholder="Enter full address">{{ old('address') }}</textarea>
+                            placeholder="{{ __('guests.forms.address_placeholder') }}">{{ old('address') }}</textarea>
                         @error('address')
                             <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -216,14 +216,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
                             </svg>
                         </div>
-                        Identification
+                        {{ __('guests.sections.identification') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- ID Number -->
                         <div>
                             <label for="id_number" class="block text-sm font-semibold text-secondary mb-2">
-                                ID/Passport Number <span class="text-red-500">*</span>
+                                {{ __('guests.fields.id_passport_number') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -231,7 +231,7 @@
                                 id="id_number"
                                 value="{{ old('id_number') }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('id_number') border-red-500 @enderror"
-                                placeholder="Enter ID or passport number"
+                                placeholder="{{ __('guests.forms.id_number_placeholder') }}"
                                 required>
                             @error('id_number')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -255,12 +255,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        Guest Photo
+                        {{ __('guests.sections.guest_photo') }}
                     </h3>
 
                     <div>
                         <label for="photo" class="block text-sm font-semibold text-secondary mb-2">
-                            Profile Photo <span class="text-gray-400 text-xs font-normal">(Optional, max 2MB, JPG/PNG)</span>
+                            {{ __('guests.forms.profile_photo') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.photo_placeholder') }})</span>
                         </label>
                         <input 
                             type="file" 
@@ -289,12 +289,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
-                        ID Documents
+                        {{ __('guests.sections.id_documents') }}
                     </h3>
 
                     <div>
                         <label for="id_documents" class="block text-sm font-semibold text-secondary mb-2">
-                            Upload ID Documents <span class="text-gray-400 text-xs font-normal">(Optional, max 5MB each, JPG/PNG/PDF, multiple allowed)</span>
+                            {{ __('guests.forms.upload_documents') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.documents_placeholder') }})</span>
                         </label>
                         <input 
                             type="file" 
@@ -323,12 +323,12 @@
                             </svg>
                         </div>
                         <div class="text-sm">
-                            <p class="font-bold text-secondary mb-1">Important Notes:</p>
+                            <p class="font-bold text-secondary mb-1">{{ __('guests.info.important_notes') }}</p>
                             <ul class="list-disc list-inside space-y-1 text-gray-600">
-                                <li>Guest information will be used for all future reservations</li>
-                                <li>Email must be unique</li>
-                                <li>You can upload multiple ID documents (passport, driver's license, etc.)</li>
-                                <li>Supported formats: JPG, PNG for photos; JPG, PNG, PDF for documents</li>
+                                <li>{{ __('guests.info.note_guest_info') }}</li>
+                                <li>{{ __('guests.info.note_email_unique') }}</li>
+                                <li>{{ __('guests.info.note_multiple_documents') }}</li>
+                                <li>{{ __('guests.info.note_supported_formats') }}</li>
                             </ul>
                         </div>
                     </div>
@@ -339,12 +339,12 @@
             <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
                 <a href="{{ route('guests.index') }}" 
                    class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
-                    Cancel
+                    {{ __('guests.actions.cancel') }}
                 </a>
                 <button 
                     type="submit"
                     class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                    Create Guest
+                    {{ __('guests.create_guest') }}
                 </button>
             </div>
         </form>

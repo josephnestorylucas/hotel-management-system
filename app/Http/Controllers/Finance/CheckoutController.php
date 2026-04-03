@@ -8,6 +8,8 @@ use App\Models\BookingCharge;
 use App\Models\Checkout;
 use App\Models\FinancialTransaction;
 use App\Models\FinancePayment;
+use App\Models\LaundryOrder;
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,9 @@ class CheckoutController extends Controller
     /**
      * GET /finance/checkout/{booking}
      * Show the guest folio — all charges grouped by type.
+     * 
+     * UNIFIED CHECKOUT FLOW:
+     * This is the SINGLE checkout page where ALL charges are aggregated and paid.
      */
     public function show(Booking $booking): View
     {
@@ -33,6 +38,7 @@ class CheckoutController extends Controller
             ->where('key', 'tzs_exchange_rate')->value('value') ?? 2500);
 
         // Fetch all unpaid charges grouped by type
+        // This includes ALL charge types: restaurant, bar, laundry, room_service, etc.
         $charges = BookingCharge::where('booking_id', $booking->id)
             ->where('status', 'unpaid')
             ->with(['order', 'laundryOrder', 'createdBy'])
@@ -54,6 +60,12 @@ class CheckoutController extends Controller
     /**
      * POST /finance/checkout/{checkout}/process
      * Process the actual payment and complete checkout.
+     * 
+     * UNIFIED CHECKOUT FLOW:
+     * 1. Process payment
+     * 2. Mark all BookingCharges as paid
+     * 3. Finalize related module orders (Restaurant, Laundry) as 'settled'
+     * 4. Record financial transactions
      */
     public function process(Request $request, Checkout $checkout): RedirectResponse
     {
@@ -112,6 +124,16 @@ class CheckoutController extends Controller
             $totalPaidUsd = $paidCashUsd + $paidCardUsd;
             $changeDueUsd = max(0, $totalPaidUsd - $grandTotalUsd);
 
+            // Map payment method for module settlement
+            $paymentMethodMap = [
+                'cash_usd' => 'cash',
+                'cash_tzs' => 'cash',
+                'card_usd' => 'card',
+                'card_tzs' => 'card',
+                'split'    => 'split',
+            ];
+            $modulePaymentMethod = $paymentMethodMap[$data['payment_method']] ?? 'cash';
+
             // Update checkout record
             $checkout->update([
                 'status'         => 'completed',
@@ -127,6 +149,11 @@ class CheckoutController extends Controller
                 'completed_at'   => now(),
             ]);
 
+            // Get all unpaid charges before marking them paid
+            $unpaidCharges = BookingCharge::where('booking_id', $checkout->booking_id)
+                ->where('status', 'unpaid')
+                ->get();
+
             // Mark all booking charges as paid
             BookingCharge::where('booking_id', $checkout->booking_id)
                 ->where('status', 'unpaid')
@@ -134,6 +161,10 @@ class CheckoutController extends Controller
                     'status'      => 'paid',
                     'checkout_id' => $checkout->id,
                 ]);
+
+            // FINALIZE RELATED MODULE ORDERS
+            // This ensures orders in Restaurant, Bar, Laundry are marked as 'settled'
+            $this->finalizeModuleOrders($unpaidCharges, $modulePaymentMethod);
 
             // Create the payment record
             $payment = FinancePayment::create([
@@ -166,13 +197,6 @@ class CheckoutController extends Controller
 
             // Post to accounting journal (room revenue)
             $booking = Booking::find($checkout->booking_id);
-            $paymentMethodMap = [
-                'cash_usd' => 'cash',
-                'cash_tzs' => 'cash',
-                'card_usd' => 'card',
-                'card_tzs' => 'card',
-                'split' => 'cash',
-            ];
             $paymentMethod = $paymentMethodMap[$data['payment_method']] ?? 'cash';
             app(AccountingService::class)->postBookingSettlement(
                 bookingRef: $booking->booking_number,
@@ -186,6 +210,70 @@ class CheckoutController extends Controller
         return redirect()
             ->route('finance.receipt.guest', $checkout)
             ->with('success', 'Checkout completed. Receipt ready.');
+    }
+
+    /**
+     * Finalize related module orders after checkout payment.
+     * 
+     * This marks:
+     * - Restaurant/Bar orders as 'settled'
+     * - Laundry orders as 'settled'
+     * - Other module orders as appropriate
+     */
+    protected function finalizeModuleOrders($charges, string $paymentMethod): void
+    {
+        foreach ($charges as $charge) {
+            // Handle Restaurant/Bar orders
+            if (in_array($charge->charge_type, ['restaurant', 'bar', 'room_service'])) {
+                if ($charge->order_id || $charge->reference_id) {
+                    $orderId = $charge->order_id ?? $charge->reference_id;
+                    $order = Order::find($orderId);
+                    
+                    if ($order && $order->status !== 'settled') {
+                        $order->update([
+                            'status'         => 'settled',
+                            'payment_method' => $paymentMethod,
+                            'settled_by'     => auth()->id(),
+                            'settled_at'     => now(),
+                        ]);
+
+                        // Post to accounting journal
+                        app(AccountingService::class)->postRestaurantSettlement(
+                            orderNo: $order->order_number,
+                            orderId: $order->id,
+                            amount: (float) $order->total,
+                            paymentMethod: $paymentMethod,
+                            actorId: auth()->id()
+                        );
+                    }
+                }
+            }
+
+            // Handle Laundry orders
+            if ($charge->charge_type === 'laundry') {
+                if ($charge->reference_id) {
+                    $laundryOrder = LaundryOrder::find($charge->reference_id);
+                    
+                    if ($laundryOrder && $laundryOrder->status !== 'settled') {
+                        $laundryOrder->update([
+                            'status'         => 'settled',
+                            'payment_method' => $paymentMethod,
+                            'settled_by'     => auth()->id(),
+                            'settled_at'     => now(),
+                        ]);
+
+                        // Post to accounting journal
+                        app(AccountingService::class)->postLaundrySettlement(
+                            orderNo: $laundryOrder->order_number,
+                            orderId: $laundryOrder->id,
+                            amount: (float) $laundryOrder->total,
+                            paymentMethod: $paymentMethod,
+                            actorId: auth()->id()
+                        );
+                    }
+                }
+            }
+        }
     }
 
     /**

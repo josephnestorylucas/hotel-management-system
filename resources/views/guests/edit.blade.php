@@ -1,8 +1,8 @@
 {{-- resources/views/guests/edit.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Edit Guest')
-@section('page-title', 'Guests')
+@section('title', __('guests.edit_guest'))
+@section('page-title', __('guests.title'))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -19,7 +19,7 @@
                     @endif
                 </div>
                 <div>
-                    <h2 class="text-xl font-extrabold text-secondary">Edit Guest</h2>
+                    <h2 class="text-xl font-extrabold text-secondary">{{ __('guests.edit_guest') }}</h2>
                     <p class="text-sm text-gray-500 mt-1">{{ $guest->full_name }}</p>
                 </div>
             </div>
@@ -39,14 +39,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>
-                        Personal Information
+                        {{ __('guests.sections.personal_information') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- First Name -->
                         <div>
                             <label for="first_name" class="block text-sm font-semibold text-secondary mb-2">
-                                First Name <span class="text-red-500">*</span>
+                                {{ __('guests.fields.first_name') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -68,7 +68,7 @@
                         <!-- Last Name -->
                         <div>
                             <label for="last_name" class="block text-sm font-semibold text-secondary mb-2">
-                                Last Name <span class="text-red-500">*</span>
+                                {{ __('guests.fields.last_name') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -90,7 +90,7 @@
                         <!-- Date of Birth -->
                         <div>
                             <label for="date_of_birth" class="block text-sm font-semibold text-secondary mb-2">
-                                Date of Birth <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                                {{ __('guests.fields.date_of_birth') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.optional') }})</span>
                             </label>
                             <input 
                                 type="date" 
@@ -112,7 +112,7 @@
                         <!-- Nationality -->
                         <div>
                             <label for="nationality" class="block text-sm font-semibold text-secondary mb-2">
-                                Nationality <span class="text-red-500">*</span>
+                                {{ __('guests.fields.nationality') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -120,7 +120,7 @@
                                 id="nationality"
                                 value="{{ old('nationality', $guest->nationality) }}" 
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('nationality') border-red-500 @enderror"
-                                placeholder="e.g., American, British"
+                                placeholder="{{ __('guests.forms.nationality_placeholder') }}"
                                 required>
                             @error('nationality')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
@@ -144,14 +144,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        Contact Information
+                        {{ __('guests.sections.contact_information') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Phone Number -->
                         <div>
                             <label for="phone_number" class="block text-sm font-semibold text-secondary mb-2">
-                                Phone Number <span class="text-red-500">*</span>
+                                {{ __('guests.fields.phone') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -173,7 +173,7 @@
                         <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-semibold text-secondary mb-2">
-                                Email Address <span class="text-red-500">*</span>
+                                {{ __('guests.fields.email_address') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="email" 
@@ -196,14 +196,14 @@
                     <!-- Address -->
                     <div class="mt-6">
                         <label for="address" class="block text-sm font-semibold text-secondary mb-2">
-                            Address <span class="text-gray-400 text-xs font-normal">(Optional)</span>
+                            {{ __('guests.fields.address') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.optional') }})</span>
                         </label>
                         <textarea 
                             name="address" 
                             id="address"
                             rows="3"
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('address') border-red-500 @enderror"
-                            placeholder="Enter full address">{{ old('address', $guest->address) }}</textarea>
+                            placeholder="{{ __('guests.forms.address_placeholder') }}">{{ old('address', $guest->address) }}</textarea>
                         @error('address')
                             <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -225,14 +225,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
                             </svg>
                         </div>
-                        Identification
+                        {{ __('guests.sections.identification') }}
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- ID Number -->
                         <div>
                             <label for="id_number" class="block text-sm font-semibold text-secondary mb-2">
-                                ID/Passport Number <span class="text-red-500">*</span>
+                                {{ __('guests.fields.id_passport_number') }} <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
@@ -263,19 +263,19 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        Guest Photo
+                        {{ __('guests.sections.guest_photo') }}
                     </h3>
 
                     <!-- Current Photo -->
                     @if($guest->hasPhoto())
                     <div class="mb-4 p-4 bg-gray-50 rounded-xl">
-                        <label class="block text-sm font-semibold text-secondary mb-2">Current Photo</label>
+                        <label class="block text-sm font-semibold text-secondary mb-2">{{ __('guests.forms.current_photo') }}</label>
                         <div class="flex items-center gap-4">
                             <img src="{{ $guest->photo_medium_url ?? $guest->photo_url }}" alt="{{ $guest->full_name }}" class="w-24 h-24 object-cover rounded-xl shadow">
                             <div class="flex items-center gap-2">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="remove_photo" value="1" class="rounded border-gray-300 text-red-600 focus:ring-red-500">
-                                    <span class="text-sm text-red-600 font-medium">Remove current photo</span>
+                                    <span class="text-sm text-red-600 font-medium">{{ __('guests.forms.remove_photo') }}</span>
                                 </label>
                             </div>
                         </div>
@@ -285,7 +285,7 @@
                     <!-- Upload New Photo -->
                     <div>
                         <label for="photo" class="block text-sm font-semibold text-secondary mb-2">
-                            {{ $guest->hasPhoto() ? 'Replace Photo' : 'Upload Photo' }} <span class="text-gray-400 text-xs font-normal">(Optional, max 2MB)</span>
+                            {{ $guest->hasPhoto() ? __('guests.forms.replace_photo') : __('guests.forms.upload_photo') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.photo_replace_placeholder') }})</span>
                         </label>
                         <input 
                             type="file" 
@@ -314,13 +314,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
-                        ID Documents
+                        {{ __('guests.sections.id_documents') }}
                     </h3>
 
                     <!-- Current Documents -->
                     @if($guest->hasIdDocuments())
                     <div class="mb-4 p-4 bg-gray-50 rounded-xl">
-                        <label class="block text-sm font-semibold text-secondary mb-3">Current Documents ({{ $guest->id_documents_count }})</label>
+                        <label class="block text-sm font-semibold text-secondary mb-3">{{ __('guests.forms.current_documents') }} ({{ $guest->id_documents_count }})</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach($guest->id_documents as $document)
                             <div class="flex items-center justify-between bg-white border border-gray-200 rounded-xl p-3">
@@ -340,10 +340,10 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a href="{{ $document->getUrl() }}" target="_blank" class="text-xs text-primary hover:underline font-medium">View</a>
+                                    <a href="{{ $document->getUrl() }}" target="_blank" class="text-xs text-primary hover:underline font-medium">{{ __('guests.actions.view') }}</a>
                                     <label class="flex items-center">
                                         <input type="checkbox" name="remove_documents[]" value="{{ $document->id }}" class="rounded border-gray-300 text-red-600 focus:ring-red-500">
-                                        <span class="ml-1 text-xs text-red-600">Remove</span>
+                                        <span class="ml-1 text-xs text-red-600">{{ __('guests.remove') }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -355,7 +355,7 @@
                     <!-- Upload New Documents -->
                     <div>
                         <label for="id_documents" class="block text-sm font-semibold text-secondary mb-2">
-                            Add ID Documents <span class="text-gray-400 text-xs font-normal">(Optional, max 5MB each, multiple allowed)</span>
+                            {{ __('guests.forms.add_documents') }} <span class="text-gray-400 text-xs font-normal">({{ __('guests.forms.documents_add_placeholder') }})</span>
                         </label>
                         <input 
                             type="file" 
@@ -377,18 +377,18 @@
 
                 <!-- Guest Information -->
                 <div class="bg-gradient-to-br from-primary/5 to-blue-50 rounded-xl p-4 border border-primary/20">
-                    <h4 class="text-sm font-bold text-secondary mb-3">Guest Information</h4>
+                    <h4 class="text-sm font-bold text-secondary mb-3">{{ __('guests.sections.guest_info') }}</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500">Registered:</span>
+                            <span class="text-gray-500">{{ __('guests.info.registered') }}:</span>
                             <span class="text-secondary font-semibold ml-2">{{ $guest->created_at->format('M d, Y H:i') }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Last Updated:</span>
+                            <span class="text-gray-500">{{ __('guests.info.last_updated') }}:</span>
                             <span class="text-secondary font-semibold ml-2">{{ $guest->updated_at->format('M d, Y H:i') }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500">Total Reservations:</span>
+                            <span class="text-gray-500">{{ __('guests.stats.total_reservations') }}:</span>
                             <span class="text-secondary font-semibold ml-2">{{ $guest->reservations()->count() }}</span>
                         </div>
                     </div>
@@ -400,9 +400,10 @@
                 @if($guest->reservations()->count() === 0)
                 <button 
                     type="button"
-                    onclick="if(confirm('Are you sure you want to delete this guest?')) { document.getElementById('delete-form').submit(); }"
+                    data-confirm-message="{{ __('guests.messages.confirm_delete') }}"
+                    onclick="if(confirm(this.dataset.confirmMessage)) { document.getElementById('delete-form').submit(); }"
                     class="px-6 py-2.5 text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all">
-                    Delete Guest
+                    {{ __('guests.delete_guest') }}
                 </button>
                 @else
                 <div></div>
@@ -411,12 +412,12 @@
                 <div class="flex items-center gap-3">
                     <a href="{{ route('guests.index') }}" 
                        class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
-                        Cancel
+                        {{ __('guests.actions.cancel') }}
                     </a>
                     <button 
                         type="submit"
                         class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
-                        Update Guest
+                        {{ __('guests.update_guest') }}
                     </button>
                 </div>
             </div>

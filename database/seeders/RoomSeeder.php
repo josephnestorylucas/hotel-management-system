@@ -26,13 +26,15 @@ class RoomSeeder extends Seeder {
                     default => $roomTypes->where('code', 'STE')->first(),
                 };
 
-                Room::create([
-                    'floor_id' => $floor->id,
-                    'room_type_id' => $roomType->id,
-                    'room_number' => $building->code . '-' . $roomNumber,
-                    'status' => 'available',
-                    'is_active' => true,
-                ]);
+                Room::updateOrCreate(
+                    ['room_number' => $building->code . '-' . $roomNumber],
+                    [
+                        'floor_id' => $floor->id,
+                        'room_type_id' => $roomType?->id,
+                        'status' => 'available',
+                        'is_active' => true,
+                    ]
+                );
             }
         }
     }

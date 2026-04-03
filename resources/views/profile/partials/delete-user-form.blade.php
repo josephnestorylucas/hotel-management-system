@@ -7,12 +7,12 @@
                 </svg>
             </div>
             <h2 class="text-lg font-bold text-red-600">
-                {{ __('Delete Account') }}
+                {{ __('profile.sections.delete_account') }}
             </h2>
         </div>
 
         <p class="text-sm text-gray-500">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+            {{ __('profile.subtitles.delete_warning') }}
         </p>
     </header>
 
@@ -21,7 +21,7 @@
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
         class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
-    >{{ __('Delete Account') }}</button>
+    >{{ __('profile.actions.delete_account') }}</button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
@@ -35,22 +35,22 @@
                     </svg>
                 </div>
                 <h2 class="text-lg font-bold text-secondary">
-                    {{ __('Are you sure you want to delete your account?') }}
+                    {{ __('profile.messages.confirm_delete') }}
                 </h2>
             </div>
 
             <p class="text-sm text-gray-500 mb-6">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+                {{ __('profile.subtitles.delete_confirm_warning') }}
             </p>
 
             <div class="mb-6">
-                <label for="password" class="sr-only">{{ __('Password') }}</label>
+                <label for="password" class="sr-only">{{ __('profile.fields.password') }}</label>
                 <input
                     id="password"
                     name="password"
                     type="password"
                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                    placeholder="{{ __('Password') }}"
+                    placeholder="{{ __('profile.fields.password') }}"
                 />
                 @error('password', 'userDeletion')
                     <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -59,11 +59,11 @@
 
             <div class="flex justify-end gap-3">
                 <button type="button" x-on:click="$dispatch('close')" class="px-6 py-2.5 text-sm font-semibold text-secondary bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
-                    {{ __('Cancel') }}
+                    {{ __('profile.actions.cancel') }}
                 </button>
 
                 <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all">
-                    {{ __('Delete Account') }}
+                    {{ __('profile.actions.delete_account') }}
                 </button>
             </div>
         </form>

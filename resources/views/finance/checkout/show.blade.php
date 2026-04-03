@@ -185,10 +185,16 @@
         @endif
 
         @if($checkout->status === 'completed')
-        <a href="{{ route('finance.receipt.guest', $checkout) }}"
-           class="block text-center bg-blue-600 text-white py-2.5 rounded hover:bg-blue-700 font-medium">
-            Print Receipt
-        </a>
+        <div class="space-y-2">
+            <a href="{{ route('receipts.checkout', $checkout) }}" target="_blank"
+               class="block text-center bg-blue-600 text-white py-2.5 rounded hover:bg-blue-700 font-medium">
+                Print Receipt
+            </a>
+            <a href="{{ route('finance.receipt.guest', $checkout) }}" target="_blank"
+               class="block text-center border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50 text-sm">
+                Print Detailed Folio
+            </a>
+        </div>
         @endif
     </div>
 </div>

@@ -16,19 +16,38 @@
                 &middot; {{ $order->created_at->format('d M Y H:i') }}
             </p>
         </div>
-        @php
-            $colors = [
-                'open'      => 'bg-yellow-100 text-yellow-700',
-                'sent'      => 'bg-blue-100 text-blue-700',
-                'ready'     => 'bg-indigo-100 text-indigo-700',
-                'served'    => 'bg-green-100 text-green-700',
-                'settled'   => 'bg-gray-200 text-gray-600',
-                'cancelled' => 'bg-red-100 text-red-700',
-            ];
-        @endphp
-        <span class="text-sm px-4 py-1.5 rounded-full font-semibold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-600' }}">
-            {{ ucfirst($order->status) }}
-        </span>
+        <div class="flex items-center gap-3">
+            @if($order->status === 'settled')
+                <a href="{{ route('receipts.order', $order) }}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    Print Receipt
+                </a>
+            @else
+                <a href="{{ route('receipts.order', $order) }}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 border-2 border-yellow-400 text-yellow-700 text-sm font-semibold rounded-lg hover:bg-yellow-50 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    View Receipt (Unpaid)
+                </a>
+            @endif
+            @php
+                $colors = [
+                    'open'      => 'bg-yellow-100 text-yellow-700',
+                    'sent'      => 'bg-blue-100 text-blue-700',
+                    'ready'     => 'bg-indigo-100 text-indigo-700',
+                    'served'    => 'bg-green-100 text-green-700',
+                    'settled'   => 'bg-gray-200 text-gray-600',
+                    'cancelled' => 'bg-red-100 text-red-700',
+                ];
+            @endphp
+            <span class="text-sm px-4 py-1.5 rounded-full font-semibold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-600' }}">
+                {{ ucfirst($order->status) }}
+            </span>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -39,7 +39,8 @@ use App\Http\Controllers\Restaurant\OrderController;
 use App\Http\Controllers\Restaurant\ReportController as RestaurantReportController;
 use App\Http\Controllers\Finance\CheckoutController as FinanceCheckoutController;
 use App\Http\Controllers\Finance\FinancePaymentController;
-use App\Http\Controllers\Finance\ReceiptController;
+use App\Http\Controllers\Finance\ReceiptController as FinanceReceiptController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\Finance\FinancialDashboardController;
 use App\Http\Controllers\Procurement\DashboardController as ProcurementDashboardController;
 use App\Http\Controllers\Procurement\SupplierController;
@@ -445,8 +446,8 @@ Route::middleware(['auth'])->group(function () {
              ->name('walkin-payment.callback');
 
         // ── Receipts ──────────────────────────────────────────────────────────────
-        Route::get('receipts/guest/{checkout}', [ReceiptController::class, 'guest'])->name('receipt.guest');
-        Route::get('receipts/walkin',           [ReceiptController::class, 'walkin'])->name('receipt.walkin');
+        Route::get('receipts/guest/{checkout}', [FinanceReceiptController::class, 'guest'])->name('receipt.guest');
+        Route::get('receipts/walkin',           [FinanceReceiptController::class, 'walkin'])->name('receipt.walkin');
         // ── Petty Cash ──────────────────────────────────────────────────────
         Route::post('petty-cash/{pettyCash}/approve', [PettyCashController::class, 'approve'])->name('petty-cash.approve')
              ->middleware('role:store_manager');
@@ -526,6 +527,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('notifications',                          [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/unread-count',             [NotificationController::class, 'unreadCount'])->name('notifications.count');
     Route::post('notifications/{notification}/read',     [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    // ═══ UNIFIED RECEIPTS ═══
+    Route::prefix('receipts')->name('receipts.')->group(function () {
+        Route::get('search',                    [ReceiptController::class, 'search'])->name('search');
+        Route::get('laundry/{laundryOrder}',    [ReceiptController::class, 'laundry'])->name('laundry');
+        Route::get('order/{order}',             [ReceiptController::class, 'order'])->name('order');
+        Route::get('checkout/{checkout}',       [ReceiptController::class, 'checkout'])->name('checkout');
+        Route::get('walkin/{walkinTransaction}',[ReceiptController::class, 'walkin'])->name('walkin');
+        Route::get('reprint/{receiptNumber}',   [ReceiptController::class, 'reprint'])->name('reprint');
+        Route::post('{uuid}/refresh',           [ReceiptController::class, 'refresh'])->name('refresh');
+        Route::post('{uuid}/printed',           [ReceiptController::class, 'markPrinted'])->name('printed');
+        Route::get('{uuid}',                    [ReceiptController::class, 'show'])->name('show');
+    });
 
     // ═══ ADMIN — Broadcasts & Offers ═══
     Route::middleware(['role:admin,manager,supervisor,laundry_manager'])->prefix('admin')->name('admin.')->group(function () {

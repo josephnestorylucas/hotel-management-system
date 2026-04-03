@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class LaundryOrder extends Model
+class LaundryOrder extends Model implements ReceiptPrintable
 {
     use HasUuid;
 
@@ -117,5 +119,69 @@ class LaundryOrder extends Model
             'cancelled'  => 'gray',
             default      => 'gray',
         };
+    }
+
+    // ── Receipt Relationship ─────────────────────────────────────────────────
+
+    public function receipt(): MorphOne
+    {
+        return $this->morphOne(Receipt::class, 'receiptable');
+    }
+
+    // ── ReceiptPrintable Implementation ──────────────────────────────────────
+
+    public function toReceiptData(): array
+    {
+        $this->loadMissing(['items.laundryItem', 'settler', 'booking']);
+
+        $items = $this->items->map(function ($item) {
+            return [
+                'name'       => $item->laundryItem?->name ?? 'Laundry Item',
+                'details'    => $item->service_type,
+                'quantity'   => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'amount'     => $item->subtotal,
+            ];
+        })->toArray();
+
+        return [
+            'receipt_no'            => $this->order_number,
+            'issued_at'             => $this->settled_at ?? $this->created_at,
+            'module'                => 'laundry',
+            'customer_name'         => $this->customer_name ?? $this->booking?->guest_name ?? null,
+            'customer_phone'        => $this->customer_phone ?? $this->booking?->guest?->phone ?? null,
+            'items'                 => $items,
+            'subtotal'              => (float) $this->subtotal,
+            'discount'              => (float) $this->discount,
+            'tax'                   => 0.0,
+            'total'                 => (float) $this->total,
+            'amount_paid'           => $this->isPaid() ? (float) $this->total : 0.0,
+            'balance'               => $this->isPaid() ? 0.0 : (float) $this->total,
+            'currency'              => 'TZS',
+            'payment_method'        => $this->payment_method,
+            'payment_status'        => $this->getPaymentStatus(),
+            'transaction_reference' => null,
+            'cashier'               => $this->settler?->name,
+            'notes'                 => $this->special_instructions,
+        ];
+    }
+
+    public function getReceiptModule(): string
+    {
+        return 'laundry';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'settled' && $this->settled_at !== null;
+    }
+
+    protected function getPaymentStatus(): string
+    {
+        if ($this->status === 'cancelled') {
+            return 'cancelled';
+        }
+
+        return $this->isPaid() ? 'paid' : 'unpaid';
     }
 }

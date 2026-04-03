@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\DB;
 
-class Checkout extends Model
+class Checkout extends Model implements ReceiptPrintable
 {
     use HasUuid;
 
@@ -49,6 +51,13 @@ class Checkout extends Model
     public function charges()   { return $this->hasMany(BookingCharge::class); }
     public function payments()  { return $this->hasMany(FinancePayment::class); }
 
+    // ── Receipt Relationship ─────────────────────────────────────────────────
+
+    public function receipt(): MorphOne
+    {
+        return $this->morphOne(Receipt::class, 'receiptable');
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -82,5 +91,66 @@ class Checkout extends Model
     public function getBalanceDueAttribute(): float
     {
         return max(0, (float) $this->grand_total_usd - (float) $this->total_paid_usd);
+    }
+
+    // ── ReceiptPrintable Implementation ──────────────────────────────────────
+
+    public function toReceiptData(): array
+    {
+        $this->loadMissing(['booking.guest', 'booking.room', 'charges', 'completer']);
+
+        // Group charges by type for items
+        $items = $this->charges->map(function ($charge) {
+            return [
+                'name'       => $charge->description,
+                'details'    => $charge->charge_type_label ?? $charge->charge_type,
+                'quantity'   => 1,
+                'unit_price' => $charge->amount * $this->exchange_rate, // Convert to TZS
+                'amount'     => $charge->amount * $this->exchange_rate,
+            ];
+        })->toArray();
+
+        $totalTzs = (float) $this->grand_total_tzs;
+        $paidTzs  = (float) $this->total_paid_usd * (float) $this->exchange_rate;
+
+        return [
+            'receipt_no'            => $this->receipt_number,
+            'issued_at'             => $this->completed_at ?? $this->created_at,
+            'module'                => 'checkout',
+            'customer_name'         => $this->booking?->guest_name ?? null,
+            'customer_phone'        => $this->booking?->guest?->phone ?? null,
+            'items'                 => $items,
+            'subtotal'              => (float) $this->total_charges_usd * (float) $this->exchange_rate,
+            'discount'              => (float) $this->discount_usd * (float) $this->exchange_rate,
+            'tax'                   => 0.0,
+            'total'                 => $totalTzs,
+            'amount_paid'           => $paidTzs,
+            'balance'               => max(0, $totalTzs - $paidTzs),
+            'currency'              => 'TZS',
+            'payment_method'        => $this->payment_method,
+            'payment_status'        => $this->getPaymentStatus(),
+            'transaction_reference' => null,
+            'cashier'               => $this->completer?->name,
+            'notes'                 => $this->notes,
+        ];
+    }
+
+    public function getReceiptModule(): string
+    {
+        return 'checkout';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'completed' && $this->balance_due <= 0;
+    }
+
+    protected function getPaymentStatus(): string
+    {
+        if ($this->status === 'completed') {
+            return $this->balance_due <= 0 ? 'paid' : 'partial';
+        }
+
+        return 'unpaid';
     }
 }

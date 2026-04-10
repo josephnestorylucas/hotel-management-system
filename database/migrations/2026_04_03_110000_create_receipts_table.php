@@ -44,7 +44,7 @@ return new class extends Migration
             $table->string('transaction_reference')->nullable();
             
             // Staff who issued the receipt
-            $table->foreignId('cashier_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('cashier_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('cashier_name')->nullable(); // Snapshot in case user is deleted
             
             // Additional info

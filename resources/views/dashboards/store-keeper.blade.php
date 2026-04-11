@@ -5,7 +5,6 @@
 @section('page-title', __('dashboard.titles.store_keeper'))
 
 @section('content')
-<!-- Welcome Banner -->
 <div class="bg-gradient-to-r from-teal-500 to-teal-700 rounded-2xl p-6 mb-8 text-white shadow-xl">
     <div class="flex items-center justify-between">
         <div>
@@ -19,205 +18,127 @@
     </div>
 </div>
 
-<!-- Top Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.pending') }}</p>
-                <p class="text-3xl font-extrabold text-yellow-600 mt-1">{{ $stats['pending_laundry'] }}</p>
-            </div>
-            <div class="w-14 h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl flex items-center justify-center">
-                <svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.in_progress') }}</p>
-                <p class="text-3xl font-extrabold text-blue-600 mt-1">{{ $stats['inprogress_laundry'] }}</p>
-            </div>
-            <div class="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
-                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.completed') }}</p>
-                <p class="text-3xl font-extrabold text-green-600 mt-1">{{ $stats['completed_laundry'] }}</p>
-            </div>
-            <div class="w-14 h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
-                <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.laundry.delivered') }}</p>
-                <p class="text-3xl font-extrabold text-teal-600 mt-1">{{ $stats['delivered_laundry'] }}</p>
-            </div>
-            <div class="w-14 h-14 bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl flex items-center justify-center">
-                <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Laundry Overview & Room Status -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <!-- Laundry Status Summary -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.laundry_summary') }}</h3>
-        <div class="space-y-4">
-            @php
-                $laundryColors = [
-                    'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'bar' => 'bg-yellow-500', 'label' => __('dashboard.laundry.pending')],
-                    'in_progress' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-700', 'bar' => 'bg-blue-500', 'label' => __('dashboard.laundry.in_progress')],
-                    'completed' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'bar' => 'bg-green-500', 'label' => __('dashboard.laundry.completed')],
-                    'delivered' => ['bg' => 'bg-teal-100', 'text' => 'text-teal-700', 'bar' => 'bg-teal-500', 'label' => __('dashboard.laundry.delivered')],
-                ];
-                $totalLaundry = array_sum($laundryStatusCounts);
-            @endphp
-            @foreach($laundryColors as $status => $colors)
-            @php $count = $laundryStatusCounts[$status] ?? 0; @endphp
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-600">{{ $colors['label'] }}</span>
-                    <span class="text-sm font-bold {{ $colors['text'] }}">{{ $count }}</span>
-                </div>
-                <div class="w-full bg-gray-100 rounded-full h-2.5">
-                    <div class="{{ $colors['bar'] }} h-2.5 rounded-full" style="width: {{ $totalLaundry > 0 ? ($count / $totalLaundry * 100) : 0 }}%"></div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        <div class="mt-6 p-3 bg-teal-50 rounded-xl text-center">
-            <p class="text-sm text-teal-600 font-medium">{{ __('dashboard.laundry.today_tasks') }}</p>
-            <p class="text-2xl font-extrabold text-teal-700">{{ $stats['today_laundry'] }}</p>
-        </div>
+        <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.active_products') }}</p>
+        <p class="text-3xl font-extrabold text-teal-700 mt-1">{{ $stats['active_products'] }}</p>
     </div>
-
-    <!-- Room Status -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 lg:col-span-2">
-        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.room_status_overview') }}</h3>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                <p class="text-3xl font-extrabold text-green-700">{{ $stats['available_rooms'] }}</p>
-                <p class="text-xs font-medium text-green-600 mt-1">{{ __('dashboard.room_status.available') }}</p>
-            </div>
-            <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                <p class="text-3xl font-extrabold text-red-700">{{ $stats['occupied_rooms'] }}</p>
-                <p class="text-xs font-medium text-red-600 mt-1">{{ __('dashboard.room_status.occupied') }}</p>
-            </div>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                <p class="text-3xl font-extrabold text-yellow-700">{{ $stats['dirty_rooms'] }}</p>
-                <p class="text-xs font-medium text-yellow-600 mt-1">{{ __('dashboard.stats.needs_cleaning') }}</p>
-            </div>
-        </div>
-
-        @if($roomsNeedingAttention->count() > 0)
-        <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{{ __('dashboard.sections.rooms_needing_attention') }}</h4>
-        <div class="space-y-2 max-h-64 overflow-y-auto">
-            @foreach($roomsNeedingAttention as $room)
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 {{ $room->status === 'dirty' ? 'bg-yellow-100' : 'bg-red-100' }} rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 {{ $room->status === 'dirty' ? 'text-yellow-600' : 'text-red-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="font-semibold text-secondary">Room {{ $room->room_number }}</span>
-                        <p class="text-xs text-gray-500">{{ $room->floor->building->name ?? '' }} - {{ $room->roomType->name ?? '' }}</p>
-                    </div>
-                </div>
-                <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $room->status === 'dirty' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800' }}">
-                    {{ ucfirst(str_replace('_', ' ', $room->status)) }}
-                </span>
-            </div>
-            @endforeach
-        </div>
-        @else
-        <div class="text-center py-6 text-gray-400">
-            <svg class="w-12 h-12 mx-auto mb-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <p class="text-green-500 font-medium">{{ __('dashboard.messages.all_rooms_good_condition') }}</p>
-        </div>
-        @endif
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.low_stock_items') }}</p>
+        <p class="text-3xl font-extrabold text-red-600 mt-1">{{ $stats['low_stock_items'] }}</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.pending_internal_requests') }}</p>
+        <p class="text-3xl font-extrabold text-amber-600 mt-1">{{ $stats['pending_internal_requests'] }}</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.pending_transfers') }}</p>
+        <p class="text-3xl font-extrabold text-blue-600 mt-1">{{ $stats['pending_transfers'] }}</p>
     </div>
 </div>
 
-<!-- Recent Laundry Orders -->
-<div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-    <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.recent_laundry_orders') }}</h3>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.low_stock_watchlist') }}</h3>
+        <div class="space-y-3">
+            @forelse($lowStockProducts as $stock)
+                <div class="flex items-center justify-between p-3 bg-red-50 rounded-xl border border-red-100">
+                    <div>
+                        <p class="font-semibold text-secondary">{{ $stock->product?->name }}</p>
+                        <p class="text-xs text-gray-500">{{ $stock->location?->name }} · {{ $stock->product?->unit }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-red-600">{{ number_format((float) $stock->available_qty, 3) }}</p>
+                        <p class="text-xs text-gray-500">{{ __('dashboard.stats.need_reordering') }}</p>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-8 text-gray-400">{{ __('dashboard.messages.no_low_stock_items') }}</div>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.pending_internal_requests') }}</h3>
+        <div class="space-y-3">
+            @forelse($pendingInternalRequests as $request)
+                <div class="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
+                    <div>
+                        <p class="font-semibold text-secondary">{{ $request->product?->name }}</p>
+                        <p class="text-xs text-gray-500">{{ $request->department }} · {{ $request->requester?->name ?? __('dashboard.messages.not_assigned') }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-amber-700">{{ number_format((float) $request->quantity, 3) }}</p>
+                        <p class="text-xs text-gray-500">{{ ucfirst($request->status) }}</p>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-8 text-gray-400">{{ __('dashboard.messages.no_pending_internal_requests') }}</div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-extrabold text-secondary">{{ __('dashboard.sections.recent_store_transfers') }}</h3>
+        <a href="{{ route('store.transfers.index') }}" class="text-sm text-primary hover:text-blue-700 font-semibold">{{ __('dashboard.actions.view_all') }}</a>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                    <th class="pb-3 pr-4">{{ __('dashboard.table.order_number') }}</th>
-                    <th class="pb-3 pr-4">{{ __('dashboard.table.guest') }}</th>
-                    <th class="pb-3 pr-4">{{ __('dashboard.table.room') }}</th>
-                    <th class="pb-3 pr-4">{{ __('dashboard.table.total') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.product') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.quantity') }}</th>
+                    <th class="pb-3 pr-4">{{ __('dashboard.table.status') }}</th>
                     <th class="pb-3 pr-4">{{ __('dashboard.table.date') }}</th>
-                    <th class="pb-3">{{ __('dashboard.table.status') }}</th>
+                    <th class="pb-3">{{ __('dashboard.table.action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-                @forelse($recentLaundryOrders as $order)
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="py-3 pr-4">
-                        <a href="{{ route('laundry.show', $order) }}" class="font-semibold text-blue-600 hover:text-blue-800">{{ $order->order_number }}</a>
-                    </td>
-                    <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $order->guest->first_name ?? '' }} {{ $order->guest->last_name ?? '' }}</span>
-                    </td>
-                    <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $order->booking->room->room_number ?? 'N/A' }}</span>
-                    </td>
-                    <td class="py-3 pr-4">
-                        <span class="font-bold text-green-600">{{ number_format($order->total_amount) }}</span>
-                    </td>
-                    <td class="py-3 pr-4">
-                        <span class="text-sm text-gray-600">{{ $order->created_at->format('M d, Y') }}</span>
-                    </td>
-                    <td class="py-3">
-                        @php
-                            $orderBadge = match($order->status) {
-                                'pending' => 'bg-yellow-100 text-yellow-800',
-                                'in_progress' => 'bg-blue-100 text-blue-800',
-                                'completed' => 'bg-green-100 text-green-800',
-                                'delivered' => 'bg-teal-100 text-teal-800',
-                                default => 'bg-gray-100 text-gray-800',
-                            };
-                        @endphp
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $orderBadge }}">
-                            {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                        </span>
-                    </td>
-                </tr>
+                @forelse($recentTransfers as $transfer)
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-3 pr-4">
+                            <div class="font-semibold text-secondary">{{ $transfer->product?->name }}</div>
+                            <div class="text-xs text-gray-500">{{ $transfer->fromLocation?->name }} -> {{ $transfer->toLocation?->name }}</div>
+                        </td>
+                        <td class="py-3 pr-4 font-semibold text-secondary">{{ number_format((float) $transfer->quantity, 3) }}</td>
+                        <td class="py-3 pr-4">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $transfer->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ($transfer->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
+                                {{ ucfirst($transfer->status) }}
+                            </span>
+                        </td>
+                        <td class="py-3 pr-4 text-sm text-gray-600">{{ $transfer->created_at?->format('M d, Y') }}</td>
+                        <td class="py-3">
+                            <a href="{{ route('store.transfers.index') }}" class="text-primary hover:text-blue-700 font-semibold">{{ __('dashboard.actions.view') }}</a>
+                        </td>
+                    </tr>
                 @empty
-                <tr>
-                    <td colspan="6" class="py-8 text-center text-gray-400">{{ __('dashboard.messages.no_laundry_orders_found') }}</td>
-                </tr>
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-gray-400">{{ __('dashboard.messages.no_recent_store_transfers') }}</td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.quick_actions') }}</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="{{ route('store.products.index') }}" class="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl border border-teal-200 hover:shadow-lg transition-all group">
+            <span class="text-sm font-semibold text-teal-700">{{ __('general.nav.products') }}</span>
+        </a>
+        <a href="{{ route('store.stock.levels') }}" class="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-all group">
+            <span class="text-sm font-semibold text-blue-700">{{ __('general.nav.stock_levels') }}</span>
+        </a>
+        <a href="{{ route('store.internal-requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 hover:shadow-lg transition-all group">
+            <span class="text-sm font-semibold text-amber-700">{{ __('general.nav.internal_requests') }}</span>
+        </a>
+        <a href="{{ route('store.transfers.index') }}" class="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl border border-indigo-200 hover:shadow-lg transition-all group">
+            <span class="text-sm font-semibold text-indigo-700">{{ __('general.nav.transfers') }}</span>
+        </a>
     </div>
 </div>
 @endsection

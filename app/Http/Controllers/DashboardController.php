@@ -471,38 +471,40 @@ class DashboardController extends Controller {
 
     private function storeKeeperDashboard() {
         $stats = [
-            'total_rooms' => Room::count(),
-            'occupied_rooms' => Room::where('status', 'occupied')->count(),
-            'available_rooms' => Room::where('status', 'available')->where('is_active', true)->count(),
-            'dirty_rooms' => Room::where('status', 'dirty')->count(),
-            'out_of_order_rooms' => Room::where('status', 'out_of_order')->count(),
+            'active_products' => Product::where('is_active', true)->count(),
+            'low_stock_items' => StockLevel::query()
+                ->whereHas('product', function ($query) {
+                    $query->whereColumn('stock_levels.quantity', '<=', 'products.reorder_level');
+                })
+                ->count(),
+            'pending_internal_requests' => InternalUsageRequest::whereIn('status', ['pending', 'approved'])->count(),
+            'pending_transfers' => StockTransfer::where('status', 'pending')->count(),
         ];
 
-        $stats['pending_laundry'] = LaundryOrder::where('status', 'pending')->count();
-        $stats['inprogress_laundry'] = LaundryOrder::where('status', 'in_progress')->count();
-        $stats['completed_laundry'] = LaundryOrder::where('status', 'completed')->count();
-        $stats['delivered_laundry'] = LaundryOrder::where('status', 'delivered')->count();
-        $stats['today_laundry'] = LaundryOrder::whereDate('created_at', today())->count();
+        $lowStockProducts = StockLevel::with(['product', 'location'])
+            ->whereHas('product', function ($query) {
+                $query->whereColumn('stock_levels.quantity', '<=', 'products.reorder_level');
+            })
+            ->orderBy('quantity')
+            ->limit(10)
+            ->get();
 
-        $laundryStatusCounts = LaundryOrder::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->pluck('count', 'status')
-            ->toArray();
-
-        $recentLaundryOrders = LaundryOrder::with(['guest', 'booking.room', 'creator'])
+        $pendingInternalRequests = InternalUsageRequest::with(['product', 'requester'])
+            ->whereIn('status', ['pending', 'approved'])
             ->latest()
             ->limit(10)
             ->get();
 
-        $roomsNeedingAttention = Room::with(['floor.building', 'roomType'])
-            ->whereIn('status', ['dirty', 'out_of_order'])
+        $recentTransfers = StockTransfer::with(['product', 'fromLocation', 'toLocation', 'requester'])
+            ->latest()
+            ->limit(10)
             ->get();
 
         return view('dashboards.store-keeper', compact(
             'stats',
-            'laundryStatusCounts',
-            'recentLaundryOrders',
-            'roomsNeedingAttention'
+            'lowStockProducts',
+            'pendingInternalRequests',
+            'recentTransfers'
         ));
     }
 

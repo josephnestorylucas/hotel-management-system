@@ -106,6 +106,11 @@ class LaundryOrder extends Model implements ReceiptPrintable
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
+
     public function processor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');

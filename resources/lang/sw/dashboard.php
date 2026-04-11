@@ -106,6 +106,8 @@ return [
         'low_stock_items' => 'Bidhaa Zilizo Chini',
         'need_reordering' => 'zinahitaji kuagiza tena',
         'pending_laundry' => 'Kufulia Kunakosubiri',
+        'active_products' => 'Bidhaa Zinazotumika',
+        'pending_internal_requests' => 'Maombi ya Matumizi ya Ndani Yanayosubiri',
         // Restaurant/Bar stats
         'bar_products' => 'Bidhaa za Baa',
         'kitchen_products' => 'Bidhaa za Jiko',
@@ -357,6 +359,9 @@ return [
         'no_purchase_orders_yet' => 'Hakuna oda za ununuzi bado.',
         'no_supplier_activity_month' => 'Hakuna shughuli za muuzaji mwezi huu.',
         'no_goods_received_yet' => 'Hakuna stakabadhi za bidhaa bado.',
+        'no_low_stock_items' => 'Hakuna bidhaa za hisa chini kwa sasa.',
+        'no_pending_internal_requests' => 'Hakuna maombi ya matumizi ya ndani yanayosubiri.',
+        'no_recent_store_transfers' => 'Hakuna uhamisho wa ghala wa hivi karibuni.',
     ],
     
     // Sections
@@ -397,6 +402,8 @@ return [
         'top_suppliers' => 'Wauzaji Bora Mwezi Huu',
         'recent_grns' => 'Stakabadhi za Bidhaa za Hivi Karibuni',
         'laundry_summary' => 'Muhtasari wa Kufulia',
+        'low_stock_watchlist' => 'Orodha ya Hisa Chini',
+        'recent_store_transfers' => 'Uhamisho wa Hivi Karibuni wa Ghala',
         'recent_bar_kitchen_movements' => 'Mienendo ya Baa na Jiko ya Hivi Karibuni',
         'recent_movements' => 'Mienendo ya Baa na Jiko ya Hivi Karibuni',
         'notifications' => 'Arifa',

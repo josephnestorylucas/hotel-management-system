@@ -106,6 +106,8 @@ return [
         'low_stock_items' => 'Low Stock Items',
         'need_reordering' => 'need reordering',
         'pending_laundry' => 'Pending Laundry',
+        'active_products' => 'Active Products',
+        'pending_internal_requests' => 'Pending Internal Requests',
         // Restaurant/Bar stats
         'bar_products' => 'Bar Products',
         'kitchen_products' => 'Kitchen Products',
@@ -357,6 +359,9 @@ return [
         'no_purchase_orders_yet' => 'No purchase orders yet.',
         'no_supplier_activity_month' => 'No supplier activity this month.',
         'no_goods_received_yet' => 'No goods received notes yet.',
+        'no_low_stock_items' => 'No low stock items right now.',
+        'no_pending_internal_requests' => 'No pending internal requests.',
+        'no_recent_store_transfers' => 'No recent store transfers.',
     ],
     
     // Sections
@@ -397,6 +402,8 @@ return [
         'top_suppliers' => 'Top Suppliers This Month',
         'recent_grns' => 'Recent Goods Received Notes',
         'laundry_summary' => 'Laundry Summary',
+        'low_stock_watchlist' => 'Low Stock Watchlist',
+        'recent_store_transfers' => 'Recent Store Transfers',
         'recent_bar_kitchen_movements' => 'Recent Bar & Kitchen Movements',
         'recent_movements' => 'Recent Bar & Kitchen Movements',
         'notifications' => 'Notifications',

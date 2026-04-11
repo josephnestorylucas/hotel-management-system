@@ -24,7 +24,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.procurement.active_suppliers') }}</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.active_suppliers') }}</p>
                 <p class="text-3xl font-extrabold text-secondary mt-1">{{ $stats['active_suppliers'] }}</p>
                 <p class="text-xs text-gray-500 font-medium mt-1">{{ __('dashboard.procurement.of_total', ['total' => $stats['total_suppliers']]) }}</p>
             </div>
@@ -39,9 +39,9 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.procurement.pending_lpos') }}</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.pending_lpos') }}</p>
                 <p class="text-3xl font-extrabold text-yellow-600 mt-1">{{ $stats['pending_lpos'] }}</p>
-                <p class="text-xs text-gray-500 font-medium mt-1">{{ __('dashboard.procurement.awaiting_approval') }}</p>
+                <p class="text-xs text-gray-500 font-medium mt-1">{{ __('dashboard.stats.awaiting_approval') }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl flex items-center justify-center">
                 <svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +54,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.procurement.pending_grns') }}</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.pending_grns') }}</p>
                 <p class="text-3xl font-extrabold text-orange-600 mt-1">{{ $stats['pending_grns'] }}</p>
                 <p class="text-xs text-gray-500 font-medium mt-1">{{ __('dashboard.procurement.awaiting_confirmation') }}</p>
             </div>
@@ -69,9 +69,9 @@
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.procurement.low_stock_items') }}</p>
+                <p class="text-sm font-medium text-gray-500">{{ __('dashboard.stats.low_stock_items') }}</p>
                 <p class="text-3xl font-extrabold text-red-600 mt-1">{{ $stats['low_stock_items'] }}</p>
-                <p class="text-xs text-red-500 font-medium mt-1">{{ __('dashboard.procurement.need_reordering') }}</p>
+                <p class="text-xs text-red-500 font-medium mt-1">{{ __('dashboard.stats.need_reordering') }}</p>
             </div>
             <div class="w-14 h-14 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center">
                 <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@
             <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border border-yellow-200">
                 <p class="text-xs font-semibold text-yellow-600 uppercase tracking-wider">{{ __('dashboard.procurement.pending_orders_value') }}</p>
                 <p class="text-2xl font-extrabold text-yellow-700 mt-2">{{ number_format($stats['pending_orders_value'], 0) }} TZS</p>
-                <p class="text-xs text-yellow-600 mt-1">{{ __('dashboard.procurement.awaiting_delivery') }}</p>
+                <p class="text-xs text-yellow-600 mt-1">{{ __('dashboard.stats.awaiting_delivery') }}</p>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div class="text-center p-3 bg-blue-50 rounded-xl">
@@ -284,13 +284,13 @@
             </table>
         </div>
         <div class="mt-4 pt-4 border-t border-gray-100">
-            <a href="{{ route('procurement.lpo.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">{{ __('dashboard.actions.view_all_purchase_orders') }} &rarr;</a>
+            <a href="{{ route('procurement.lpo.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">{{ __('dashboard.actions.view_all_lpos') }} &rarr;</a>
         </div>
     </div>
 
     <!-- Top Suppliers -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.top_suppliers_month') }}</h3>
+        <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.top_suppliers') }}</h3>
         <div class="space-y-3">
             @forelse($topSuppliers as $index => $supplier)
             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
@@ -317,7 +317,7 @@
 
 <!-- Recent Goods Received Notes -->
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-    <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.recent_goods_received') }}</h3>
+    <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.recent_grns') }}</h3>
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead>

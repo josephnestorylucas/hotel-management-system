@@ -1,140 +1,26 @@
-You are a Laravel backend + Blade engineer.
+error while running migration 
 
-========================================
-OBJECTIVE
-========================================
-Add receipt printing for all payment-related models and the financial system.
+  Illuminate\Database\QueryException
 
-Receipts must be consistent, printable, and available anywhere a payment is completed or recorded.
+  SQLSTATE[42804]: Datatype mismatch: 7 ERROR:  foreign key constraint "receipts_cashier_id_foreign" cannot be implemented
+DETAIL:  Key columns "cashier_id" and "id" are of incompatible types: bigint and uuid. (Connection: pgsql, Host: 127.0.0.1, Port: 5432, Database: hms_db, SQL: alter table "
+receipts" add constraint "receipts_cashier_id_foreign" foreign key ("cashier_id") references "users" ("id") on delete set null)
 
-========================================
-STEP 1: IDENTIFY ALL PAYMENT MODELS
-========================================
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:838
+    834▕             $exceptionType = $this->isUniqueConstraintError($e)
+    835▕                 ? UniqueConstraintViolationException::class
+    836▕                 : QueryException::class;
+    837▕
+  ➜ 838▕             throw new $exceptionType(
+    839▕                 $this->getNameWithReadWriteType(),
+    840▕                 $query,
+    841▕                 $this->prepareBindings($bindings),
+    842▕                 $e,
 
-Search for:
-- payment
-- settle
-- checkout
-- transaction
-- invoice
-- receipt
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+      PDOException::("SQLSTATE[42804]: Datatype mismatch: 7 ERROR:  foreign key constraint "receipts_cashier_id_foreign" cannot be implemented
+DETAIL:  Key columns "cashier_id" and "id" are of incompatible types: bigint and uuid.")
 
-List every model/flow that finalizes payments, such as:
-- Booking / Checkout charges
-- Laundry orders
-- Restaurant orders
-- Bar orders
-- Store sales
-- Conference / events
-- Walk-in transactions
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+      PDOStatement::execute()
 
-Confirm which model is the source of truth for each payment.
-
-========================================
-STEP 2: STANDARD RECEIPT DATA CONTRACT
-========================================
-
-Create a shared contract or trait (e.g., ReceiptPrintable) that returns:
-- receipt_no
-- issued_at
-- module
-- customer_name
-- customer_phone
-- items summary
-- subtotal
-- discount
-- tax
-- total
-- amount_paid
-- balance (if any)
-- payment_method
-- transaction_reference
-- cashier
-
-Every payment model must implement this data format.
-
-========================================
-STEP 3: RECEIPT NUMBERING
-========================================
-
-Implement a single receipt numbering service:
-- Unique and sequential
-- Prefix like HMS-YYYY-XXXX
-- Idempotent: reprint must reuse existing number
-
-Store receipt_no in the transaction record or a new receipts table.
-
-========================================
-STEP 4: RECEIPT RENDERING
-========================================
-
-Create a single printable Blade view:
-- resources/views/receipts/print.blade.php
-- Print CSS for A4 and thermal
-- Clear layout: header, customer, items, totals, payment details
-
-========================================
-STEP 5: ROUTES + CONTROLLERS
-========================================
-
-Add routes to print receipts:
-- /receipts/{module}/{id}/print or
-- /receipts/{transaction}/print
-
-Controller must:
-- authorize cashier/manager
-- load model + transaction
-- render receipt view
-
-========================================
-STEP 6: UI INTEGRATION
-========================================
-
-Add a "Print receipt" button in:
-- in  the  all  orders   where  are  not  paid the  reciept  cna  say it  has  not  been  paid 
-- Checkout payment success
-- Laundry settle success
-- Restaurant settle success
-- Bar settle success
-- Store sale completion
-- Transaction details screen
-
-========================================
-STEP 7: FINANCIAL SYSTEM INTEGRATION
-========================================
-
-Ensure accounting records store and display:
-- receipt_no
-- transaction_reference
-
-Add print link in financial reports or transaction views.
-
-========================================
-STEP 8: EDGE CASES
-========================================
-
-Handle:
-- walk-ins
-- partial payments (show balance)
-- refunds (print refund receipt with reference)
-- missing customer data (show "N/A")
-
-========================================
-STEP 9: VALIDATION
-========================================
-
-Verify for each module:
-1. Payment completes
-2. Receipt generated and printed
-3. Reprint uses same receipt_no
-4. Totals match transaction
-
-========================================
-OUTPUT REQUIRED
-========================================
-
-1. List of models updated
-2. Receipt view path
-3. Routes/controllers added
-4. Confirmation all modules print consistently
-5. Confirmation receipt numbers are stored in accounting records

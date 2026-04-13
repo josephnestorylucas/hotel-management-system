@@ -1,6 +1,7 @@
-@extends('store.layout')
+@extends('layouts.app')
 
 @section('title', 'Stock Transfers')
+@section('page-title', 'Stock Transfers')
 
 @section('content')
 <div class="flex justify-between items-center mb-6">

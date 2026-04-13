@@ -1,6 +1,7 @@
-@extends('store.layout')
+@extends('layouts.app')
 
 @section('title', 'New Internal Request')
+@section('page-title', 'New Internal Request')
 
 @section('content')
 <div class="max-w-2xl">

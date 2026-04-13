@@ -1,6 +1,7 @@
-@extends('store.layout')
+@extends('layouts.app')
 
 @section('title', 'Create Adjustment')
+@section('page-title', 'Create Adjustment')
 
 @section('content')
 <div class="max-w-2xl">

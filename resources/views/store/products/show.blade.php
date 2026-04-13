@@ -1,6 +1,7 @@
-@extends('store.layout')
+@extends('layouts.app')
 
 @section('title', $product->name)
+@section('page-title', $product->name)
 
 @section('content')
 <div class="flex justify-between items-start mb-6">

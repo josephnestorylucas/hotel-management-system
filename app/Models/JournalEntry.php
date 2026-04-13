@@ -11,7 +11,7 @@ class JournalEntry extends Model
     use HasUuids;
 
     protected $fillable = [
-        'entry_no', 'entry_date', 'reference', 'source', 'source_id',
+        'entry_no', 'entry_date', 'reference', 'source', 'source_id', 'supplier_id',
         'description', 'total_debit', 'total_credit',
         'status', 'created_by', 'posted_by', 'posted_at',
     ];
@@ -32,6 +32,7 @@ class JournalEntry extends Model
     }
 
     public function lines()   { return $this->hasMany(JournalLine::class); }
+    public function supplier(){ return $this->belongsTo(Supplier::class); }
     public function creator() { return $this->belongsTo(User::class, 'created_by'); }
     public function poster()  { return $this->belongsTo(User::class, 'posted_by'); }
 

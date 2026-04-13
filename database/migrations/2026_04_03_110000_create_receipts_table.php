@@ -65,7 +65,6 @@ return new class extends Migration
             $table->index('module');
             $table->index('payment_status');
             $table->index('issued_at');
-            $table->index(['receiptable_type', 'receiptable_id']);
         });
     }
 

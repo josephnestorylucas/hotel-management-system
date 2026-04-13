@@ -21,6 +21,7 @@ class GoodsReceivedNoteItem extends Model
         'quantity_received',
         'unit_price',
         'subtotal',
+        'stock_movement_id',
         'notes',
     ];
 
@@ -44,5 +45,10 @@ class GoodsReceivedNoteItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function stockMovement(): BelongsTo
+    {
+        return $this->belongsTo(StockMovement::class);
     }
 }

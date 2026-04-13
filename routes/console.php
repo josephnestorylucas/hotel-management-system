@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schedule;
 use App\Jobs\SendCheckoutReminderJob;
 use App\Models\Booking;
+use App\Models\GoodsReceivedNote;
+use App\Models\LocalPurchaseOrderItem;
+use App\Services\ProcurementIntegrationService;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -82,6 +85,53 @@ Artisan::command('translations:verify', function () {
 
     return 1;
 })->purpose('Verify en/sw translation key parity');
+
+Artisan::command('procurement:audit-links {--fix-statuses}', function () {
+    $confirmedGrns = GoodsReceivedNote::with(['items.lpoItem', 'lpo.items'])
+        ->where('status', 'confirmed')
+        ->get();
+
+    $missingAccounting = $confirmedGrns->filter(fn ($grn) => ! $grn->accounting_journal_entry_id);
+    $missingStockLinks = $confirmedGrns->filter(function ($grn) {
+        return $grn->items->contains(fn ($item) => $item->product_id && ! $item->stock_movement_id);
+    });
+
+    $mismatchedReceivedQty = LocalPurchaseOrderItem::query()
+        ->get()
+        ->filter(function ($item) {
+            $confirmedQty = $item->grnItems()
+                ->whereHas('grn', fn ($q) => $q->where('status', 'confirmed'))
+                ->sum('quantity_received');
+
+            return abs((float) $item->received_quantity - (float) $confirmedQty) > 0.0001;
+        });
+
+    $this->info('Procurement integration audit complete.');
+    $this->line('Confirmed GRNs: ' . $confirmedGrns->count());
+    $this->line('Missing accounting links: ' . $missingAccounting->count());
+    $this->line('Missing stock links: ' . $missingStockLinks->count());
+    $this->line('Mismatched received quantities: ' . $mismatchedReceivedQty->count());
+
+    if ($this->option('fix-statuses')) {
+        $service = app(ProcurementIntegrationService::class);
+
+        LocalPurchaseOrderItem::query()->each(function ($item) {
+            $confirmedQty = $item->grnItems()
+                ->whereHas('grn', fn ($q) => $q->where('status', 'confirmed'))
+                ->sum('quantity_received');
+
+            $item->update(['received_quantity' => round((float) $confirmedQty, 3)]);
+        });
+
+        $confirmedGrns->pluck('lpo')->filter()->unique('id')->each(function ($lpo) use ($service) {
+            $service->syncLpoReceivingStatus($lpo->fresh('items'));
+        });
+
+        $this->info('Received quantities and LPO statuses repaired from confirmed GRNs.');
+    }
+
+    return 0;
+})->purpose('Audit procurement, stock, and accounting integration links');
 
 // ═══ SCHEDULED TASKS ═══
 

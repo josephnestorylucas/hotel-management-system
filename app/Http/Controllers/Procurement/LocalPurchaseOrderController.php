@@ -8,6 +8,7 @@ use App\Models\LocalPurchaseOrder;
 use App\Models\LocalPurchaseOrderItem;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Services\ProcurementIntegrationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -177,15 +178,11 @@ class LocalPurchaseOrderController extends Controller
 
     public function approve(LocalPurchaseOrder $localPurchaseOrder): RedirectResponse
     {
-        if ($localPurchaseOrder->status !== 'pending_approval') {
-            return back()->with('error', 'LPO is not pending approval.');
+        try {
+            app(ProcurementIntegrationService::class)->approveLpo($localPurchaseOrder, (string) auth()->id());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
-
-        $localPurchaseOrder->update([
-            'status' => 'approved',
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-        ]);
 
         return back()->with('success', "LPO {$localPurchaseOrder->lpo_number} approved successfully.");
     }

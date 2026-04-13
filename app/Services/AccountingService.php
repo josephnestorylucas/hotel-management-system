@@ -43,6 +43,7 @@ class AccountingService
                 'description'  => $data['description'],
                 'source'       => $data['source'],
                 'source_id'    => $data['source_id'] ?? null,
+                'supplier_id'  => $data['supplier_id'] ?? null,
                 'reference'    => $data['reference'] ?? null,
                 'total_debit'  => $totalDebit,
                 'total_credit' => $totalCredit,
@@ -164,15 +165,17 @@ class AccountingService
     public function postGrnConfirmation(
         string $grnNo,
         string $grnId,
+        ?string $supplierId,
         float $netAmount,
         float $vatAmount,
         string $actorId
     ): JournalEntry {
         return $this->post([
             'date'        => now()->toDateString(),
-            'description' => "Goods received — {$grnNo}",
+            'description' => "Goods received - {$grnNo}",
             'source'      => 'procurement',
             'source_id'   => $grnId,
+            'supplier_id' => $supplierId,
             'reference'   => $grnNo,
             'lines' => [
                 ['account_code' => '1400', 'type' => 'debit',  'amount' => $netAmount],
@@ -189,14 +192,16 @@ class AccountingService
     public function postSupplierPayment(
         string $reference,
         string $sourceId,
+        ?string $supplierId,
         float $amount,
         string $actorId
     ): JournalEntry {
         return $this->post([
             'date'        => now()->toDateString(),
-            'description' => "Supplier payment — {$reference}",
+            'description' => "Supplier payment - {$reference}",
             'source'      => 'procurement',
             'source_id'   => $sourceId,
+            'supplier_id' => $supplierId,
             'reference'   => $reference,
             'lines' => [
                 ['account_code' => '2100', 'type' => 'debit',  'amount' => $amount],

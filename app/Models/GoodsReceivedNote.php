@@ -26,6 +26,7 @@ class GoodsReceivedNote extends Model
         'grand_total',
         'notes',
         'receipt_path',
+        'accounting_journal_entry_id',
         'status',
         'rejection_reason',
         'received_by',
@@ -116,6 +117,11 @@ class GoodsReceivedNote extends Model
     public function confirmer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'confirmed_by');
+    }
+
+    public function accountingEntry(): BelongsTo
+    {
+        return $this->belongsTo(JournalEntry::class, 'accounting_journal_entry_id');
     }
 
     public function getSupplierNameAttribute(): string

@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LocalPurchaseOrderItem extends Model
 {
@@ -17,6 +18,7 @@ class LocalPurchaseOrderItem extends Model
         'item_name',
         'unit',
         'quantity',
+        'received_quantity',
         'unit_price',
         'subtotal',
         'notes',
@@ -24,6 +26,7 @@ class LocalPurchaseOrderItem extends Model
 
     protected $casts = [
         'quantity' => 'decimal:3',
+        'received_quantity' => 'decimal:3',
         'unit_price' => 'decimal:2',
         'subtotal' => 'decimal:2',
     ];
@@ -36,5 +39,10 @@ class LocalPurchaseOrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function grnItems(): HasMany
+    {
+        return $this->hasMany(GoodsReceivedNoteItem::class, 'lpo_item_id');
     }
 }

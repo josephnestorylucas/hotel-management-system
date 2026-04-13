@@ -10,9 +10,10 @@ use App\Models\LocalPurchaseOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\ProcurementIntegrationService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use App\Services\AccountingService;
 
 class GoodsReceivedNoteController extends Controller
 {
@@ -146,29 +147,11 @@ class GoodsReceivedNoteController extends Controller
 
     public function confirm(GoodsReceivedNote $goodsReceivedNote): RedirectResponse
     {
-        if ($goodsReceivedNote->status !== 'pending_confirmation') {
-            return back()->with('error', 'GRN is not pending confirmation.');
+        try {
+            app(ProcurementIntegrationService::class)->confirmGrn($goodsReceivedNote, (string) auth()->id());
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
-
-        DB::transaction(function () use ($goodsReceivedNote) {
-            $goodsReceivedNote->update([
-                'status' => 'confirmed',
-                'confirmed_by' => auth()->id(),
-                'confirmed_at' => now(),
-            ]);
-
-            // CRITICAL: Push goods into stock
-            $goodsReceivedNote->pushToStock(auth()->id());
-
-            // Post to accounting journal
-            app(AccountingService::class)->postGrnConfirmation(
-                grnNo: $goodsReceivedNote->grn_number,
-                grnId: $goodsReceivedNote->id,
-                netAmount: (float) $goodsReceivedNote->subtotal,
-                vatAmount: (float) $goodsReceivedNote->tax_amount,
-                actorId: auth()->id()
-            );
-        });
 
         return back()->with('success', "GRN {$goodsReceivedNote->grn_number} confirmed. Stock levels updated successfully.");
     }

@@ -61,8 +61,8 @@
                     {{ number_format($d->quantity * ($d->product->cost_price ?? 0), 0) }} TZS
                 </td>
                 <td class="px-4 py-3 text-gray-500">{{ $d->reason ?? '—' }}</td>
-                <td class="px-4 py-3 text-gray-400 text-xs">{{ Str::limit($d->notes, 40) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-xs">{{ $d->user->name ?? '—' }}</td>
+                <td class="px-4 py-3 text-gray-400 text-xs">{{ \Illuminate\Support\Str::limit($d->notes, 40) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ $d->actor->name ?? '—' }}</td>
             </tr>
             @empty
             <tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">No damage records found.</td></tr>

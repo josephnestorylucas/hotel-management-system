@@ -74,13 +74,13 @@
                         {{ ucwords(str_replace('_',' ', $m->type)) }}
                     </span>
                 </td>
-                <td class="px-4 py-3 text-right font-mono {{ $m->direction === 'increase' ? 'text-green-600' : 'text-red-600' }}">
-                    {{ $m->direction === 'increase' ? '+' : '-' }}{{ $m->quantity }}
+                <td class="px-4 py-3 text-right font-mono {{ in_array($m->type, ['restock', 'transfer_in']) ? 'text-green-600' : 'text-red-600' }}">
+                    {{ in_array($m->type, ['restock', 'transfer_in']) ? '+' : '-' }}{{ $m->quantity }}
                 </td>
-                <td class="px-4 py-3 text-right text-gray-400">{{ $m->before_qty }}</td>
-                <td class="px-4 py-3 text-right font-medium">{{ $m->after_qty }}</td>
+                <td class="px-4 py-3 text-right text-gray-400">{{ $m->quantity_before }}</td>
+                <td class="px-4 py-3 text-right font-medium">{{ $m->quantity_after }}</td>
                 <td class="px-4 py-3 text-gray-400 text-xs">{{ $m->reference ?? '—' }}</td>
-                <td class="px-4 py-3 text-gray-500 text-xs">{{ $m->user->name ?? '—' }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ $m->actor->name ?? '—' }}</td>
             </tr>
             @empty
             <tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">No movements found.</td></tr>

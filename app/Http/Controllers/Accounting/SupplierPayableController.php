@@ -149,7 +149,9 @@ class SupplierPayableController extends Controller
                 ->withInput();
         }
 
-        return back()->with('success', __('accountant.messages.payment_allocated'));
+        return redirect()
+            ->route('accountant.payments.apply', $supplierPayment)
+            ->with('success', __('accountant.messages.payment_allocated'));
     }
 
     public function postPayment(SupplierPayment $supplierPayment, SupplierPayablesService $service): RedirectResponse

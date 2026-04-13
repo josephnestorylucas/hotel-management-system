@@ -97,6 +97,7 @@ return [
         'save_draft' => 'Save draft',
         'apply_payment_title' => 'Apply Supplier Payment',
         'allocate_payment' => 'Allocate payment',
+        'allocate_help' => 'Enter the exact amount you want to apply to each payable, then save allocations before finalizing.',
         'save_allocations' => 'Save allocations',
         'allocate_amount' => 'Allocate amount',
         'allocated_amount' => 'Allocated amount',

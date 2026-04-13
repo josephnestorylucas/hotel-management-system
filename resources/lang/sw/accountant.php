@@ -97,6 +97,7 @@ return [
         'save_draft' => 'Hifadhi rasimu',
         'apply_payment_title' => 'Tumia Malipo ya Muuzaji',
         'allocate_payment' => 'Gawa malipo',
+        'allocate_help' => 'Weka kiasi halisi unachotaka kugawa kwa kila deni, kisha hifadhi mgao kabla ya kuhitimisha.',
         'save_allocations' => 'Hifadhi mgao',
         'allocate_amount' => 'Kiasi cha kugawa',
         'allocated_amount' => 'Kiasi kilichogawiwa',

@@ -7,13 +7,14 @@
 @php($showRoute = auth()->user()->hasRole('manager') ? 'manager.accounting.journal.show' : 'accounting.journal.show')
 @php($postRoute = auth()->user()->hasRole('manager') ? 'manager.accounting.journal.post' : 'accounting.journal.post')
 @php($reverseRoute = auth()->user()->hasRole('manager') ? 'manager.accounting.journal.reverse' : 'accounting.journal.reverse')
+@php($backRoute = auth()->user()->hasRole('manager') ? 'manager.accounting.reports.supplier-payables' : 'accounting.journal.index')
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-extrabold text-secondary">{{ $journalEntry->entry_no }}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ __('accountant.journal.labels.detail_subtitle') }}</p>
         </div>
-        <a href="{{ route('accounting.journal.index') }}" class="text-primary hover:text-blue-700 font-semibold">← {{ __('accountant.journal.actions.back_to_journal') }}</a>
+        <a href="{{ route($backRoute) }}" class="text-primary hover:text-blue-700 font-semibold">← {{ __('accountant.journal.actions.back_to_journal') }}</a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">

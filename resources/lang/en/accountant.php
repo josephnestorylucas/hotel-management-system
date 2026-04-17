@@ -271,6 +271,7 @@ return [
             'unbalanced' => 'Unbalanced',
             'created_by' => 'Created By',
             'posted_by' => 'Posted By',
+            'posted_at' => 'Posted At',
             'reversal_reason' => 'Reversal Reason',
         ],
         'actions' => [

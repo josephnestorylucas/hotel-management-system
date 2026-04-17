@@ -55,13 +55,11 @@ class StockTransferRestrictionsTest extends TestCase
             ->assertRedirect(route('dashboard'));
     }
 
-    public function test_transfer_requires_manager_approval_before_fulfillment_and_writes_audit(): void
+    public function test_store_manager_can_create_and_complete_transfer_with_audit_records(): void
     {
         $this->bootstrapStockContext();
 
-        $restaurantManager = $this->makeUser('restaurant_manager');
         $storeManager = $this->makeUser('store_manager');
-        $storeKeeper = $this->makeUser('store_keeper');
         $product = Product::query()->firstOrFail();
         $mainStore = StockLocation::mainStore();
         $bar = StockLocation::bar();
@@ -70,7 +68,7 @@ class StockTransferRestrictionsTest extends TestCase
             ->where('location_id', $mainStore->id)
             ->update(['quantity' => 20, 'reserved_qty' => 0]);
 
-        $this->actingAs($restaurantManager)
+        $this->actingAs($storeManager)
             ->post(route('store.transfers.store'), [
                 'product_id' => $product->id,
                 'to_location_code' => 'bar',
@@ -81,26 +79,17 @@ class StockTransferRestrictionsTest extends TestCase
 
         $transfer = StockTransfer::query()->latest()->firstOrFail();
 
-        $this->actingAs($storeKeeper)
-            ->post(route('store.transfers.fulfill', $transfer))
-            ->assertStatus(422);
+        $this->assertSame($storeManager->id, $transfer->requested_by);
 
         $this->actingAs($storeManager)
-            ->post(route('store.transfers.approve', $transfer))
-            ->assertRedirect(route('store.transfers.index'));
-
-        $transfer->refresh();
-        $this->assertSame('approved', $transfer->status);
-        $this->assertSame($storeManager->id, $transfer->approved_by);
-        $this->assertNotNull($transfer->approved_at);
-
-        $this->actingAs($storeKeeper)
             ->post(route('store.transfers.fulfill', $transfer))
             ->assertRedirect(route('store.transfers.index'));
 
         $transfer->refresh();
         $this->assertSame('completed', $transfer->status);
-        $this->assertSame($storeKeeper->id, $transfer->fulfilled_by);
+        $this->assertSame($storeManager->id, $transfer->approved_by);
+        $this->assertNotNull($transfer->approved_at);
+        $this->assertSame($storeManager->id, $transfer->fulfilled_by);
         $this->assertNotNull($transfer->completed_at);
 
         $this->assertDatabaseHas('stock_levels', [
@@ -136,8 +125,8 @@ class StockTransferRestrictionsTest extends TestCase
     {
         $this->bootstrapStockContext();
 
-        $restaurantManager = $this->makeUser('restaurant_manager');
         $storeManager = $this->makeUser('store_manager');
+        $manager = $this->makeUser('manager');
         $product = Product::query()->firstOrFail();
         $mainStore = StockLocation::mainStore();
 
@@ -145,7 +134,7 @@ class StockTransferRestrictionsTest extends TestCase
             ->where('location_id', $mainStore->id)
             ->update(['quantity' => 8, 'reserved_qty' => 0]);
 
-        $this->actingAs($restaurantManager)
+        $this->actingAs($storeManager)
             ->post(route('store.transfers.store'), [
                 'product_id' => $product->id,
                 'to_location_code' => 'kitchen',
@@ -155,11 +144,11 @@ class StockTransferRestrictionsTest extends TestCase
 
         $transfer = StockTransfer::query()->latest()->firstOrFail();
 
-        $this->actingAs($storeManager)
+        $this->actingAs($manager)
             ->post(route('store.transfers.reject', $transfer), [])
             ->assertSessionHasErrors('rejection_reason');
 
-        $this->actingAs($storeManager)
+        $this->actingAs($manager)
             ->post(route('store.transfers.reject', $transfer), [
                 'rejection_reason' => 'Insufficient documentation for request',
             ])
@@ -167,7 +156,7 @@ class StockTransferRestrictionsTest extends TestCase
 
         $transfer->refresh();
         $this->assertSame('rejected', $transfer->status);
-        $this->assertSame($storeManager->id, $transfer->rejected_by);
+        $this->assertSame($manager->id, $transfer->rejected_by);
         $this->assertNotNull($transfer->rejected_at);
         $this->assertSame('Insufficient documentation for request', $transfer->rejection_reason);
     }

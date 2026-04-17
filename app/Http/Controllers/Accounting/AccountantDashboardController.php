@@ -133,15 +133,26 @@ class AccountantDashboardController extends Controller
     public function reports(): View
     {
         $snapshot = $this->snapshot();
-        $reportLinks = [
-            ['label' => __('accountant.reports.profit_loss'), 'route' => 'accounting.reports.profit-loss'],
-            ['label' => __('accountant.reports.balance_sheet'), 'route' => 'accounting.reports.balance-sheet'],
-            ['label' => __('accountant.reports.cashflow_summary'), 'route' => 'accounting.reports.cashflow-summary'],
-            ['label' => __('accountant.reports.ap_aging'), 'route' => 'accounting.reports.ap-aging'],
-            ['label' => __('accountant.reports.receipts_summary'), 'route' => 'accounting.reports.receipts-summary'],
+        $dateFrom = request('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = request('date_to', now()->toDateString());
+        $reportMetrics = $this->reportMetrics($dateFrom, $dateTo);
+        $reportQuery = [
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ];
+        $asOfQuery = [
+            'as_of' => $dateTo,
         ];
 
-        return view('accountant.reports', compact('snapshot', 'reportLinks'));
+        $reportLinks = [
+            ['label' => __('accountant.reports.profit_loss'), 'route' => 'accounting.reports.profit-loss', 'query' => $reportQuery],
+            ['label' => __('accountant.reports.balance_sheet'), 'route' => 'accounting.reports.balance-sheet', 'query' => $asOfQuery],
+            ['label' => __('accountant.reports.cashflow_summary'), 'route' => 'accounting.reports.cashflow-summary', 'query' => $reportQuery],
+            ['label' => __('accountant.reports.ap_aging'), 'route' => 'accounting.reports.ap-aging', 'query' => $asOfQuery],
+            ['label' => __('accountant.reports.receipts_summary'), 'route' => 'accounting.reports.receipts-summary', 'query' => $reportQuery],
+        ];
+
+        return view('accountant.reports', compact('snapshot', 'reportMetrics', 'reportLinks', 'dateFrom', 'dateTo'));
     }
 
     public function auditLogs(): View
@@ -174,6 +185,25 @@ class AccountantDashboardController extends Controller
             'pendingInvoices' => Invoice::whereIn('status', ['draft', 'issued'])->count(),
             'openPayrollRuns' => PayrollRun::where('status', 'draft')->count(),
             'draftSupplierPayments' => SupplierPayment::where('status', 'draft')->count(),
+        ];
+    }
+
+    private function reportMetrics(string $dateFrom, string $dateTo): array
+    {
+        $revenue = Account::where('type', 'revenue')
+            ->where('is_active', true)
+            ->get()
+            ->sum(fn (Account $account) => $account->getBalance($dateFrom, $dateTo));
+
+        $expenses = Account::whereIn('type', ['expense', 'cogs'])
+            ->where('is_active', true)
+            ->get()
+            ->sum(fn (Account $account) => $account->getBalance($dateFrom, $dateTo));
+
+        return [
+            'totalRevenue' => (float) $revenue,
+            'totalExpenses' => (float) $expenses,
+            'netProfit' => (float) ($revenue - $expenses),
         ];
     }
 

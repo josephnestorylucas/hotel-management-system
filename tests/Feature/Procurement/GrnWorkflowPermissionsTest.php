@@ -83,6 +83,23 @@ class GrnWorkflowPermissionsTest extends TestCase
         ]);
     }
 
+    public function test_store_manager_has_read_only_grn_access(): void
+    {
+        [$storeKeeper, $storeManager, $manager, $grn] = $this->buildWorkflowContext();
+
+        $this->actingAs($storeManager)
+            ->get(route('procurement.grn.create'))
+            ->assertRedirect(route('dashboard'));
+
+        $this->actingAs($storeManager)
+            ->post(route('procurement.grn.submit', $grn))
+            ->assertRedirect(route('dashboard'));
+
+        $this->actingAs($storeManager)
+            ->post(route('procurement.grn.approve', $grn))
+            ->assertRedirect(route('dashboard'));
+    }
+
     private function buildWorkflowContext(): array
     {
         Artisan::call('db:seed', ['class' => 'RoleSeeder']);

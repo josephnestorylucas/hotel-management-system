@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Request Stock Transfer')
-@section('page-title', 'Request Stock Transfer')
+@section('title', 'Create Stock Transfer')
+@section('page-title', 'Create Stock Transfer')
 
 @section('content')
 <div class="max-w-2xl">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Request Stock Transfer</h1>
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Create Stock Transfer</h1>
 
     <div class="bg-white rounded-xl shadow-sm p-6">
         <form method="POST" action="{{ route('store.transfers.store') }}">
@@ -54,7 +54,7 @@
             <div class="flex gap-3 mt-6">
                 <button type="submit"
                         class="bg-primary text-white px-5 py-2 rounded-xl hover:bg-blue-700 text-sm font-medium">
-                    Submit Transfer Request
+                    Submit Transfer
                 </button>
                 <a href="{{ route('store.transfers.index') }}"
                    class="bg-gray-200 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-300 text-sm font-medium">

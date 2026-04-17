@@ -9,20 +9,25 @@
         <p class="text-sm text-gray-500">{{ $buffetSale->package_name_snapshot }}</p>
     </div>
 
-    <div class="bg-white rounded-lg shadow p-5 grid grid-cols-2 gap-4 text-sm">
-        <div><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.sale_type') }}:</span> {{ __('general.restaurant.buffet.sale_type.' . $buffetSale->sale_type) }}</div>
-        <div><span class="text-gray-500">{{ __('general.status') }}:</span> {{ ucfirst($buffetSale->status) }}</div>
-        <div><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.pax') }}:</span> {{ $buffetSale->adults_count }}A / {{ $buffetSale->children_count }}C</div>
-        <div><span class="text-gray-500">{{ __('general.total') }}:</span> {{ number_format($buffetSale->total_amount, 0) }} TZS</div>
-        @if($buffetSale->booking_id)
-            <div class="col-span-2"><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.booking') }}:</span> {{ $buffetSale->booking?->booking_number }} - {{ $buffetSale->booking?->guest_display_name }}</div>
-        @endif
-    </div>
+        <div class="bg-white rounded-lg shadow p-5 grid grid-cols-2 gap-4 text-sm">
+            <div><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.sale_type') }}:</span> {{ __('general.restaurant.buffet.sale_type.' . $buffetSale->sale_type) }}</div>
+            <div><span class="text-gray-500">{{ __('general.status') }}:</span> {{ ucfirst($buffetSale->status) }}</div>
+            <div><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.pax') }}:</span> {{ $buffetSale->adults_count }}A / {{ $buffetSale->children_count }}C</div>
+            <div><span class="text-gray-500">{{ __('general.total') }}:</span> {{ number_format($buffetSale->total_amount, 0) }} TZS</div>
+            <div><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.payment_method') }}:</span> {{ $buffetSale->payment_method ? ucfirst(str_replace('_', ' ', $buffetSale->payment_method)) : '—' }}</div>
+            <div><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.reference') }}:</span> {{ $buffetSale->payment_reference ?? '—' }}</div>
+            @if($buffetSale->booking_id)
+                <div class="col-span-2"><span class="text-gray-500">{{ __('general.restaurant.buffet.fields.booking') }}:</span> {{ $buffetSale->booking?->booking_number }} - {{ $buffetSale->booking?->guest_display_name }}</div>
+            @endif
+        </div>
 
     @if($buffetSale->status === 'settled' && $buffetSale->receipt)
         <div class="bg-white rounded-lg shadow p-5">
             <a href="{{ route('receipts.show', $buffetSale->receipt->uuid) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded text-sm">
                 {{ __('general.restaurant.buffet.actions.print_receipt') }}
+            </a>
+            <a href="{{ route('receipts.reprint', $buffetSale->receipt->receipt_number) }}" target="_blank" class="px-4 py-2 bg-gray-100 text-gray-700 rounded text-sm">
+                {{ __('accountant.receipts.reprint') }}
             </a>
         </div>
     @endif

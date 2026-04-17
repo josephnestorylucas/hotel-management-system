@@ -271,6 +271,7 @@ return [
             'unbalanced' => 'Haijasawazika',
             'created_by' => 'Imeundwa na',
             'posted_by' => 'Imechapishwa na',
+            'posted_at' => 'Imechapishwa tarehe',
             'reversal_reason' => 'Sababu ya Kurejesha',
         ],
         'actions' => [

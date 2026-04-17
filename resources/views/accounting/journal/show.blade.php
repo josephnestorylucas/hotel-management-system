@@ -57,6 +57,10 @@
                         <div class="text-gray-500">{{ __('accountant.journal.labels.posted_by') }}</div>
                         <div class="mt-1 font-semibold text-secondary">{{ $journalEntry->poster?->name ?? '—' }}</div>
                     </div>
+                    <div>
+                        <div class="text-gray-500">{{ __('accountant.journal.labels.posted_at') }}</div>
+                        <div class="mt-1 font-semibold text-secondary">{{ $journalEntry->posted_at?->format('M d, Y H:i') ?? '—' }}</div>
+                    </div>
                     <div class="md:col-span-2">
                         <div class="text-gray-500">{{ __('accountant.journal.labels.description') }}</div>
                         <div class="mt-1 font-semibold text-secondary">{{ $journalEntry->description }}</div>

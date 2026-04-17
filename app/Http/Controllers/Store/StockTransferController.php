@@ -76,8 +76,8 @@ class StockTransferController extends Controller
             'requested_by'     => auth()->id(),
         ]);
 
-        // Notify store keepers and managers
-        $userIds = User::whereHas('role', fn ($q) => $q->whereIn('name', ['store_keeper', 'store_manager']))
+        // Notify managers/admins for optional approval visibility.
+        $userIds = User::whereHas('role', fn ($q) => $q->whereIn('name', ['manager', 'admin']))
             ->pluck('id')
             ->toArray();
 
@@ -128,9 +128,9 @@ class StockTransferController extends Controller
     public function fulfill(StockTransfer $stockTransfer): RedirectResponse
     {
         abort_if(
-            $stockTransfer->status !== 'approved',
+            ! in_array($stockTransfer->status, ['pending', 'approved'], true),
             422,
-            'Only approved transfers can be fulfilled.'
+            'Only pending or approved transfers can be completed.'
         );
 
         $sourceLevel = StockLevel::where('product_id', $stockTransfer->product_id)
@@ -177,6 +177,8 @@ class StockTransferController extends Controller
 
             $stockTransfer->update([
                 'status'       => 'completed',
+                'approved_by'  => $stockTransfer->approved_by ?? auth()->id(),
+                'approved_at'  => $stockTransfer->approved_at ?? now(),
                 'fulfilled_by' => auth()->id(),
                 'completed_at' => now(),
             ]);

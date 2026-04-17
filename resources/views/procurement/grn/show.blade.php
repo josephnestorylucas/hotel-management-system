@@ -15,7 +15,7 @@
         </div>
         <div class="flex items-center gap-3">
             <!-- Status-based Actions -->
-            @if($goodsReceivedNote->status === \App\Models\GoodsReceivedNote::STATUS_DRAFT && auth()->user()->hasAnyRole(['store_manager', 'store_keeper', 'admin']))
+            @if($goodsReceivedNote->status === \App\Models\GoodsReceivedNote::STATUS_DRAFT && auth()->user()->hasRole('store_keeper'))
             <form method="POST" action="{{ route('procurement.grn.submit', $goodsReceivedNote) }}" class="inline">
                 @csrf
                 <button type="submit" class="px-4 py-2 bg-yellow-600 text-white text-sm font-semibold rounded-lg hover:bg-yellow-700 transition-colors">
@@ -48,7 +48,7 @@
             </button>
             @endif
 
-            @if($goodsReceivedNote->status === \App\Models\GoodsReceivedNote::STATUS_DRAFT && auth()->user()->hasAnyRole(['store_manager', 'store_keeper', 'admin']))
+            @if($goodsReceivedNote->status === \App\Models\GoodsReceivedNote::STATUS_DRAFT && auth()->user()->hasRole('store_keeper'))
             <button 
                 type="button"
                 onclick="document.getElementById('upload-modal').classList.remove('hidden')"

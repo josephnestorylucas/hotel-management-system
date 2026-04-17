@@ -50,6 +50,40 @@ class BuffetBillingFlowTest extends TestCase
         ]);
     }
 
+    public function test_restaurant_manager_can_update_buffet_package_schedule_and_prices(): void
+    {
+        $manager = $this->makeUser('restaurant_manager');
+        $package = BuffetPackage::create([
+            'name' => 'Breakfast Buffet',
+            'adult_price' => 25000,
+            'child_price' => 15000,
+            'available_days' => ['monday'],
+            'start_time' => '06:00:00',
+            'end_time' => '10:00:00',
+            'is_active' => true,
+            'created_by' => $manager->id,
+        ]);
+
+        $this->actingAs($manager)
+            ->put(route('restaurant.buffet.packages.update', $package), [
+                'name' => 'Late Breakfast Buffet',
+                'adult_price' => 28000,
+                'child_price' => 18000,
+                'available_days' => ['monday', 'wednesday'],
+                'start_time' => '07:00',
+                'end_time' => '11:00',
+                'is_active' => 1,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $package->refresh();
+        $this->assertSame('Late Breakfast Buffet', $package->name);
+        $this->assertEquals(28000, (float) $package->adult_price);
+        $this->assertEquals(18000, (float) $package->child_price);
+        $this->assertSame(['monday', 'wednesday'], $package->available_days);
+    }
+
     public function test_walkin_buffet_sale_can_be_settled_with_payment_and_receipt(): void
     {
         $manager = $this->makeUser('restaurant_manager');
@@ -112,6 +146,12 @@ class BuffetBillingFlowTest extends TestCase
             ->first();
         $this->assertNotNull($receipt);
         $this->assertEquals(75000, (float) $receipt->total);
+        $this->assertSame('cash', $receipt->payment_method);
+        $this->assertSame('BUF-CASH-001', $receipt->transaction_reference);
+
+        $sale->refresh();
+        $this->assertSame('cash', $sale->payment_method);
+        $this->assertSame('BUF-CASH-001', $sale->payment_reference);
     }
 
     public function test_booking_linked_buffet_sale_charges_guest_folio(): void

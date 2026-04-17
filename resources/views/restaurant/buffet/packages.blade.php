@@ -49,20 +49,40 @@
             <tbody class="divide-y">
                 @foreach($packages as $package)
                     <tr>
-                        <td class="px-4 py-2">{{ $package->name }}</td>
-                        <td class="px-4 py-2">{{ number_format($package->adult_price, 0) }}</td>
-                        <td class="px-4 py-2">{{ number_format($package->child_price, 0) }}</td>
-                        <td class="px-4 py-2 text-xs text-gray-600">
-                            {{ collect($package->available_days ?? [])->map(fn($d) => __('general.days.' . strtolower($d)))->implode(', ') ?: '-' }}
-                            ({{ $package->start_time ?? '--:--' }} - {{ $package->end_time ?? '--:--' }})
-                        </td>
-                        <td class="px-4 py-2">{{ $package->is_active ? __('general.active') : __('general.inactive') }}</td>
-                        <td class="px-4 py-2 text-right">
+                        <td colspan="6" class="px-4 py-3">
+                            <form method="POST" action="{{ route('restaurant.buffet.packages.update', $package) }}" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-start">
+                                @csrf
+                                @method('PUT')
+                                <input name="name" value="{{ $package->name }}" class="border-gray-300 rounded px-3 py-2 text-sm md:col-span-2" required>
+                                <input type="number" step="0.01" min="0.01" name="adult_price" value="{{ $package->adult_price }}" class="border-gray-300 rounded px-3 py-2 text-sm" required>
+                                <input type="number" step="0.01" min="0" name="child_price" value="{{ $package->child_price }}" class="border-gray-300 rounded px-3 py-2 text-sm">
+                                <input type="time" name="start_time" value="{{ $package->start_time ? substr((string) $package->start_time, 0, 5) : '' }}" class="border-gray-300 rounded px-3 py-2 text-sm">
+                                <input type="time" name="end_time" value="{{ $package->end_time ? substr((string) $package->end_time, 0, 5) : '' }}" class="border-gray-300 rounded px-3 py-2 text-sm">
+                                <div class="md:col-span-4 grid grid-cols-2 md:grid-cols-7 gap-2 text-xs text-gray-600">
+                                    @foreach(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
+                                        <label class="inline-flex items-center gap-1">
+                                            <input type="checkbox" name="available_days[]" value="{{ $day }}" @checked(collect($package->available_days ?? [])->contains($day))>
+                                            {{ __('general.days.' . $day) }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <div class="md:col-span-1 flex items-center gap-2 text-xs">
+                                    <label class="inline-flex items-center gap-1">
+                                        <input type="checkbox" name="is_active" value="1" @checked($package->is_active)>
+                                        {{ __('general.active') }}
+                                    </label>
+                                </div>
+                                <div class="md:col-span-1 flex justify-end gap-2">
+                                    <button class="px-3 py-2 bg-primary text-white rounded text-xs">{{ __('general.save') }}</button>
+                                    @if($package->is_active)
+                                        <button form="deactivate-{{ $package->id }}" class="px-3 py-2 text-red-600 text-xs">{{ __('general.delete') }}</button>
+                                    @endif
+                                </div>
+                            </form>
                             @if($package->is_active)
-                                <form method="POST" action="{{ route('restaurant.buffet.packages.deactivate', $package) }}">
+                                <form id="deactivate-{{ $package->id }}" method="POST" action="{{ route('restaurant.buffet.packages.deactivate', $package) }}" class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="text-red-600 text-xs">{{ __('general.delete') }}</button>
                                 </form>
                             @endif
                         </td>

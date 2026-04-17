@@ -224,6 +224,8 @@ class BuffetController extends Controller
                 ->where('key', 'tzs_exchange_rate')
                 ->value('value') ?? 2500);
             $amountUsd = FinancePayment::toUsd((float) $buffetSale->total_amount, 'TZS', $exchangeRate);
+            $normalizedMethod = $method === 'mobile' ? 'mobile_money' : $method;
+            $paymentReference = $request->string('payment_reference')->toString() ?: null;
 
             $payment = FinancePayment::create([
                 'payment_type' => 'walkin',
@@ -234,9 +236,9 @@ class BuffetController extends Controller
                 'amount' => $buffetSale->total_amount,
                 'amount_usd' => $amountUsd,
                 'exchange_rate' => $exchangeRate,
-                'method' => $method === 'mobile' ? 'mobile_money' : $method,
+                'method' => $normalizedMethod,
                 'status' => 'completed',
-                'reference' => $request->string('payment_reference')->toString() ?: null,
+                'reference' => $paymentReference,
                 'notes' => "Buffet walk-in {$buffetSale->sale_number}",
                 'created_by' => auth()->id(),
                 'paid_at' => now(),
@@ -266,6 +268,8 @@ class BuffetController extends Controller
 
             $buffetSale->update([
                 'status' => 'settled',
+                'payment_method' => $normalizedMethod,
+                'payment_reference' => $paymentReference,
                 'settled_by' => auth()->id(),
                 'settled_at' => now(),
             ]);

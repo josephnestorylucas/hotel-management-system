@@ -83,6 +83,100 @@ class AccountingUiSmokeTest extends TestCase
         }
     }
 
+    public function test_reports_center_propagates_selected_period_to_report_links(): void
+    {
+        [$accountant] = $this->bootstrapAccountingUiContext();
+
+        $dateFrom = now()->subDays(7)->toDateString();
+        $dateTo = now()->toDateString();
+
+        $response = $this->actingAs($accountant)
+            ->get(route('accountant.reports', [
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+            ]));
+
+        $response->assertOk();
+        $response->assertSee('accounting/reports/profit-loss?date_from=' . $dateFrom . '&amp;date_to=' . $dateTo, false);
+        $response->assertSee('accounting/reports/ap-aging?as_of=' . $dateTo, false);
+    }
+
+    public function test_reports_center_summary_cards_use_selected_period_metrics(): void
+    {
+        [$accountant] = $this->bootstrapAccountingUiContext();
+
+        $cashAccountId = Account::where('code', '1100')->value('id');
+        $revenueAccountId = Account::where('type', 'revenue')->orderBy('code')->value('id');
+        $expenseAccountId = Account::where('type', 'expense')->orderBy('code')->value('id');
+
+        $outsideRangeEntry = JournalEntry::create([
+            'entry_date' => now()->subMonths(2)->toDateString(),
+            'description' => 'Outside range sale',
+            'reference' => 'OUTSIDE-RANGE-001',
+            'source' => 'manual',
+            'total_debit' => 500,
+            'total_credit' => 500,
+            'status' => 'posted',
+            'created_by' => $accountant->id,
+            'posted_by' => $accountant->id,
+            'posted_at' => now()->subMonths(2),
+        ]);
+
+        $outsideRangeEntry->lines()->createMany([
+            ['account_id' => $cashAccountId, 'type' => 'debit', 'amount' => 500],
+            ['account_id' => $revenueAccountId, 'type' => 'credit', 'amount' => 500],
+        ]);
+
+        $inRangeSale = JournalEntry::create([
+            'entry_date' => now()->toDateString(),
+            'description' => 'In range sale',
+            'reference' => 'IN-RANGE-SALE-001',
+            'source' => 'manual',
+            'total_debit' => 200,
+            'total_credit' => 200,
+            'status' => 'posted',
+            'created_by' => $accountant->id,
+            'posted_by' => $accountant->id,
+            'posted_at' => now(),
+        ]);
+
+        $inRangeSale->lines()->createMany([
+            ['account_id' => $cashAccountId, 'type' => 'debit', 'amount' => 200],
+            ['account_id' => $revenueAccountId, 'type' => 'credit', 'amount' => 200],
+        ]);
+
+        $inRangeExpense = JournalEntry::create([
+            'entry_date' => now()->toDateString(),
+            'description' => 'In range expense',
+            'reference' => 'IN-RANGE-EXP-001',
+            'source' => 'manual',
+            'total_debit' => 80,
+            'total_credit' => 80,
+            'status' => 'posted',
+            'created_by' => $accountant->id,
+            'posted_by' => $accountant->id,
+            'posted_at' => now(),
+        ]);
+
+        $inRangeExpense->lines()->createMany([
+            ['account_id' => $expenseAccountId, 'type' => 'debit', 'amount' => 80],
+            ['account_id' => $cashAccountId, 'type' => 'credit', 'amount' => 80],
+        ]);
+
+        $response = $this->actingAs($accountant)
+            ->get(route('accountant.reports', [
+                'date_from' => now()->startOfMonth()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]));
+
+        $response->assertOk()
+            ->assertViewHas('reportMetrics', function (array $reportMetrics) {
+                return $reportMetrics['totalRevenue'] === 200.0
+                    && $reportMetrics['totalExpenses'] === 80.0
+                    && $reportMetrics['netProfit'] === 120.0;
+            });
+    }
+
     private function bootstrapAccountingUiContext(): array
     {
         Artisan::call('db:seed', ['class' => 'RoleSeeder']);

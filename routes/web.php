@@ -360,17 +360,17 @@ Route::middleware(['auth'])->group(function () {
 
         // ── Stock Transfers ───────────────────────────────────────────────
         Route::get('transfers',                [StockTransferController::class, 'index'])->name('transfers.index')
-             ->middleware('role:store_manager,store_keeper,restaurant_manager');
+             ->middleware('role:store_manager,store_keeper,manager,admin');
         Route::get('transfers/create',         [StockTransferController::class, 'create'])->name('transfers.create')
-             ->middleware('role:restaurant_manager');
+             ->middleware('role:store_manager');
         Route::post('transfers',               [StockTransferController::class, 'store'])->name('transfers.store')
-             ->middleware('role:restaurant_manager');
+             ->middleware('role:store_manager');
         Route::post('transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('transfers.approve')
-             ->middleware('role:store_manager');
+             ->middleware('role:manager,admin');
         Route::post('transfers/{stockTransfer}/fulfill', [StockTransferController::class, 'fulfill'])->name('transfers.fulfill')
-             ->middleware('role:store_keeper');
+             ->middleware('role:store_manager,manager,admin');
         Route::post('transfers/{stockTransfer}/reject',  [StockTransferController::class, 'reject'])->name('transfers.reject')
-             ->middleware('role:store_manager');
+             ->middleware('role:manager,admin');
 
         // ── Reports ───────────────────────────────────────────────────────
         Route::get('reports/stock-snapshot',   [ReportController::class, 'stockSnapshot'])->name('reports.stock-snapshot')
@@ -596,17 +596,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('grn', [GoodsReceivedNoteController::class, 'index'])->name('grn.index')
              ->middleware('role:store_manager,store_keeper,manager');
         Route::get('grn/create', [GoodsReceivedNoteController::class, 'create'])->name('grn.create')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::post('grn', [GoodsReceivedNoteController::class, 'store'])->name('grn.store')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::get('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'show'])->name('grn.show')
              ->middleware('role:store_manager,store_keeper,manager');
         Route::delete('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'destroy'])->name('grn.destroy')
-             ->middleware('role:store_manager');
+             ->middleware('role:store_keeper');
         Route::post('grn/{goodsReceivedNote}/receipt', [GoodsReceivedNoteController::class, 'uploadReceipt'])->name('grn.upload-receipt')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::post('grn/{goodsReceivedNote}/submit', [GoodsReceivedNoteController::class, 'submitForConfirmation'])->name('grn.submit')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::post('grn/{goodsReceivedNote}/confirm', [GoodsReceivedNoteController::class, 'confirm'])->name('grn.confirm')
              ->middleware('role:store_keeper');
         Route::post('grn/{goodsReceivedNote}/approve', [GoodsReceivedNoteController::class, 'approve'])->name('grn.approve')

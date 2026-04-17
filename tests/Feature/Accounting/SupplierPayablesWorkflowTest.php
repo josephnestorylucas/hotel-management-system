@@ -173,6 +173,65 @@ class SupplierPayablesWorkflowTest extends TestCase
         $this->assertEquals(0.0, (float) $payable->amount_paid);
     }
 
+    public function test_manager_sees_ap_views_without_payment_actions_reserved_for_accountants(): void
+    {
+        [$accountant, $manager, $supplier, $payable] = $this->bootstrapSinglePayable(withManager: true);
+
+        $draftPayment = SupplierPayment::create([
+            'supplier_id' => $supplier->id,
+            'payment_date' => now()->toDateString(),
+            'currency' => 'USD',
+            'amount' => 300,
+            'method' => 'bank',
+            'reference' => 'SUPPAY-UI-001',
+            'status' => 'draft',
+            'created_by' => $accountant->id,
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('accountant.payables.dashboard'))
+            ->assertOk()
+            ->assertDontSee(route('accountant.payments.create'), false)
+            ->assertDontSee(route('accountant.payments.apply', $draftPayment), false);
+
+        $this->actingAs($manager)
+            ->get(route('accountant.payables.show', $payable))
+            ->assertOk()
+            ->assertDontSee(route('accountant.payments.create'), false);
+    }
+
+    public function test_cancelled_payment_apply_view_remains_read_only(): void
+    {
+        [$accountant, $supplier, $payable] = $this->bootstrapSinglePayable(amountTotal: 500);
+
+        $payment = SupplierPayment::create([
+            'supplier_id' => $supplier->id,
+            'payment_date' => now()->toDateString(),
+            'currency' => 'USD',
+            'amount' => 500,
+            'method' => 'cash',
+            'status' => 'draft',
+            'created_by' => $accountant->id,
+        ]);
+
+        $this->actingAs($accountant)->post(route('accountant.payments.allocate', $payment), [
+            'allocations' => [$payable->id => 500],
+        ])->assertRedirect();
+
+        $this->actingAs($accountant)->post(route('accountant.payments.post', $payment))
+            ->assertRedirect(route('accountant.payables.dashboard'));
+
+        $this->actingAs($accountant)->post(route('accountant.payments.cancel', $payment), [
+            'cancellation_reason' => 'Duplicate settlement',
+        ])->assertRedirect();
+
+        $this->actingAs($accountant)
+            ->get(route('accountant.payments.apply', $payment))
+            ->assertOk()
+            ->assertDontSee(__('accountant.ap.save_allocations'))
+            ->assertDontSee(__('accountant.ap.post_payment'));
+    }
+
     private function bootstrapProcurementContext(): array
     {
         Artisan::call('db:seed', ['class' => 'RoleSeeder']);

@@ -42,9 +42,11 @@ class ReceiptService
     {
         $data = $model->toReceiptData();
         $user = Auth::user();
+        $receiptNumber = $data['receipt_number'] ?? $data['receipt_no'] ?? null;
 
         return Receipt::create([
-            'module'                => $model->getReceiptModule(),
+            'receipt_number'        => $receiptNumber,
+            'module'                => $data['module'] ?? $model->getReceiptModule(),
             'receiptable_type'      => get_class($model),
             'receiptable_id'        => $model->getKey(),
             'customer_name'         => $data['customer_name'] ?? null,
@@ -160,9 +162,12 @@ class ReceiptService
             'total'                 => $data['total'] ?? $receipt->total,
             'amount_paid'           => $data['amount_paid'] ?? $receipt->amount_paid,
             'balance'               => $data['balance'] ?? $receipt->balance,
+            'currency'              => $data['currency'] ?? $receipt->currency,
             'payment_method'        => $data['payment_method'] ?? $receipt->payment_method,
             'payment_status'        => $data['payment_status'] ?? $receipt->payment_status,
             'transaction_reference' => $data['transaction_reference'] ?? $receipt->transaction_reference,
+            'cashier_name'          => $data['cashier'] ?? $receipt->cashier_name,
+            'notes'                 => $data['notes'] ?? $receipt->notes,
         ]);
 
         return $receipt->fresh();

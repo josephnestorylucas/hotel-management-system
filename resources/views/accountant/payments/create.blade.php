@@ -6,6 +6,21 @@
 @section('content')
 <form method="POST" action="{{ route('accountant.payments.store') }}" class="mx-auto max-w-3xl space-y-6 rounded-2xl bg-white p-6 shadow-sm">
     @csrf
+    @if($errors->any())
+        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div class="font-semibold">{{ __('accountant.ap.form_error_title') }}</div>
+            <ul class="mt-2 space-y-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        {{ __('accountant.ap.create_payment_help') }}
+    </div>
+
     <div class="grid gap-4 md:grid-cols-2">
         <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700">{{ __('general.name') }}</label>
@@ -51,7 +66,7 @@
         <textarea name="notes" rows="4" class="w-full rounded-xl border-gray-200 text-sm">{{ old('notes') }}</textarea>
     </div>
 
-    <div class="flex items-center justify-end gap-3">
+    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
         <a href="{{ route('accountant.payables.dashboard') }}" class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">{{ __('general.cancel') }}</a>
         <button class="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white">{{ __('accountant.ap.save_draft') }}</button>
     </div>

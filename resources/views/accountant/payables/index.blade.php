@@ -6,21 +6,33 @@
 @section('content')
 <div class="space-y-6">
     <form method="GET" class="grid gap-4 rounded-2xl bg-white p-6 shadow-sm md:grid-cols-5">
-        <select name="supplier_id" class="rounded-xl border-gray-200 text-sm">
-            <option value="">{{ __('accountant.ap.all_suppliers') }}</option>
-            @foreach($suppliers as $supplier)
-                <option value="{{ $supplier->id }}" @selected(request('supplier_id') === $supplier->id)>{{ $supplier->name }}</option>
-            @endforeach
-        </select>
-        <select name="status" class="rounded-xl border-gray-200 text-sm">
-            <option value="">{{ __('accountant.ap.all_statuses') }}</option>
-            @foreach(['unpaid', 'partial', 'paid', 'cancelled'] as $status)
-                <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
-            @endforeach
-        </select>
-        <input type="date" name="date_from" value="{{ request('date_from') }}" class="rounded-xl border-gray-200 text-sm">
-        <input type="date" name="date_to" value="{{ request('date_to') }}" class="rounded-xl border-gray-200 text-sm">
-        <div class="flex gap-2">
+        <div>
+            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">{{ __('general.name') }}</label>
+            <select name="supplier_id" class="w-full rounded-xl border-gray-200 text-sm">
+                <option value="">{{ __('accountant.ap.all_suppliers') }}</option>
+                @foreach($suppliers as $supplier)
+                    <option value="{{ $supplier->id }}" @selected(request('supplier_id') === $supplier->id)>{{ $supplier->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">{{ __('general.status') }}</label>
+            <select name="status" class="w-full rounded-xl border-gray-200 text-sm">
+                <option value="">{{ __('accountant.ap.all_statuses') }}</option>
+                @foreach(['unpaid', 'partial', 'paid', 'cancelled'] as $status)
+                    <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">{{ __('accountant.ap.date_from') }}</label>
+            <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full rounded-xl border-gray-200 text-sm">
+        </div>
+        <div>
+            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">{{ __('accountant.ap.date_to') }}</label>
+            <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full rounded-xl border-gray-200 text-sm">
+        </div>
+        <div class="flex items-end gap-2">
             <button class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">{{ __('general.filter') }}</button>
             <a href="{{ route('accountant.payables.index') }}" class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">{{ __('general.reset') }}</a>
         </div>
@@ -55,7 +67,7 @@
                             <td class="py-3 text-right"><x-money :amount="$payable->amount_total" /></td>
                             <td class="py-3 text-right"><x-money :amount="$payable->amount_paid" /></td>
                             <td class="py-3 text-right font-bold"><x-money :amount="$payable->balance" /></td>
-                            <td class="py-3"><span class="rounded-full px-2 py-1 text-xs font-semibold {{ $payable->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : ($payable->status === 'partial' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700') }}">{{ ucfirst($payable->status) }}</span></td>
+                            <td class="py-3"><span class="rounded-full px-2 py-1 text-xs font-semibold {{ $payable->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : ($payable->status === 'partial' ? 'bg-yellow-100 text-yellow-700' : ($payable->status === 'cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700')) }}">{{ ucfirst($payable->status) }}</span></td>
                         </tr>
                     @empty
                         <tr><td colspan="7" class="py-6 text-center text-gray-500">{{ __('general.no_data') }}</td></tr>

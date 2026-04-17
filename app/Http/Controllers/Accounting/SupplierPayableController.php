@@ -49,7 +49,9 @@ class SupplierPayableController extends Controller
 
         $totalOutstanding = (float) $openPayables->sum('balance');
 
-        return view('accountant.payables.dashboard', compact('openPayables', 'aging', 'recentPayments', 'totalOutstanding'));
+        $canManageAp = $this->canManageAp();
+
+        return view('accountant.payables.dashboard', compact('openPayables', 'aging', 'recentPayments', 'totalOutstanding', 'canManageAp'));
     }
 
     public function index(Request $request): View
@@ -89,7 +91,9 @@ class SupplierPayableController extends Controller
             'allocations.creator',
         ]);
 
-        return view('accountant.payables.show', compact('supplierPayable'));
+        $canManageAp = $this->canManageAp();
+
+        return view('accountant.payables.show', compact('supplierPayable', 'canManageAp'));
     }
 
     public function createPayment(): View
@@ -142,7 +146,9 @@ class SupplierPayableController extends Controller
             ->orderBy('payable_date')
             ->get();
 
-        return view('accountant.payments.apply', compact('supplierPayment', 'payables', 'allocatedAmount', 'remainingAmount'));
+        $canPostAp = $this->canPostAp();
+
+        return view('accountant.payments.apply', compact('supplierPayment', 'payables', 'allocatedAmount', 'remainingAmount', 'canPostAp'));
     }
 
     public function allocatePayment(Request $request, SupplierPayment $supplierPayment, SupplierPayablesService $service): RedirectResponse

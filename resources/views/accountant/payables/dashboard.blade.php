@@ -12,7 +12,9 @@
         </div>
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('accountant.payables.index') }}" class="rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20">{{ __('accountant.ap.view_payables') }}</a>
-            <a href="{{ route('accountant.payments.create') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-50">{{ __('accountant.ap.new_payment') }}</a>
+            @if($canManageAp)
+                <a href="{{ route('accountant.payments.create') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-50">{{ __('accountant.ap.new_payment') }}</a>
+            @endif
         </div>
     </div>
 
@@ -63,7 +65,9 @@
         <div class="rounded-2xl bg-white p-6 shadow-sm">
             <div class="flex items-center justify-between gap-3">
                 <h3 class="text-lg font-extrabold text-secondary">{{ __('accountant.ap.recent_payments') }}</h3>
-                <a href="{{ route('accountant.payments.create') }}" class="text-sm font-semibold text-indigo-600">{{ __('accountant.ap.new_payment') }}</a>
+                @if($canManageAp)
+                    <a href="{{ route('accountant.payments.create') }}" class="text-sm font-semibold text-indigo-600">{{ __('accountant.ap.new_payment') }}</a>
+                @endif
             </div>
 
             <div class="mt-4 space-y-3">
@@ -78,7 +82,7 @@
                         </div>
                         <div class="mt-3 flex items-center justify-between">
                             <div class="text-sm font-bold text-secondary"><x-money :amount="$payment->amount" /></div>
-                            @if($payment->status !== 'posted')
+                            @if($canManageAp && ! in_array($payment->status, ['posted', 'cancelled'], true))
                                 <a href="{{ route('accountant.payments.apply', $payment) }}" class="text-sm font-semibold text-indigo-600">{{ __('accountant.ap.allocate_now') }}</a>
                             @endif
                         </div>

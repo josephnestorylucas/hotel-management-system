@@ -24,12 +24,28 @@
     <div class="grid gap-4 md:grid-cols-2">
         <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700">{{ __('general.name') }}</label>
-            <select name="supplier_id" class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-secondary shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" required>
+            <select id="supplier_id" name="supplier_id" class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-secondary shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" required>
                 <option value="">{{ __('accountant.ap.select_supplier') }}</option>
                 @foreach($suppliers as $supplier)
                     <option value="{{ $supplier->id }}" @selected(old('supplier_id') === $supplier->id)>{{ $supplier->name }}</option>
                 @endforeach
             </select>
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">{{ __('accountant.ap.select_grn_payable') }}</label>
+            <select id="supplier_payable_id" name="supplier_payable_id" class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-secondary shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                <option value="">{{ __('accountant.ap.select_grn_payable_optional') }}</option>
+                @foreach($grnPayables as $payable)
+                    <option
+                        value="{{ $payable->id }}"
+                        data-supplier-id="{{ $payable->supplier_id }}"
+                        @selected(old('supplier_payable_id') === $payable->id)
+                    >
+                        {{ $payable->reference }} - {{ $payable->supplier?->name }} - {{ __('accountant.labels.balance') }}: {{ number_format((float) $payable->balance, 2) }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-gray-500">{{ __('accountant.ap.select_grn_payable_help') }}</p>
         </div>
         <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700">{{ __('general.date') }}</label>
@@ -71,4 +87,49 @@
         <button class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">{{ __('accountant.ap.save_draft') }}</button>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const supplierSelect = document.getElementById('supplier_id');
+    const payableSelect = document.getElementById('supplier_payable_id');
+
+    if (!supplierSelect || !payableSelect) {
+        return;
+    }
+
+    const allOptions = Array.from(payableSelect.options).slice(1);
+
+    const filterPayablesBySupplier = function () {
+        const supplierId = supplierSelect.value;
+        const current = payableSelect.value;
+
+        allOptions.forEach((option) => {
+            option.hidden = supplierId !== '' && option.dataset.supplierId !== supplierId;
+        });
+
+        const selectedOption = payableSelect.selectedOptions[0];
+        if (selectedOption && selectedOption.hidden) {
+            payableSelect.value = '';
+        }
+
+        if (current && payableSelect.value === '') {
+            const candidate = allOptions.find((option) => option.value === current && !option.hidden);
+            if (candidate) {
+                payableSelect.value = candidate.value;
+            }
+        }
+    };
+
+    supplierSelect.addEventListener('change', filterPayablesBySupplier);
+    payableSelect.addEventListener('change', function () {
+        const selected = payableSelect.selectedOptions[0];
+        if (selected && selected.dataset.supplierId) {
+            supplierSelect.value = selected.dataset.supplierId;
+            filterPayablesBySupplier();
+        }
+    });
+
+    filterPayablesBySupplier();
+});
+</script>
 @endsection

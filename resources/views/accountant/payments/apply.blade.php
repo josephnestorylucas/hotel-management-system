@@ -50,6 +50,7 @@
                 <tbody>
                     @forelse($payables as $payable)
                         @php($existing = optional($supplierPayment->allocations->firstWhere('supplier_payable_id', $payable->id))->allocated_amount)
+                        @php($prefillValue = ($prefillPayableId && $prefillPayableId === $payable->id && old('allocations.' . $payable->id) === null && $existing === null) ? (float) $remainingAmount : null)
                         <tr class="border-b border-gray-50 last:border-0">
                             <td class="py-4 align-top"><a href="{{ route('accountant.payables.show', $payable) }}" class="font-semibold text-indigo-600 hover:text-indigo-700">{{ $payable->reference }}</a></td>
                             <td class="py-4 align-top text-gray-600">{{ $payable->payable_date?->format('M d, Y') }}</td>
@@ -57,7 +58,7 @@
                             <td class="py-4 align-top text-right font-bold text-amber-700"><x-money :amount="$payable->balance + (float) $existing" /></td>
                             <td class="py-4 text-right">
                                 <div class="ml-auto w-full max-w-[220px]">
-                                    <input type="number" step="0.01" min="0" name="allocations[{{ $payable->id }}]" value="{{ old('allocations.' . $payable->id, $existing) }}" class="w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-base font-semibold text-secondary focus:border-indigo-500 focus:bg-white focus:ring-indigo-500" placeholder="0.00" {{ in_array($supplierPayment->status, ['posted', 'cancelled'], true) ? 'disabled' : '' }}>
+                                    <input type="number" step="0.01" min="0" name="allocations[{{ $payable->id }}]" value="{{ old('allocations.' . $payable->id, $existing ?? $prefillValue) }}" class="w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-base font-semibold text-secondary focus:border-indigo-500 focus:bg-white focus:ring-indigo-500" placeholder="0.00" {{ in_array($supplierPayment->status, ['posted', 'cancelled'], true) ? 'disabled' : '' }}>
                                 </div>
                             </td>
                         </tr>

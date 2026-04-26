@@ -1,0 +1,1 @@
+the  store  keeper  is  the  one  to  do  the  stock  transer  and  the transer  we  need  to selct  where the  transfer  is  done from  which  is  selceted to  where   and  the  store  manager  only  accepts  the transfer  or   confirm  it 

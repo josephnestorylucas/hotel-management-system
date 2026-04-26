@@ -14,6 +14,7 @@ use App\Models\Supplier;
 use App\Models\SupplierPayable;
 use App\Models\SupplierPayment;
 use App\Models\User;
+use App\Services\SupplierPayablesService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -236,6 +237,79 @@ class SupplierPayablesWorkflowTest extends TestCase
             ->assertOk()
             ->assertDontSee(__('accountant.ap.save_allocations'))
             ->assertDontSee(__('accountant.ap.post_payment'));
+    }
+
+    public function test_create_payment_view_lists_supplier_and_open_grn_payables(): void
+    {
+        [$accountant, $supplier, $payable] = $this->bootstrapSinglePayable(amountTotal: 500);
+
+        $this->actingAs($accountant)
+            ->get(route('accountant.payments.create'))
+            ->assertOk()
+            ->assertSee($supplier->name)
+            ->assertSee($payable->reference)
+            ->assertSee(__('accountant.ap.select_grn_payable'));
+    }
+
+    public function test_store_payment_rejects_mismatched_selected_payable_supplier(): void
+    {
+        [$accountant, $supplierA, $payableA] = $this->bootstrapSinglePayable(amountTotal: 300);
+        [, $supplierB, ] = $this->bootstrapSinglePayable(amountTotal: 200);
+
+        $this->actingAs($accountant)
+            ->post(route('accountant.payments.store'), [
+                'supplier_id' => $supplierB->id,
+                'supplier_payable_id' => $payableA->id,
+                'payment_date' => now()->toDateString(),
+                'currency' => 'USD',
+                'amount' => 100,
+                'method' => 'cash',
+            ])
+            ->assertSessionHasErrors('supplier_payable_id');
+    }
+
+    public function test_sync_approved_grn_payables_creates_missing_payable_for_open_grn_supplier(): void
+    {
+        [$storeKeeper, $manager, $supplier, $product] = $this->bootstrapProcurementContext();
+
+        $lpo = LocalPurchaseOrder::create([
+            'supplier_id' => $supplier->id,
+            'order_date' => now()->toDateString(),
+            'status' => 'approved',
+            'created_by' => $storeKeeper->id,
+            'approved_by' => $manager->id,
+            'approved_at' => now(),
+        ]);
+
+        $lpoItem = LocalPurchaseOrderItem::create([
+            'lpo_id' => $lpo->id,
+            'product_id' => $product->id,
+            'item_name' => $product->name,
+            'unit' => $product->unit,
+            'quantity' => 2,
+            'unit_price' => 250,
+            'subtotal' => 500,
+        ]);
+
+        $grn = $this->createGrn($lpo, $supplier, $storeKeeper, $lpoItem, $product, 2, 250);
+
+        $this->actingAs($storeKeeper)->post(route('procurement.grn.confirm', $grn))->assertRedirect();
+        $this->actingAs($manager)->post(route('procurement.grn.approve', $grn))->assertRedirect();
+
+        SupplierPayable::query()
+            ->where('source_module', 'procurement')
+            ->where('source_reference_id', $grn->id)
+            ->delete();
+
+        $created = app(SupplierPayablesService::class)->syncApprovedGrnPayables($manager->id, $supplier->id);
+
+        $this->assertSame(1, $created);
+        $this->assertDatabaseHas('supplier_payables', [
+            'source_module' => 'procurement',
+            'source_reference_type' => 'grn',
+            'source_reference_id' => $grn->id,
+            'supplier_id' => $supplier->id,
+        ]);
     }
 
     private function bootstrapProcurementContext(): array

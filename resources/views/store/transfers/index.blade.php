@@ -65,7 +65,6 @@
                         <button class="text-xs bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">Reject</button>
                     </form>
                     @endif
-                    @endif
                     @if(in_array($t->status, ['pending', 'approved'], true) && auth()->user()->hasRole('STORE_MANAGER'))
                     <form method="POST" action="{{ route('store.transfers.fulfill', $t) }}" class="inline">
                         @csrf

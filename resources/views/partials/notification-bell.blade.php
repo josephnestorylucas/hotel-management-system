@@ -36,8 +36,10 @@
         </div>
         @if(auth()->user()->latestNotifications && auth()->user()->latestNotifications->count() > 0)
             @foreach(auth()->user()->latestNotifications as $notif)
-            <a href="{{ route('notifications.read', $notif) }}"
-               class="block px-4 py-3 border-b hover:bg-gray-50 transition {{ $notif->is_read ? 'opacity-60' : '' }}">
+            <form method="POST" action="{{ route('notifications.read', $notif) }}" class="block">
+                @csrf
+                <button type="submit"
+                        class="w-full text-left px-4 py-3 border-b hover:bg-gray-50 transition {{ $notif->is_read ? 'opacity-60' : '' }}">
                 <div class="flex items-start gap-2">
                     @if(!$notif->is_read)
                     <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></span>
@@ -48,7 +50,8 @@
                         <div class="text-xs text-gray-300 mt-1">{{ $notif->created_at->diffForHumans() }}</div>
                     </div>
                 </div>
-            </a>
+                </button>
+            </form>
             @endforeach
         @else
             <div class="px-4 py-6 text-center text-sm text-gray-400">No notifications</div>

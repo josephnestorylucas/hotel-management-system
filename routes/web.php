@@ -633,7 +633,7 @@ Route::middleware(['auth'])->group(function () {
     // ═══ NOTIFICATIONS ═══
     Route::get('notifications',                          [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/unread-count',             [NotificationController::class, 'unreadCount'])->name('notifications.count');
-    Route::post('notifications/{notification}/read',     [NotificationController::class, 'markRead'])->name('notifications.read');
+     Route::match(['get', 'post'], 'notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
     // ═══ UNIFIED RECEIPTS ═══
     Route::prefix('receipts')->name('receipts.')->group(function () {

@@ -11,8 +11,10 @@
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
         @forelse($notifications as $notif)
-        <a href="{{ route('notifications.read', $notif) }}"
-           class="block px-6 py-4 border-b hover:bg-gray-50 transition {{ $notif->is_read ? 'opacity-60' : 'bg-blue-50/30' }}">
+        <form method="POST" action="{{ route('notifications.read', $notif) }}" class="block">
+            @csrf
+            <button type="submit"
+                class="w-full text-left px-6 py-4 border-b hover:bg-gray-50 transition {{ $notif->is_read ? 'opacity-60' : 'bg-blue-50/30' }}">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <div class="flex items-center gap-2">
@@ -35,7 +37,8 @@
                 </div>
                 <span class="text-xs text-gray-400 whitespace-nowrap ml-4">{{ $notif->created_at->diffForHumans() }}</span>
             </div>
-        </a>
+            </button>
+        </form>
         @empty
         <div class="px-6 py-12 text-center">
             <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

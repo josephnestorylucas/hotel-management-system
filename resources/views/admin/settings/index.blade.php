@@ -189,8 +189,13 @@
 
             <div class="mb-5">
                 <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.mail_driver') }}</label>
-                <input type="text" name="mail_driver" value="{{ old('mail_driver', $settings['mail_driver']) }}"
-                       class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                <select name="mail_driver" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    @foreach(['smtp', 'sendmail', 'ses', 'postmark', 'resend', 'log', 'array'] as $driver)
+                    <option value="{{ $driver }}" {{ old('mail_driver', $settings['mail_driver']) === $driver ? 'selected' : '' }}>
+                        {{ strtoupper($driver) }}
+                    </option>
+                    @endforeach
+                </select>
                 @error('mail_driver')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
             </div>
 

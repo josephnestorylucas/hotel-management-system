@@ -8,6 +8,7 @@ use App\Helpers\CurrencyHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class SettingsController extends Controller
@@ -83,10 +84,23 @@ class SettingsController extends Controller
      */
     public function updateSmsSettings(Request $request)
     {
+        $hasSmsApiKey = !empty(SystemSetting::getValue('sms_api_key', ''));
+        $hasSmsProviderKey = !empty(SystemSetting::getValue('sms_provider_key', ''));
+
         $validated = $request->validate([
-            'sms_provider_key' => ['nullable', 'string', 'max:100', 'required_if:sms_is_enabled,1'],
+            'sms_provider_key' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::requiredIf(fn () => $request->boolean('sms_is_enabled') && !$hasSmsProviderKey),
+            ],
             'sms_sender_id' => ['nullable', 'string', 'max:100'],
-            'sms_api_key' => ['nullable', 'string', 'max:255', 'required_if:sms_is_enabled,1'],
+            'sms_api_key' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $request->boolean('sms_is_enabled') && !$hasSmsApiKey),
+            ],
             'sms_base_url' => ['nullable', 'url'],
             'sms_is_enabled' => ['nullable', 'boolean'],
         ]);
@@ -111,13 +125,20 @@ class SettingsController extends Controller
      */
     public function updateEmailSettings(Request $request)
     {
+        $hasMailPassword = !empty(SystemSetting::getValue('mail_password', ''));
+
         $validated = $request->validate([
             'mail_driver' => ['nullable', 'string', 'max:50', 'required_if:mail_is_enabled,1'],
             'mail_host' => ['nullable', 'string', 'max:191', 'required_if:mail_is_enabled,1'],
             'mail_port' => ['nullable', 'integer', 'min:1', 'max:65535', 'required_if:mail_is_enabled,1'],
             'mail_username' => ['nullable', 'string', 'max:191'],
-            'mail_password' => ['nullable', 'string', 'max:255'],
-            'mail_encryption' => ['nullable', 'string', 'max:10'],
+            'mail_password' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $request->boolean('mail_is_enabled') && !$hasMailPassword),
+            ],
+            'mail_encryption' => ['nullable', 'string', 'max:10', Rule::in(['tls', 'ssl', 'none'])],
             'mail_from_address' => ['nullable', 'email', 'max:191', 'required_if:mail_is_enabled,1'],
             'mail_from_name' => ['nullable', 'string', 'max:191'],
             'mail_is_enabled' => ['nullable', 'boolean'],
@@ -147,10 +168,23 @@ class SettingsController extends Controller
      */
     public function updateSnipeSettings(Request $request)
     {
+        $hasSnipeApiKey = !empty(SystemSetting::getValue('snipe_api_key', ''));
+        $hasSnipeApiSecret = !empty(SystemSetting::getValue('snipe_api_secret', ''));
+
         $validated = $request->validate([
             'snipe_is_enabled' => ['nullable', 'boolean'],
-            'snipe_api_key' => ['nullable', 'string', 'max:255', 'required_if:snipe_is_enabled,1'],
-            'snipe_api_secret' => ['nullable', 'string', 'max:255', 'required_if:snipe_is_enabled,1'],
+            'snipe_api_key' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $request->boolean('snipe_is_enabled') && !$hasSnipeApiKey),
+            ],
+            'snipe_api_secret' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $request->boolean('snipe_is_enabled') && !$hasSnipeApiSecret),
+            ],
             'snipe_base_url' => ['nullable', 'url'],
             'snipe_webhook_secret' => ['nullable', 'string', 'max:255'],
         ]);

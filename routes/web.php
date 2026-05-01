@@ -607,6 +607,8 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:store_keeper');
         Route::get('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'show'])->name('grn.show')
              ->middleware('role:store_manager,store_keeper,manager');
+        Route::get('grn/{goodsReceivedNote}/print', [GoodsReceivedNoteController::class, 'print'])->name('grn.print')
+             ->middleware('role:store_manager,store_keeper,manager');
         Route::delete('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'destroy'])->name('grn.destroy')
              ->middleware('role:store_keeper');
         Route::post('grn/{goodsReceivedNote}/receipt', [GoodsReceivedNoteController::class, 'uploadReceipt'])->name('grn.upload-receipt')

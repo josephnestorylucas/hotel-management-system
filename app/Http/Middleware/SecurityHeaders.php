@@ -60,6 +60,19 @@ class SecurityHeaders
             "form-action 'self'",
         ]));
 
+        // Allow same-origin framing for print previews only.
+        if ($request->routeIs('procurement.lpo.print', 'procurement.grn.print')) {
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+
+            $csp = $response->headers->get('Content-Security-Policy');
+            if ($csp) {
+                $response->headers->set(
+                    'Content-Security-Policy',
+                    str_replace("frame-ancestors 'none'", "frame-ancestors 'self'", $csp)
+                );
+            }
+        }
+
         // HSTS — enforce HTTPS (only in production)
         if (config('app.env') === 'production') {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');

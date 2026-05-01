@@ -122,6 +122,13 @@ class GoodsReceivedNoteController extends Controller
         return view('procurement.grn.show', compact('goodsReceivedNote'));
     }
 
+    public function print(GoodsReceivedNote $goodsReceivedNote): View
+    {
+        $goodsReceivedNote->load(['supplier', 'lpo', 'items.product', 'receiver', 'confirmer', 'approver']);
+
+        return view('procurement.grn.print', compact('goodsReceivedNote'));
+    }
+
     public function edit(GoodsReceivedNote $goodsReceivedNote): View
     {
         abort_unless(auth()->user()?->hasRole(Role::STORE_KEEPER), 403);

@@ -3,12 +3,14 @@
 
 namespace App\Models;
 
+use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class LocalPurchaseOrder extends Model
+class LocalPurchaseOrder extends Model implements ReceiptPrintable
 {
     use HasUuid;
 
@@ -95,5 +97,56 @@ class LocalPurchaseOrder extends Model
     public function getSupplierNameAttribute(): string
     {
         return $this->supplier?->name ?? $this->supplier_name_manual ?? 'N/A';
+    }
+
+    public function receipt(): MorphOne
+    {
+        return $this->morphOne(Receipt::class, 'receiptable');
+    }
+
+    public function toReceiptData(): array
+    {
+        $this->loadMissing(['items.product', 'supplier', 'creator']);
+
+        $items = $this->items->map(function ($item) {
+            return [
+                'name'       => $item->product?->name ?? $item->item_name ?? 'Item',
+                'details'    => $item->description ?? '',
+                'quantity'   => $item->quantity ?? 1,
+                'unit_price' => (float) ($item->unit_price ?? 0),
+                'amount'     => (float) ($item->subtotal ?? (($item->quantity ?? 1) * ($item->unit_price ?? 0))),
+            ];
+        })->toArray();
+
+        return [
+            'receipt_no'            => $this->lpo_number,
+            'issued_at'             => $this->approved_at ?? $this->created_at,
+            'module'                => 'procurement',
+            'customer_name'         => $this->supplier_name,
+            'customer_phone'        => $this->supplier?->phone ?? null,
+            'items'                 => $items,
+            'subtotal'              => (float) $this->subtotal,
+            'discount'              => 0.0,
+            'tax'                   => (float) $this->tax_amount,
+            'total'                 => (float) $this->grand_total,
+            'amount_paid'           => 0.0,
+            'balance'               => (float) $this->grand_total,
+            'currency'              => 'TZS',
+            'payment_method'        => null,
+            'payment_status'        => $this->isPaid() ? 'paid' : 'unpaid',
+            'transaction_reference' => $this->lpo_number,
+            'cashier'               => $this->creator?->name,
+            'notes'                 => $this->notes,
+        ];
+    }
+
+    public function getReceiptModule(): string
+    {
+        return 'procurement';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'fully_received' || $this->status === 'completed';
     }
 }

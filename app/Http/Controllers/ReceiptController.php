@@ -3,9 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Checkout;
+use App\Models\GoodsReceivedNote;
+use App\Models\InternalUsageRequest;
 use App\Models\LaundryOrder;
+use App\Models\LocalPurchaseOrder;
 use App\Models\Order;
 use App\Models\Receipt;
+use App\Models\StockAdjustment;
+use App\Models\StockTransfer;
+use App\Models\SupplierPayment;
 use App\Models\WalkinTransaction;
 use App\Services\ReceiptService;
 use Illuminate\Http\RedirectResponse;
@@ -157,6 +163,140 @@ class ReceiptController extends Controller
     }
 
     /**
+     * Print receipt for a purchase order (get or create).
+     * GET /receipts/procurement/lpo/{lpo}
+     */
+    public function lpo(LocalPurchaseOrder $lpo): View|RedirectResponse
+    {
+        if (!$this->hasModuleAccess('procurement')) {
+            return redirect()->route('dashboard')
+                ->with('unauthorized', 'You do not have permission to print procurement receipts.');
+        }
+
+        $receipt = $this->receiptService->getOrCreateReceipt($lpo);
+
+        $extraFields = [
+            __('general.receipt.lpo_number') => $lpo->lpo_number,
+            __('general.receipt.supplier')   => $lpo->supplier_name,
+            __('general.receipt.status')     => $lpo->status,
+        ];
+
+        return view('receipts.print', compact('receipt', 'extraFields'));
+    }
+
+    /**
+     * Print receipt for a goods received note (get or create).
+     * GET /receipts/procurement/grn/{grn}
+     */
+    public function grn(GoodsReceivedNote $grn): View|RedirectResponse
+    {
+        if (!$this->hasModuleAccess('procurement')) {
+            return redirect()->route('dashboard')
+                ->with('unauthorized', 'You do not have permission to print procurement receipts.');
+        }
+
+        $receipt = $this->receiptService->getOrCreateReceipt($grn);
+
+        $extraFields = [
+            __('general.receipt.grn_number')    => $grn->grn_number,
+            __('general.receipt.lpo_number')    => $grn->lpo?->lpo_number,
+            __('general.receipt.supplier')      => $grn->supplier_name,
+            __('general.receipt.received_date') => $grn->received_date?->format('d M Y'),
+        ];
+
+        return view('receipts.print', compact('receipt', 'extraFields'));
+    }
+
+    /**
+     * Print receipt for a supplier payment (get or create).
+     * GET /receipts/procurement/payment/{payment}
+     */
+    public function supplierPayment(SupplierPayment $payment): View|RedirectResponse
+    {
+        if (!$this->hasModuleAccess('procurement')) {
+            return redirect()->route('dashboard')
+                ->with('unauthorized', 'You do not have permission to print procurement receipts.');
+        }
+
+        $receipt = $this->receiptService->getOrCreateReceipt($payment);
+
+        $extraFields = [
+            __('general.receipt.supplier')      => $payment->supplier?->name,
+            __('general.receipt.reference')     => $payment->reference,
+            __('general.receipt.payment_date')  => $payment->payment_date?->format('d M Y'),
+            __('general.receipt.status')        => $payment->status,
+        ];
+
+        return view('receipts.print', compact('receipt', 'extraFields'));
+    }
+
+    /**
+     * Print receipt for a stock adjustment (get or create).
+     * GET /receipts/store/adjustment/{adjustment}
+     */
+    public function stockAdjustment(StockAdjustment $adjustment): View|RedirectResponse
+    {
+        if (!$this->hasModuleAccess('store')) {
+            return redirect()->route('dashboard')
+                ->with('unauthorized', 'You do not have permission to print store receipts.');
+        }
+
+        $receipt = $this->receiptService->getOrCreateReceipt($adjustment);
+
+        $extraFields = [
+            __('general.receipt.reason')  => $adjustment->reason,
+            __('general.receipt.status')  => $adjustment->status,
+        ];
+
+        return view('receipts.print', compact('receipt', 'extraFields'));
+    }
+
+    /**
+     * Print receipt for a stock transfer (get or create).
+     * GET /receipts/store/transfer/{transfer}
+     */
+    public function stockTransfer(StockTransfer $transfer): View|RedirectResponse
+    {
+        if (!$this->hasModuleAccess('store')) {
+            return redirect()->route('dashboard')
+                ->with('unauthorized', 'You do not have permission to print store receipts.');
+        }
+
+        $receipt = $this->receiptService->getOrCreateReceipt($transfer);
+
+        $extraFields = [
+            __('general.receipt.from_location') => $transfer->fromLocation?->name,
+            __('general.receipt.to_location')   => $transfer->toLocation?->name,
+            __('general.receipt.reason')        => $transfer->reason,
+            __('general.receipt.status')        => $transfer->status,
+        ];
+
+        return view('receipts.print', compact('receipt', 'extraFields'));
+    }
+
+    /**
+     * Print receipt for an internal usage request (get or create).
+     * GET /receipts/store/internal-request/{request}
+     */
+    public function internalRequest(InternalUsageRequest $internalRequest): View|RedirectResponse
+    {
+        if (!$this->hasModuleAccess('store')) {
+            return redirect()->route('dashboard')
+                ->with('unauthorized', 'You do not have permission to print store receipts.');
+        }
+
+        $receipt = $this->receiptService->getOrCreateReceipt($internalRequest);
+
+        $extraFields = [
+            __('general.receipt.department') => $internalRequest->department,
+            __('general.receipt.reason')     => $internalRequest->reason,
+            __('general.receipt.status')     => $internalRequest->status,
+        ];
+
+        return view('receipts.print', compact('receipt', 'extraFields'));
+    }
+
+    /**
      * Search receipts.
      * GET /receipts/search
      */
@@ -202,12 +342,15 @@ class ReceiptController extends Controller
     protected function getModuleRoles(): array
     {
         return [
-            'laundry'    => ['laundry_manager', 'house_help', 'front_desk', 'supervisor', 'manager', 'admin', 'accountant'],
-            'restaurant' => ['restaurant_manager', 'bar_tender', 'waiter', 'front_desk', 'manager', 'admin', 'accountant'],
-            'bar'        => ['restaurant_manager', 'bar_tender', 'waiter', 'front_desk', 'manager', 'admin', 'accountant'],
-            'checkout'   => ['front_desk', 'manager', 'admin', 'accountant'],
-            'walkin'     => ['front_desk', 'bar_tender', 'restaurant_manager', 'manager', 'admin', 'accountant'],
-            'conference' => ['front_desk', 'supervisor', 'manager', 'admin', 'accountant'],
+            'laundry'     => ['laundry_manager', 'house_help', 'front_desk', 'supervisor', 'manager', 'admin', 'accountant'],
+            'restaurant'  => ['restaurant_manager', 'bar_tender', 'waiter', 'front_desk', 'manager', 'admin', 'accountant'],
+            'bar'         => ['restaurant_manager', 'bar_tender', 'waiter', 'front_desk', 'manager', 'admin', 'accountant'],
+            'checkout'    => ['front_desk', 'manager', 'admin', 'accountant'],
+            'walkin'      => ['front_desk', 'bar_tender', 'restaurant_manager', 'manager', 'admin', 'accountant'],
+            'conference'  => ['front_desk', 'supervisor', 'manager', 'admin', 'accountant'],
+            'procurement' => ['supervisor', 'manager', 'admin', 'accountant'],
+            'store'       => ['supervisor', 'manager', 'admin', 'accountant'],
+            'accounting'  => ['manager', 'admin', 'accountant'],
         ];
     }
 

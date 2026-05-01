@@ -4,46 +4,42 @@ namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Checkout;
-use App\Models\FinancePayment;
 use App\Models\Order;
+use App\Services\ReceiptService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class ReceiptController extends Controller
 {
+    public function __construct(
+        protected ReceiptService $receiptService
+    ) {}
+
     /**
      * GET /finance/receipts/guest/{checkout}
-     * Printable guest checkout receipt.
+     * Redirects to unified receipt system.
      */
-    public function guest(Checkout $checkout): View
+    public function guest(Checkout $checkout): RedirectResponse
     {
-        $checkout->load(['booking', 'charges', 'initiator', 'completer', 'payments']);
+        // Ensure a receipt exists for this checkout
+        $receipt = $this->receiptService->getOrCreateReceipt($checkout);
 
-        $chargesByType = $checkout->charges->groupBy('charge_type');
-
-        $exchangeRate = (float) $checkout->exchange_rate;
-
-        return view('finance.receipts.guest', compact('checkout', 'chargesByType', 'exchangeRate'));
+        return redirect()->route('receipts.show', $receipt->uuid);
     }
 
     /**
-     * GET /finance/receipts/walkin
-     * Printable walk-in sale receipt.
+     * GET /finance/receipts/walkin?order_id=...
+     * Redirects to unified receipt system.
      */
-    public function walkin(Request $request): View
+    public function walkin(Request $request): RedirectResponse
     {
         $orderId = $request->order_id;
-        $order   = Order::with(['items.menuItem', 'table', 'location'])->findOrFail($orderId);
+        $order   = Order::findOrFail($orderId);
 
-        $payment = FinancePayment::where('order_id', $orderId)
-            ->where('status', 'completed')
-            ->latest('paid_at')
-            ->first();
+        // Ensure a receipt exists for this order
+        $receipt = $this->receiptService->getOrCreateReceipt($order);
 
-        $exchangeRate = (float) (DB::table('system_settings')
-            ->where('key', 'tzs_exchange_rate')->value('value') ?? 2500);
-
-        return view('finance.receipts.walkin', compact('order', 'payment', 'exchangeRate'));
+        return redirect()->route('receipts.show', $receipt->uuid);
     }
 }

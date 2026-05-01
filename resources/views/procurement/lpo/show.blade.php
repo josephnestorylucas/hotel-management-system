@@ -63,8 +63,8 @@
             @endif
 
             <!-- Print Button -->
-            <button 
-                onclick="window.print()"
+            <button type="button"
+                onclick="document.getElementById('print-modal').classList.remove('hidden'); document.getElementById('print-frame').src = '{{ route('procurement.lpo.print', $localPurchaseOrder) }}'"
                 class="px-4 py-2 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 transition-colors no-print">
                 🖨️ Print
             </button>
@@ -318,6 +318,28 @@
         <a href="{{ route('procurement.lpo.index') }}" class="text-primary hover:text-blue-700 font-semibold">
             ← Back to Purchase Orders
         </a>
+    </div>
+</div>
+
+<!-- Print Modal -->
+<div id="print-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 no-print">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-secondary">Print Preview — {{ $localPurchaseOrder->lpo_number }}</h3>
+            <div class="flex items-center gap-3">
+                <button type="button"
+                    onclick="var f=document.getElementById('print-frame');f.contentWindow.focus();f.contentWindow.print()"
+                    class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700">
+                    🖨️ Print
+                </button>
+                <button type="button"
+                    onclick="document.getElementById('print-modal').classList.add('hidden');document.getElementById('print-frame').src=''"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300">
+                    ✕ Close
+                </button>
+            </div>
+        </div>
+        <iframe id="print-frame" src="" class="flex-1 w-full border-0" style="min-height: 0;"></iframe>
     </div>
 </div>
 

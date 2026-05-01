@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class StockAdjustment extends Model
+class StockAdjustment extends Model implements ReceiptPrintable
 {
     use HasUuid;
 
@@ -39,5 +41,54 @@ class StockAdjustment extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function receipt(): MorphOne
+    {
+        return $this->morphOne(Receipt::class, 'receiptable');
+    }
+
+    public function toReceiptData(): array
+    {
+        $this->loadMissing(['product', 'location', 'creator']);
+
+        $items = [[
+            'name'       => $this->product?->name ?? 'Product',
+            'details'    => 'Adjustment: ' . ($this->previous_qty ?? 0) . ' → ' . ($this->new_qty ?? 0),
+            'quantity'   => abs($this->difference ?? 0),
+            'unit_price' => 0,
+            'amount'     => 0,
+        ]];
+
+        return [
+            'receipt_no'            => $this->uuid,
+            'issued_at'             => $this->created_at,
+            'module'                => 'store',
+            'customer_name'         => $this->location?->name ?? 'Stock Location',
+            'customer_phone'        => null,
+            'items'                 => $items,
+            'subtotal'              => 0.0,
+            'discount'              => 0.0,
+            'tax'                   => 0.0,
+            'total'                 => 0.0,
+            'amount_paid'           => 0.0,
+            'balance'               => 0.0,
+            'currency'              => 'TZS',
+            'payment_method'        => null,
+            'payment_status'        => $this->status === 'approved' ? 'paid' : 'unpaid',
+            'transaction_reference' => null,
+            'cashier'               => $this->creator?->name,
+            'notes'                 => $this->reason,
+        ];
+    }
+
+    public function getReceiptModule(): string
+    {
+        return 'store';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'approved';
     }
 }

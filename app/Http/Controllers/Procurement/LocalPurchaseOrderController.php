@@ -95,6 +95,13 @@ class LocalPurchaseOrderController extends Controller
         return view('procurement.lpo.show', compact('localPurchaseOrder'));
     }
 
+    public function print(LocalPurchaseOrder $localPurchaseOrder): View
+    {
+        $localPurchaseOrder->load(['supplier', 'items.product', 'creator', 'approver']);
+
+        return view('procurement.lpo.print', compact('localPurchaseOrder'));
+    }
+
     public function edit(LocalPurchaseOrder $localPurchaseOrder): View
     {
         if (!in_array($localPurchaseOrder->status, ['draft', 'rejected'])) {

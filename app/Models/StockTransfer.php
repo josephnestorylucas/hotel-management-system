@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class StockTransfer extends Model
+class StockTransfer extends Model implements ReceiptPrintable
 {
     use HasUuid;
 
@@ -55,5 +57,54 @@ class StockTransfer extends Model
     public function rejecter()
     {
         return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function receipt(): MorphOne
+    {
+        return $this->morphOne(Receipt::class, 'receiptable');
+    }
+
+    public function toReceiptData(): array
+    {
+        $this->loadMissing(['product', 'fromLocation', 'toLocation', 'requester']);
+
+        $items = [[
+            'name'       => $this->product?->name ?? 'Product',
+            'details'    => 'Transfer: ' . ($this->fromLocation?->name ?? '—') . ' → ' . ($this->toLocation?->name ?? '—'),
+            'quantity'   => $this->quantity ?? 1,
+            'unit_price' => 0,
+            'amount'     => 0,
+        ]];
+
+        return [
+            'receipt_no'            => $this->uuid,
+            'issued_at'             => $this->completed_at ?? $this->created_at,
+            'module'                => 'store',
+            'customer_name'         => $this->fromLocation?->name ?? 'Stock Location',
+            'customer_phone'        => null,
+            'items'                 => $items,
+            'subtotal'              => 0.0,
+            'discount'              => 0.0,
+            'tax'                   => 0.0,
+            'total'                 => 0.0,
+            'amount_paid'           => 0.0,
+            'balance'               => 0.0,
+            'currency'              => 'TZS',
+            'payment_method'        => null,
+            'payment_status'        => $this->status === 'completed' ? 'paid' : 'unpaid',
+            'transaction_reference' => null,
+            'cashier'               => $this->requester?->name,
+            'notes'                 => $this->reason,
+        ];
+    }
+
+    public function getReceiptModule(): string
+    {
+        return 'store';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'completed';
     }
 }

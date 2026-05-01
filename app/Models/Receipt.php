@@ -170,13 +170,16 @@ class Receipt extends Model
     public function getModuleLabelAttribute(): string
     {
         return match ($this->module) {
-            'laundry'    => 'Laundry Service',
-            'restaurant' => 'Restaurant',
-            'bar'        => 'Bar',
-            'checkout'   => 'Hotel Checkout',
-            'walkin'     => 'Walk-in Sale',
-            'conference' => 'Conference',
-            default      => ucfirst($this->module ?? 'Unknown'),
+            'laundry'     => 'Laundry Service',
+            'restaurant'  => 'Restaurant',
+            'bar'         => 'Bar',
+            'checkout'    => 'Hotel Checkout',
+            'walkin'      => 'Walk-in Sale',
+            'conference'  => 'Conference',
+            'procurement' => 'Procurement',
+            'store'       => 'Store / Inventory',
+            'accounting'  => 'Accounting',
+            default       => ucfirst($this->module ?? 'Unknown'),
         };
     }
 }

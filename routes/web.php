@@ -577,6 +577,8 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:store_manager,store_keeper');
         Route::get('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'show'])->name('lpo.show')
              ->middleware('role:store_manager,store_keeper,manager');
+        Route::get('lpo/{localPurchaseOrder}/print', [LocalPurchaseOrderController::class, 'print'])->name('lpo.print')
+             ->middleware('role:store_manager,store_keeper,manager');
         Route::get('lpo/{localPurchaseOrder}/edit', [LocalPurchaseOrderController::class, 'edit'])->name('lpo.edit')
              ->middleware('role:store_manager,store_keeper');
         Route::put('lpo/{localPurchaseOrder}', [LocalPurchaseOrderController::class, 'update'])->name('lpo.update')
@@ -645,6 +647,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('reprint/{receiptNumber}',   [ReceiptController::class, 'reprint'])->name('reprint');
         Route::post('{uuid}/refresh',           [ReceiptController::class, 'refresh'])->name('refresh');
         Route::post('{uuid}/printed',           [ReceiptController::class, 'markPrinted'])->name('printed');
+        // Procurement receipts
+        Route::get('procurement/lpo/{lpo}',             [ReceiptController::class, 'lpo'])->name('procurement.lpo');
+        Route::get('procurement/grn/{grn}',             [ReceiptController::class, 'grn'])->name('procurement.grn');
+        Route::get('procurement/payment/{payment}',     [ReceiptController::class, 'supplierPayment'])->name('procurement.payment');
+        // Store receipts
+        Route::get('store/adjustment/{adjustment}',     [ReceiptController::class, 'stockAdjustment'])->name('store.adjustment');
+        Route::get('store/transfer/{transfer}',         [ReceiptController::class, 'stockTransfer'])->name('store.transfer');
+        Route::get('store/internal-request/{internalRequest}', [ReceiptController::class, 'internalRequest'])->name('store.internal-request');
         Route::get('{uuid}',                    [ReceiptController::class, 'show'])->name('show');
     });
 

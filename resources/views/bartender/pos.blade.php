@@ -69,11 +69,14 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     @foreach($categories as $cat)
                         @foreach($cat->menuItems as $item)
-                        <div @click="addToCart('{{ $item->id }}', '{{ addslashes($item->name) }}', {{ (float) $item->selling_price }})"
+                        <div @click="selectProduct('{{ $item->id }}', '{{ addslashes($item->name) }}', {{ (float) $item->selling_price }})"
                             x-show="!activeCategory || activeCategory === '{{ $cat->id }}'"
-                            class="cursor-pointer p-3 rounded-lg border border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 transition-all active:scale-95"
+                            class="cursor-pointer p-3 rounded-lg border border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 transition-all active:scale-95 relative"
                             title="{{ $item->name }} - {{ number_format($item->selling_price, 0) }} TZS">
                             <div class="text-xs font-semibold text-gray-800 truncate">{{ $item->name }}</div>
+                            @if(!empty($item->varieties))
+                            <div class="text-xs text-amber-600 mt-0.5">{{ count($item->varieties) }} sizes</div>
+                            @endif
                             <div class="text-xs font-bold text-primary mt-1">{{ number_format($item->selling_price, 0) }} TZS</div>
                         </div>
                         @endforeach
@@ -152,6 +155,30 @@
         </div>
     </div>
 
+    <!-- Variety Selection Modal -->
+    <div x-show="showVarietyModal" class="fixed inset-0 z-50 flex items-center justify-center" x-cloak>
+        <div class="absolute inset-0 bg-black bg-opacity-40" @click="showVarietyModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-800" x-text="selectingProduct?.name + ' — Select Size'"></h3>
+                <button @click="showVarietyModal = false" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <div class="p-4 space-y-2">
+                <template x-for="(v, idx) in selectingVarieties" :key="idx">
+                    <div @click="addVarietyToCart(v)" 
+                        class="cursor-pointer p-3 rounded-lg border border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 transition-all flex justify-between items-center">
+                        <span class="text-sm font-medium text-gray-800" x-text="v.label"></span>
+                        <span class="text-sm font-bold text-primary" x-text="formatCurrency(v.price || selectingProduct?.basePrice)"></span>
+                    </div>
+                </template>
+                <div @click="addToCart(selectingProduct?.id, selectingProduct?.name, selectingProduct?.basePrice); showVarietyModal = false"
+                    class="cursor-pointer p-3 rounded-lg border border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 transition-all text-sm text-gray-500 text-center">
+                    No preference — use standard
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Guest Search Modal -->
     <div x-show="showGuestModal" class="fixed inset-0 z-50 flex items-center justify-center" x-cloak>
         <div class="absolute inset-0 bg-black bg-opacity-40" @click="showGuestModal = false"></div>
@@ -206,10 +233,16 @@ $menuPricesJson = $categories
     ->flatMap(fn($cat) => $cat->menuItems->map(fn($item) => ['id' => $item->id, 'price' => (float) $item->selling_price]))
     ->pluck('price', 'id')
     ->toJson();
+
+$menuVarietiesJson = $categories
+    ->flatMap(fn($cat) => $cat->menuItems->filter(fn($item) => !empty($item->varieties)))
+    ->mapWithKeys(fn($item) => [$item->id => $item->varieties])
+    ->toJson();
 @endphp
 <script>
 function barPos() {
     const menuPrices = JSON.parse({!! json_encode($menuPricesJson) !!});
+    const menuVarieties = JSON.parse({!! json_encode($menuVarietiesJson) !!});
 
     return {
         // Customer
@@ -224,6 +257,9 @@ function barPos() {
 
         // Catalog
         activeCategory: null,
+        showVarietyModal: false,
+        selectingProduct: null,
+        selectingVarieties: [],
 
         // Cart
         cart: [],
@@ -261,6 +297,36 @@ function barPos() {
         },
 
         // Cart actions
+        selectProduct(menuItemId, name, basePrice) {
+            const varieties = menuVarieties[menuItemId];
+            if (varieties && varieties.length > 0) {
+                this.selectingProduct = { id: menuItemId, name, basePrice };
+                this.selectingVarieties = varieties;
+                this.showVarietyModal = true;
+                return;
+            }
+            this.addToCart(menuItemId, name, basePrice);
+        },
+        addVarietyToCart(variety) {
+            const p = this.selectingProduct;
+            const price = variety.price || p.basePrice;
+            const label = p.name + ' (' + variety.label + ')';
+            const key = p.id + '|' + variety.label;
+            const existing = this.cart.find(i => i._varietyKey === key);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                this.cart.push({
+                    menu_item_id: p.id,
+                    name: label,
+                    unit_price: price,
+                    quantity: 1,
+                    _varietyKey: key,
+                });
+            }
+            this.showVarietyModal = false;
+            this.selectingProduct = null;
+        },
         addToCart(menuItemId, name, unitPrice) {
             const existing = this.cart.find(i => i.menu_item_id === menuItemId);
             if (existing) {

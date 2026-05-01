@@ -25,6 +25,11 @@
         <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
         @endforeach
     </select>
+    <select name="product_type" class="border border-gray-200 rounded-xl px-3 py-2 text-sm">
+        <option value="">All Types</option>
+        <option value="normal" {{ request('product_type') === 'normal' ? 'selected' : '' }}>Normal</option>
+        <option value="bar" {{ request('product_type') === 'bar' ? 'selected' : '' }}>Bar</option>
+    </select>
     <button class="bg-gray-200 px-4 py-2 rounded-xl text-sm hover:bg-gray-300 font-medium">Filter</button>
 </form>
 
@@ -36,6 +41,7 @@
                 <th class="px-4 py-3 text-left text-gray-600 font-semibold">SKU</th>
                 <th class="px-4 py-3 text-left text-gray-600 font-semibold">Category</th>
                 <th class="px-4 py-3 text-left text-gray-600 font-semibold">Unit</th>
+                <th class="px-4 py-3 text-center text-gray-600 font-semibold">Type</th>
                 <th class="px-4 py-3 text-right text-gray-600 font-semibold">Cost Price</th>
                 <th class="px-4 py-3 text-right text-gray-600 font-semibold">Selling Price</th>
                 <th class="px-4 py-3 text-center text-gray-600 font-semibold">Actions</th>
@@ -48,6 +54,13 @@
                 <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ $product->sku }}</td>
                 <td class="px-4 py-3 text-gray-500">{{ $product->category ?? '—' }}</td>
                 <td class="px-4 py-3 text-gray-500">{{ $product->unit }}</td>
+                <td class="px-4 py-3 text-center">
+                    @if($product->product_type === 'bar')
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Bar</span>
+                    @else
+                        <span class="text-gray-400">—</span>
+                    @endif
+                </td>
                 <td class="px-4 py-3 text-right text-gray-700">{{ number_format($product->cost_price, 2) }}</td>
                 <td class="px-4 py-3 text-right text-gray-700">{{ number_format($product->selling_price, 2) }}</td>
                 <td class="px-4 py-3 text-center">

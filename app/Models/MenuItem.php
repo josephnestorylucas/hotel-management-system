@@ -18,6 +18,7 @@ class MenuItem extends Model
         'selling_price' => 'decimal:2',
         'is_available'  => 'boolean',
         'is_active'     => 'boolean',
+        'varieties'     => 'array',
     ];
 
     public function category()    { return $this->belongsTo(MenuCategory::class, 'category_id'); }

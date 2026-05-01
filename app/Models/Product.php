@@ -10,8 +10,8 @@ class Product extends Model
     use HasUuid;
 
     protected $fillable = [
-        'name', 'sku', 'description', 'category', 'unit',
-        'cost_price', 'selling_price', 'reorder_level', 'is_active', 'created_by',
+        'name', 'sku', 'description', 'category', 'product_type', 'unit',
+        'cost_price', 'selling_price', 'reorder_level', 'varieties', 'is_active', 'created_by',
     ];
 
     protected $casts = [
@@ -19,6 +19,8 @@ class Product extends Model
         'selling_price' => 'decimal:2',
         'is_active'     => 'boolean',
         'reorder_level' => 'integer',
+        'varieties'     => 'array',
+        'product_type'  => 'string',
     ];
 
     /**
@@ -49,5 +51,11 @@ class Product extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function menuItem()
+    {
+        return $this->hasOne(MenuItem::class, 'name', 'name')
+            ->where('is_active', true);
     }
 }

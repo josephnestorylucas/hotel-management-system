@@ -94,6 +94,10 @@ class BartenderController extends Controller
     public function pos(): View
     {
         $bar = StockLocation::bar();
+
+        // Ensure all bar Products have corresponding MenuItems
+        $this->syncBarProductsToMenu($bar);
+
         $categories = MenuCategory::with(['menuItems' => fn ($q) => $q->where('is_active', true)->where('is_available', true)])
             ->where('location_id', $bar->id)
             ->where('is_active', true)
@@ -107,6 +111,49 @@ class BartenderController extends Controller
             ->get();
 
         return view('bartender.pos', compact('categories', 'bar', 'bookings'));
+    }
+
+    protected function syncBarProductsToMenu(StockLocation $bar): void
+    {
+        $barProducts = Product::query()
+            ->where('product_type', 'bar')
+            ->where('is_active', true)
+            ->get();
+
+        if ($barProducts->isEmpty()) {
+            return;
+        }
+
+        $defaultCategory = MenuCategory::query()
+            ->where('location_id', $bar->id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->first();
+
+        if (!$defaultCategory) {
+            return;
+        }
+
+        foreach ($barProducts as $product) {
+            $existing = MenuItem::where('name', $product->name)
+                ->where('category_id', $defaultCategory->id)
+                ->exists();
+
+            if ($existing) {
+                continue;
+            }
+
+            MenuItem::create([
+                'category_id'   => $defaultCategory->id,
+                'name'          => $product->name,
+                'description'   => $product->description,
+                'selling_price' => $product->selling_price,
+                'is_available'  => true,
+                'is_active'     => true,
+                'varieties'     => $product->varieties,
+                'created_by'    => $product->created_by ?? auth()->id(),
+            ]);
+        }
     }
 
     public function storePos(Request $request): RedirectResponse

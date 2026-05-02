@@ -111,16 +111,18 @@ return [
         'today_movements' => 'Today\'s Movements',
         'available_items' => 'Available Items',
         'served_today' => 'Served Today',
-    // Bar stats
-    'bar' => [
-        'available_items' => 'Available Items',
-        'served_today' => 'Served Today',
+        // Bar stats
+        'bar' => [
+            'available_items' => 'Available Items',
+            'served_today' => 'Served Today',
+        ],
+        // Restaurant stats
+        'restaurant' => [
+            'bar_products' => 'Bar Products',
+            'kitchen_products' => 'Kitchen Products',
+        ],
     ],
-    // Restaurant stats
-    'restaurant' => [
-        'bar_products' => 'Bar Products',
-        'kitchen_products' => 'Kitchen Products',
-    ],
+
     // Stock status
     'stock' => [
         'empty' => 'Empty',
@@ -129,7 +131,6 @@ return [
         'low_stock_items' => 'Low Stock Items',
         'pending_transfers' => 'Pending Transfers',
         'today_movements' => 'Today\'s Movements',
-    ],
     ],
     
     // Revenue

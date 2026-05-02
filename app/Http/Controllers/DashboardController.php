@@ -349,32 +349,31 @@ class DashboardController extends Controller {
             'available_rooms' => Room::where('status', 'available')->where('is_active', true)->count(),
             'occupied_rooms' => Room::where('status', 'occupied')->count(),
             'reserved_rooms' => Room::where('status', 'reserved')->count(),
-            // Expected arrivals (Reservation)
-            'today_checkins' => Reservation::whereDate('check_in_date', today())->whereIn('status', ['confirmed', 'pending'])->count(),
-            // Guests due to depart (Booking)
-            'today_checkouts' => Booking::whereDate('check_out_date', today())->where('status', 'checked_in')->count(),
+            // All bookings checked in today
+            'today_checkins' => Booking::whereDate('check_in_date', today())->count(),
+            // All bookings checking out today
+            'today_checkouts' => Booking::whereDate('check_out_date', today())->count(),
+            // Reservations arriving today (confirmed, pending, converted)
             'pending_reservations' => Reservation::where('status', 'pending')->count(),
             'active_bookings' => Booking::where('status', 'checked_in')->count(),
         ];
 
-        // Today's arrivals (Reservation)
-        $todayActivity = Reservation::with('room')
+        // Today's check-ins (Bookings)
+        $todayActivity = Booking::with('room')
             ->whereDate('check_in_date', today())
-            ->whereIn('status', ['confirmed', 'pending'])
             ->orderBy('check_in_date')
             ->get();
 
-        // Today's departures (Booking)
+        // Today's check-outs (Bookings)
         $todayDepartures = Booking::with('room')
             ->whereDate('check_out_date', today())
-            ->where('status', 'checked_in')
             ->orderBy('check_out_date')
             ->get();
 
-        // Upcoming arrivals (Reservation — next 3 days)
+        // Expected arrivals from reservations (today + next 3 days)
         $upcomingArrivals = Reservation::with('room')
             ->whereBetween('check_in_date', [today(), today()->addDays(3)])
-            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereIn('status', ['pending', 'confirmed', 'converted'])
             ->orderBy('check_in_date')
             ->get();
 

@@ -111,16 +111,18 @@ return [
         'today_movements' => 'Mienendo ya Leo',
         'available_items' => 'Vitu Vinavyopatikana',
         'served_today' => 'Vimehudumiwa Leo',
-    // Bar stats
-    'bar' => [
-        'available_items' => 'Vitu Vinavyopatikana',
-        'served_today' => 'Vimehudumiwa Leo',
+        // Bar stats
+        'bar' => [
+            'available_items' => 'Vitu Vinavyopatikana',
+            'served_today' => 'Vimehudumiwa Leo',
+        ],
+        // Restaurant stats
+        'restaurant' => [
+            'bar_products' => 'Bidhaa za Baa',
+            'kitchen_products' => 'Bidhaa za Jiko',
+        ],
     ],
-    // Restaurant stats
-    'restaurant' => [
-        'bar_products' => 'Bidhaa za Baa',
-        'kitchen_products' => 'Bidhaa za Jiko',
-    ],
+
     // Stock status
     'stock' => [
         'empty' => 'Tupu',
@@ -129,7 +131,6 @@ return [
         'low_stock_items' => 'Bidhaa Zilizo Chini',
         'pending_transfers' => 'Uhamisho Unaosubiri',
         'today_movements' => 'Mienendo ya Leo',
-    ],
     ],
     
     // Revenue

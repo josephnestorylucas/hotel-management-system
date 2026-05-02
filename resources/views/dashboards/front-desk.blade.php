@@ -122,44 +122,34 @@
     </div>
 </div>
 
-<!-- Today's Arrivals -->
+<!-- Today's Arrivals (Check-ins) -->
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
     <h3 class="text-lg font-extrabold text-secondary mb-6">{{ __('dashboard.sections.arrivals_today') }}</h3>
     <div class="overflow-x-auto">
         <table class="min-w-full">
             <thead class="bg-gradient-to-r from-green-50 to-white">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.reservation_number') }}</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.booking_number') }}</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.guest_name') }}</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.phone') }}</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.room') }}</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.status') }}</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-green-600 uppercase tracking-wider">{{ __('dashboard.table.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
-                @forelse($todayActivity as $reservation)
+                @forelse($todayActivity as $booking)
                 <tr class="hover:bg-green-50/50 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-secondary">{{ $reservation->reservation_number }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $reservation->guest_name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $reservation->guest_phone }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $reservation->room?->room_number ?? __('dashboard.not_assigned') }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @include('components.reservation-status-badge', ['status' => $reservation->status])
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-secondary">{{ $booking->booking_number }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $booking->guest_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $booking->guest_phone ?? '—' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $booking->room?->room_number ?? __('dashboard.not_assigned') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <a href="{{ route('reservations.edit', $reservation) }}" class="text-primary hover:text-blue-700 font-semibold mr-3">{{ __('dashboard.actions.view') }}</a>
-                        @if($reservation->status === 'confirmed')
-                            <form method="POST" action="{{ route('reservations.check-in', $reservation) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="text-green-600 hover:text-green-700 font-semibold">{{ __('dashboard.actions.check_in') }}</button>
-                            </form>
-                        @endif
+                        <a href="{{ route('bookings.show', $booking) }}" class="text-primary hover:text-blue-700 font-semibold">{{ __('dashboard.actions.view') }}</a>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">{{ __('dashboard.no_arrivals') }}</td>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">{{ __('dashboard.no_arrivals') }}</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -185,12 +175,13 @@
                 @forelse($todayDepartures as $booking)
                 <tr class="hover:bg-red-50/50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-secondary">{{ $booking->booking_number }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $booking->guest->full_name ?? 'N/A' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $booking->guest_name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $booking->room?->room_number ?? 'N/A' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @include('components.booking-status-badge', ['status' => $booking->status])
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <a href="{{ route('bookings.show', $booking) }}" class="text-primary hover:text-blue-700 font-semibold mr-3">{{ __('dashboard.actions.view') }}</a>
                         @if($booking->status === 'checked_in')
                             <form method="POST" action="{{ route('bookings.check-out', $booking) }}" class="inline">
                                 @csrf

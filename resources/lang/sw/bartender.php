@@ -48,6 +48,7 @@ return [
         'receipt' => 'Risiti',
         'print_receipt' => 'Chapisha Risiti',
         'reprint_receipt' => 'Chapisha Tena Risiti',
+        'view_checkout' => 'Angalia Malipo ya Mgeni',
         'apply' => 'Tumia',
     ],
     'pos' => [
@@ -120,6 +121,7 @@ return [
         'walkin_payment_completed' => 'Malipo ya mteja wa moja kwa moja yamekamilika. Risiti inapatikana kwenye mtiririko wa risiti ya agizo.',
         'restaurant_front_desk' => 'Agizo hili linaunganishwa na mtiririko wa malipo wa mkahawa na hulipwa kupitia mapokezi.',
         'room_service_checkout' => 'Baada ya kutoa, gharama huongezwa kwenye folio ya mgeni kwa malipo ya pamoja wakati wa checkout.',
+        'charged_to_folio' => 'Imewekwa Kwenye Folio ya Mgeni',
         'damage_audit' => 'Mkondo wa Ukaguzi wa Uharibifu wa Baa',
         'restaurant_walkin_redirect' => 'Agizo hili la kinywaji cha baa la mteja wa moja kwa moja hushughulikiwa kwenye dawati la mhudumu wa baa. Liandae huko kwanza kisha kusanya malipo.',
         'open_bartender_order' => 'Fungua agizo la mhudumu wa baa',
@@ -145,6 +147,7 @@ return [
         'accepted' => 'Imekubaliwa',
         'prepared' => 'Imeandaliwa',
         'served' => 'Imetolewa',
+        'charged' => 'Imewekwa Kwenye Folio',
         'cancelled' => 'Imeghairiwa',
         'rejected' => 'Imekataliwa',
         'settled' => 'Imelipwa',

@@ -143,13 +143,25 @@
                 <label class="block text-xs font-semibold text-gray-600 mb-2">Payment Method *</label>
                 <div class="flex gap-2">
                     <template x-for="method in ['Cash', 'Mobile', 'Card']" :key="method">
-                        <button type="button" @click="paymentMethod = method"
+                        <button type="button" @click="paymentMethod = method; chargeToBooking = false"
                             :class="paymentMethod === method ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'"
                             class="flex-1 px-2 py-2 rounded-lg border text-xs font-semibold transition-all" x-text="method">
                         </button>
                     </template>
+                    <button type="button" @click="paymentMethod = 'Charge to Booking'; chargeToBooking = true"
+                        :class="paymentMethod === 'Charge to Booking' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'"
+                        class="flex-1 px-2 py-2 rounded-lg border text-xs font-semibold transition-all">
+                        Folio
+                    </button>
                 </div>
                 <input type="hidden" name="payment_method" x-model="paymentMethod">
+                <!-- Booking Selection for Charge to Folio -->
+                <div x-show="chargeToBooking" class="mt-3" x-transition>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Guest Booking *</label>
+                    <input type="text" x-model="bookingId" placeholder="Enter Booking # or Room #"
+                        class="w-full border-gray-300 rounded-lg text-sm px-3 py-2">
+                    <p class="text-xs text-gray-400 mt-1">Charges will be added to the guest folio and paid at checkout.</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-2">
@@ -232,6 +244,8 @@ function barPos() {
 
         // Payment
         paymentMethod: '',
+        chargeToBooking: false,
+        bookingId: '',
 
         // Actions
 
@@ -334,6 +348,11 @@ function barPos() {
                 return;
             }
 
+            if (this.chargeToBooking && !this.bookingId) {
+                alert('Please enter a booking number or room number to charge to.');
+                return;
+            }
+
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '{{ route('bartender.pos.store') }}';
@@ -347,7 +366,7 @@ function barPos() {
             const customerNameInput = document.createElement('input');
             customerNameInput.type = 'hidden';
             customerNameInput.name = 'customer_name';
-            customerNameInput.value = this.customerName || 'Walk-in Guest';
+            customerNameInput.value = this.customerName || (this.chargeToBooking ? 'Guest' : 'Walk-in Guest');
             form.appendChild(customerNameInput);
 
             const customerPhoneInput = document.createElement('input');
@@ -359,8 +378,16 @@ function barPos() {
             const paymentInput = document.createElement('input');
             paymentInput.type = 'hidden';
             paymentInput.name = 'payment_method';
-            paymentInput.value = this.paymentMethod.toLowerCase();
+            paymentInput.value = this.chargeToBooking ? 'charge_to_booking' : this.paymentMethod.toLowerCase();
             form.appendChild(paymentInput);
+
+            if (this.chargeToBooking) {
+                const bookingInput = document.createElement('input');
+                bookingInput.type = 'hidden';
+                bookingInput.name = 'booking_id';
+                bookingInput.value = this.bookingId;
+                form.appendChild(bookingInput);
+            }
 
             if (this.orderNotes) {
                 const notesInput = document.createElement('input');

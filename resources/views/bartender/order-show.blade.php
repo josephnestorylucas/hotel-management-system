@@ -89,7 +89,31 @@
             @endif
         </div>
 
-        @if($order->order_source === 'walkin' && !in_array($order->status, ['settled', 'cancelled']) && $order->bartender_status === 'prepared')
+        @if($order->order_source === 'walkin' && $order->status === 'charged' && $order->booking_id)
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                <h3 class="font-semibold text-green-800 mb-2">{{ __('bartender.messages.charged_to_folio') }}</h3>
+                <p class="text-sm text-green-700 mb-3">
+                    This order has been added to the guest's folio. Payment will be collected at checkout.
+                </p>
+                <a href="{{ route('finance.checkout.show', $order->booking_id) }}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                    {{ __('bartender.actions.view_checkout') }}
+                </a>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <h3 class="font-semibold text-gray-800 mb-3">{{ __('bartender.actions.receipt') }}</h3>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('receipts.order', $order) }}" target="_blank" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm">
+                        {{ __('bartender.actions.print_receipt') }}
+                    </a>
+                    @if($order->receipt)
+                        <a href="{{ route('receipts.reprint', $order->receipt->receipt_number) }}" target="_blank" class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">
+                            {{ __('bartender.actions.reprint_receipt') }} ({{ $order->receipt->receipt_number }})
+                        </a>
+                    @endif
+                </div>
+            </div>
+        @elseif($order->order_source === 'walkin' && !in_array($order->status, ['settled', 'cancelled']) && $order->bartender_status === 'prepared')
             <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                 <h3 class="font-semibold text-gray-800 mb-3">{{ __('bartender.messages.walkin_payment') }}</h3>
                 <x-walkin-payment-modal

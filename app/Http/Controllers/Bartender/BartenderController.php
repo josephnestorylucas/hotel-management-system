@@ -198,21 +198,31 @@ class BartenderController extends Controller
         $data = $request->validate([
             'customer_name'  => 'nullable|string|max:150',
             'customer_phone' => 'nullable|string|max:30',
-            'payment_method' => 'required|in:cash,mobile,card',
+            'payment_method' => 'required|in:cash,mobile,card,charge_to_booking',
+            'booking_id'     => 'required_if:payment_method,charge_to_booking|uuid|exists:bookings,id',
             'notes'          => 'nullable|string|max:500',
             'items'          => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|uuid|exists:menu_items,id',
             'items.*.quantity'     => 'required|integer|min:1',
         ]);
 
-        $order = DB::transaction(function () use ($data, $bar) {
-            $customerName = $data['customer_name'] ?: 'Walk-in Guest';
+        // Validate the booking is in checked_in status if charging to folio
+        $isChargeToBooking = $data['payment_method'] === 'charge_to_booking';
+
+        if ($isChargeToBooking) {
+            $booking = Booking::findOrFail($data['booking_id']);
+            abort_if($booking->status !== 'checked_in', 422, 'Can only charge to a checked-in booking.');
+        }
+
+        $order = DB::transaction(function () use ($data, $bar, $isChargeToBooking) {
+            $customerName = $data['customer_name'] ?: ($isChargeToBooking ? 'Guest' : 'Walk-in Guest');
             $customerPhone = $data['customer_phone'] ?? null;
 
             $order = Order::create([
                 'location_id'    => $bar->id,
-                'order_type'     => 'walkin',
+                'order_type'     => $isChargeToBooking ? 'guest' : 'walkin',
                 'order_source'   => 'walkin',
+                'booking_id'     => $isChargeToBooking ? $data['booking_id'] : null,
                 'customer_name'  => $customerName,
                 'customer_phone' => $customerPhone,
                 'bartender_status' => 'prepared',
@@ -240,18 +250,36 @@ class BartenderController extends Controller
 
             $this->barOrderStockService->deductForOrder($order, $this->actorId());
 
-            $order->update([
-                'bartender_status' => 'served',
-                'bartender_status_updated_at' => now(),
-                'status'           => 'settled',
-                'settled_by'       => $this->actorId(),
-                'settled_at'       => now(),
-            ]);
+            if ($isChargeToBooking) {
+                // Charge to guest folio — not settled here, paid at checkout
+                $order->update([
+                    'bartender_status' => 'served',
+                    'bartender_status_updated_at' => now(),
+                    'status'           => 'charged',
+                    'billed_to_folio_at' => now(),
+                ]);
+
+                $this->moduleBillingService->syncOrderCharge($order->fresh(), $this->actorId());
+            } else {
+                // Walk-in — settled immediately
+                $order->update([
+                    'bartender_status' => 'served',
+                    'bartender_status_updated_at' => now(),
+                    'status'           => 'settled',
+                    'settled_by'       => $this->actorId(),
+                    'settled_at'       => now(),
+                ]);
+            }
 
             app(ReceiptService::class)->getOrCreateReceipt($order);
 
             return $order;
         });
+
+        if ($isChargeToBooking) {
+            return redirect()->route('bartender.orders.show', $order)
+                ->with('success', "Order {$order->order_number} charged to guest folio. Payment pending at checkout.");
+        }
 
         return redirect()->route('bartender.orders.show', $order)
             ->with('success', "Order {$order->order_number} completed successfully.");

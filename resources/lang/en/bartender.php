@@ -53,6 +53,7 @@ return [
         'receipt' => 'Receipt',
         'print_receipt' => 'Print Receipt',
         'reprint_receipt' => 'Reprint Receipt',
+        'view_checkout' => 'View Guest Checkout',
         'apply' => 'Apply',
     ],
     'pos' => [
@@ -125,6 +126,7 @@ return [
         'walkin_payment_completed' => 'Walk-in payment has been completed. Receipt is available from the order receipt flow.',
         'restaurant_front_desk' => 'This order links to restaurant billing flow and settles with the front desk.',
         'room_service_checkout' => 'On serve, charge is posted to guest folio for unified checkout.',
+        'charged_to_folio' => 'Charged to Guest Folio',
         'damage_audit' => 'Bar Damage Audit Trail',
         'restaurant_walkin_redirect' => 'This bar walk-in order is processed from the bartender desk. Prepare it there first, then collect payment.',
         'open_bartender_order' => 'Open bartender order',
@@ -150,6 +152,7 @@ return [
         'accepted' => 'Accepted',
         'prepared' => 'Prepared',
         'served' => 'Served',
+        'charged' => 'Charged',
         'cancelled' => 'Cancelled',
         'rejected' => 'Rejected',
         'settled' => 'Settled',

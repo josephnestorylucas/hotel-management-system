@@ -4,7 +4,7 @@
 @section('page-title', __('bartender.titles.walkin_sales'))
 
 @php
-    $statusOptions = ['open', 'pending', 'accepted', 'prepared', 'served', 'settled', 'cancelled', 'rejected'];
+    $statusOptions = ['open', 'pending', 'accepted', 'prepared', 'served', 'charged', 'settled', 'cancelled', 'rejected'];
     $paymentOptions = ['cash', 'card', 'mobile_money', 'bank_transfer', 'charge_to_booking'];
 @endphp
 

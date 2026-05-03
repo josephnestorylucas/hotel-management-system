@@ -28,11 +28,16 @@
          class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-50 max-h-96 overflow-y-auto">
         <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
             <span class="text-sm font-semibold text-gray-700">Notifications</span>
-            <span x-show="!wsConnected" class="text-xs text-yellow-600" title="Using polling fallback">
-                <svg class="w-3 h-3 inline" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                </svg>
-            </span>
+            <div class="flex items-center gap-2">
+                <button @click="markAllRead()" x-show="unreadCount > 0" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                    Mark All Read
+                </button>
+                <span x-show="!wsConnected" class="text-xs text-yellow-600" title="Using polling fallback">
+                    <svg class="w-3 h-3 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                </span>
+            </div>
         </div>
         @if(auth()->user()->latestNotifications && auth()->user()->latestNotifications->count() > 0)
             @foreach(auth()->user()->latestNotifications as $notif)
@@ -196,6 +201,24 @@ function notificationBell() {
                     self.unreadCount = data.count;
                 })
                 .catch(function() {});
+        },
+
+        markAllRead() {
+            const self = this;
+            fetch('{{ route("notifications.mark-all-read") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    self.unreadCount = 0;
+                }
+            })
+            .catch(function() {});
         },
 
         destroy() {

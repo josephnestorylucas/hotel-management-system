@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookingCharge;
+use App\Models\Checkout;
 use App\Models\FinancialTransaction;
 use App\Models\FinancePayment;
 use App\Models\LaundryOrder;
@@ -103,10 +104,18 @@ class FinancialDashboardController extends Controller
             ->take(10)
             ->get();
 
+        // Draft checkouts that can be completed
+        $draftCheckouts = Checkout::with(['booking.room', 'booking.guest'])
+            ->where('status', 'draft')
+            ->latest('updated_at')
+            ->take(10)
+            ->get();
+
         return view('finance.dashboard.index', compact(
             'revenueByModule', 'revenueByMethod', 'dailyRevenue',
             'todaySummary', 'outstandingTotal', 'recentTransactions',
-            'dateFrom', 'dateTo', 'ordersMissingCharges', 'laundryMissingCharges', 'unpaidChargesByBooking'
+            'dateFrom', 'dateTo', 'ordersMissingCharges', 'laundryMissingCharges', 'unpaidChargesByBooking',
+            'draftCheckouts'
         ));
     }
 }

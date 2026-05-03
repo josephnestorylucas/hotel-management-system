@@ -130,6 +130,46 @@
     </div>
 </div>
 
+{{-- Draft Checkouts --}}
+@if($draftCheckouts->isNotEmpty())
+<div class="bg-white rounded shadow overflow-hidden mb-6">
+    <div class="px-5 py-4 border-b bg-yellow-50">
+        <h2 class="font-semibold text-gray-700">Draft Checkouts — Pending Completion</h2>
+    </div>
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b">
+            <tr>
+                <th class="px-4 py-3 text-left text-gray-500">Receipt</th>
+                <th class="px-4 py-3 text-left text-gray-500">Booking</th>
+                <th class="px-4 py-3 text-left text-gray-500">Guest</th>
+                <th class="px-4 py-3 text-left text-gray-500">Room</th>
+                <th class="px-4 py-3 text-left text-gray-500">Total (TZS)</th>
+                <th class="px-4 py-3 text-left text-gray-500">Updated</th>
+                <th class="px-4 py-3 text-left text-gray-500">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            @foreach($draftCheckouts as $checkout)
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 font-mono text-xs">{{ $checkout->receipt_number }}</td>
+                <td class="px-4 py-3 text-xs text-gray-600">{{ $checkout->booking?->booking_number }}</td>
+                <td class="px-4 py-3 text-sm">{{ $checkout->booking?->guest_name }}</td>
+                <td class="px-4 py-3 text-sm text-gray-600">{{ $checkout->booking?->room?->room_number }}</td>
+                <td class="px-4 py-3 text-sm font-medium">@currency($checkout->grand_total_tzs, 'TZS')</td>
+                <td class="px-4 py-3 text-xs text-gray-400">{{ $checkout->updated_at->format('d M H:i') }}</td>
+                <td class="px-4 py-3">
+                    <a href="{{ route('finance.checkout.show', $checkout->booking) }}"
+                       class="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                        Complete Checkout
+                    </a>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+
 {{-- Recent transactions --}}
 <div class="bg-white rounded shadow overflow-hidden">
     <div class="px-5 py-4 border-b">

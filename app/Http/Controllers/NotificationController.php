@@ -52,4 +52,18 @@ class NotificationController extends Controller
 
         return redirect($notification->action_url ?? route('dashboard'));
     }
+
+    /**
+     * POST /notifications/mark-all-read — mark all notifications as read.
+     */
+    public function markAllRead(): JsonResponse
+    {
+        $count = $this->notificationService->markAllAsRead(auth()->id());
+
+        return response()->json([
+            'success' => true,
+            'count' => 0,
+            'marked' => $count,
+        ]);
+    }
 }

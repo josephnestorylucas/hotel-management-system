@@ -1,5 +1,6 @@
-@extends('finance.layout')
+@extends('layouts.app')
 @section('title', 'Guest Folio — ' . ($booking->guest_name ?? $booking->id))
+@section('page-title', 'Guest Folio')
 
 @php
     use App\Helpers\CurrencyHelper;
@@ -8,7 +9,6 @@
 @section('content')
 <div class="flex justify-between items-start mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-800">Guest Folio</h1>
         <p class="text-sm text-gray-400 mt-1">
             {{ $booking->guest_name ?? 'Guest' }}
             · Room {{ $booking->room->room_number ?? '—' }}
@@ -16,7 +16,7 @@
         </p>
     </div>
     <span class="px-3 py-1 rounded-full text-sm font-medium
-        {{ $checkout->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+        {{ $checkout->status === 'completed' ? 'bg-green-100 text-green-700' : ($checkout->status === 'draft' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-700') }}">
         {{ ucfirst($checkout->status) }}
     </span>
 </div>
@@ -94,7 +94,7 @@
         @endforeach
 
         {{-- Manually add charge --}}
-        @if($checkout->status === 'pending')
+        @if(in_array($checkout->status, ['pending', 'draft']))
         <div class="bg-white rounded shadow p-5">
             <h3 class="font-semibold text-gray-700 mb-3">Add Charge to Folio</h3>
             <form method="POST" action="{{ route('finance.checkout.add-charge', $checkout) }}">
@@ -142,7 +142,7 @@
             </dl>
         </div>
 
-        @if($checkout->status === 'pending')
+        @if(in_array($checkout->status, ['pending', 'draft']))
         <div class="bg-white rounded shadow p-5">
             <h2 class="font-semibold text-gray-700 mb-3">Process Payment</h2>
             <form method="POST" action="{{ route('finance.checkout.process', $checkout) }}">
@@ -201,6 +201,16 @@
                             class="w-full bg-green-600 text-white py-2.5 rounded hover:bg-green-700 font-medium">
                         Complete Checkout
                     </button>
+                </div>
+            </form>
+
+            <form method="POST" action="{{ route('finance.checkout.draft', $checkout) }}" class="mt-2">
+                @csrf
+                <button type="submit"
+                        class="w-full bg-gray-200 text-gray-700 py-2.5 rounded hover:bg-gray-300 font-medium">
+                    Save as Draft
+                </button>
+            </form>
                 </div>
             </form>
         </div>

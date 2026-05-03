@@ -54,13 +54,14 @@
                 <span class="px-3 py-1.5 rounded-full text-sm font-medium
                     @if($laundryOrder->status === 'received')      bg-yellow-100 text-yellow-700
                     @elseif($laundryOrder->status === 'processing') bg-blue-100 text-blue-700
+                    @elseif($laundryOrder->status === 'pending_confirmation') bg-purple-100 text-purple-700
                     @elseif($laundryOrder->status === 'ready')     bg-orange-100 text-orange-700
                     @elseif($laundryOrder->status === 'delivered') bg-indigo-100 text-indigo-700
                     @elseif($laundryOrder->status === 'collected') bg-teal-100 text-teal-700
                     @elseif($laundryOrder->status === 'charged')   bg-purple-100 text-purple-700
                     @elseif($laundryOrder->status === 'settled')   bg-green-100 text-green-700
                     @else bg-gray-100 text-gray-500 @endif">
-                    {{ ucfirst($laundryOrder->status) }}
+                    {{ ucfirst(str_replace('_', ' ', $laundryOrder->status)) }}
                 </span>
                 <span class="px-2 py-1 text-xs rounded
                     {{ $laundryOrder->customer_type === 'guest' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' }}">
@@ -71,8 +72,8 @@
                 @endif
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                {{-- HOUSE_HELP: Start processing --}}
-                @if($laundryOrder->status === 'received' && auth()->user()->hasAnyRole(['house_help','supervisor','laundry_manager','admin']))
+                {{-- Start processing (house_help, laundry_manager) --}}
+                @if($laundryOrder->status === 'received' && auth()->user()->hasAnyRole(['house_help','laundry_manager','admin']))
                 <form method="POST" action="{{ route('laundry.orders.process', $laundryOrder) }}">
                     @csrf
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-all">
@@ -81,19 +82,29 @@
                 </form>
                 @endif
 
-                {{-- HOUSE_HELP: Mark ready --}}
-                @if($laundryOrder->status === 'processing' && auth()->user()->hasAnyRole(['house_help','supervisor','laundry_manager','admin']))
+                {{-- Submit for confirmation (house_help, laundry_manager) --}}
+                @if($laundryOrder->status === 'processing' && auth()->user()->hasAnyRole(['house_help','laundry_manager','admin']))
                 <form method="POST" action="{{ route('laundry.orders.ready', $laundryOrder) }}">
                     @csrf
-                    <button type="submit" class="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-orange-600 transition-all">
-                        {{ __('laundry.actions.mark_ready') }}
+                    <button type="submit" class="px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-xl hover:bg-purple-600 transition-all">
+                        Submit for Confirmation
                     </button>
                 </form>
                 @endif
 
-                {{-- Guest: deliver to room --}}
+                {{-- Supervisor: Confirm --}}
+                @if($laundryOrder->status === 'pending_confirmation' && auth()->user()->hasAnyRole(['supervisor','admin']))
+                <form method="POST" action="{{ route('laundry.orders.confirm', $laundryOrder) }}">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-all">
+                        Confirm Completion
+                    </button>
+                </form>
+                @endif
+
+                {{-- Guest: deliver to room (house_help, front_desk, laundry_manager) --}}
                 @if($laundryOrder->status === 'ready' && $laundryOrder->customer_type === 'guest'
-                    && auth()->user()->hasAnyRole(['house_help','supervisor','laundry_manager','admin']))
+                    && auth()->user()->hasAnyRole(['house_help','front_desk','laundry_manager','admin']))
                 <form method="POST" action="{{ route('laundry.orders.deliver', $laundryOrder) }}">
                     @csrf
                     <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-all">
@@ -102,9 +113,9 @@
                 </form>
                 @endif
 
-                {{-- Walk-in: mark collected --}}
-                @if($laundryOrder->status === 'ready' && $laundryOrder->customer_type === 'walkin'
-                    && auth()->user()->hasAnyRole(['house_help','supervisor','laundry_manager','admin']))
+                {{-- Walk-in: mark collected (ready, delivered, or settled without collection) --}}
+                @if(in_array($laundryOrder->status, ['ready', 'delivered']) && $laundryOrder->customer_type === 'walkin'
+                    && auth()->user()->hasAnyRole(['house_help','front_desk','laundry_manager','admin']))
                 <form method="POST" action="{{ route('laundry.orders.collected', $laundryOrder) }}">
                     @csrf
                     <button type="submit" class="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-all">
@@ -112,9 +123,18 @@
                     </button>
                 </form>
                 @endif
+                @if($laundryOrder->status === 'settled' && !$laundryOrder->collected_at && $laundryOrder->customer_type === 'walkin'
+                    && auth()->user()->hasAnyRole(['house_help','front_desk','laundry_manager','admin']))
+                <form method="POST" action="{{ route('laundry.orders.collected', $laundryOrder) }}">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-all">
+                        Mark Collected (Paid)
+                    </button>
+                </form>
+                @endif
 
-                {{-- Settle payment --}}
-                @if(!in_array($laundryOrder->status, ['settled', 'charged', 'cancelled']) && auth()->user()->hasAnyRole(['front_desk','laundry_manager','supervisor','admin']))
+                {{-- Settle payment (front_desk, laundry_manager) --}}
+                @if(!in_array($laundryOrder->status, ['settled', 'charged', 'cancelled']) && auth()->user()->hasAnyRole(['front_desk','laundry_manager','admin']))
                     @if($laundryOrder->customer_type === 'walkin')
                         {{-- Walk-in: Use unified payment modal (direct payment allowed) --}}
                         <x-walkin-payment-modal 
@@ -140,8 +160,8 @@
                     </a>
                 @endif
 
-                {{-- Cancel --}}
-                @if(in_array($laundryOrder->status, ['received', 'processing', 'ready']) && auth()->user()->hasAnyRole(['supervisor','laundry_manager','admin']))
+                {{-- Cancel (laundry_manager, manager only) --}}
+                @if(in_array($laundryOrder->status, ['received', 'processing', 'pending_confirmation', 'ready']) && auth()->user()->hasAnyRole(['laundry_manager','admin']))
                 <form method="POST" action="{{ route('laundry.orders.cancel', $laundryOrder) }}"
                       onsubmit="return confirm('{{ __('laundry.messages.cancel_confirm') }}')">
                     @csrf
@@ -297,6 +317,18 @@
                 <div class="flex justify-between text-sm">
                     <dt class="text-gray-500">{{ __('laundry.info.processed_by') }}</dt>
                     <dd class="font-medium text-secondary">{{ $laundryOrder->processor->name ?? '—' }}</dd>
+                </div>
+                @endif
+                @if($laundryOrder->confirmed_by)
+                <div class="flex justify-between text-sm">
+                    <dt class="text-gray-500">Confirmed By</dt>
+                    <dd class="font-medium text-secondary">{{ $laundryOrder->confirmer->name ?? '—' }}</dd>
+                </div>
+                @endif
+                @if($laundryOrder->confirmed_at)
+                <div class="flex justify-between text-sm">
+                    <dt class="text-gray-500">Confirmed At</dt>
+                    <dd class="font-medium text-secondary">{{ $laundryOrder->confirmed_at->format('M d, Y H:i') }}</dd>
                 </div>
                 @endif
                 @if($laundryOrder->ready_at)

@@ -37,11 +37,18 @@ class CheckoutController extends Controller
     {
         $this->moduleBillingService->syncBookingChargesForBooking($booking, (string) Auth::id());
 
-        // Get or create a pending checkout for this booking
-        $checkout = Checkout::firstOrCreate(
-            ['booking_id' => $booking->id, 'status' => 'pending'],
-            ['initiated_by' => (string) Auth::id()]
-        );
+        // Get existing pending/draft checkout, or create new pending one
+        $checkout = Checkout::where('booking_id', $booking->id)
+            ->whereIn('status', ['pending', 'draft'])
+            ->first();
+
+        if (!$checkout) {
+            $checkout = Checkout::create([
+                'booking_id'   => $booking->id,
+                'status'       => 'pending',
+                'initiated_by' => (string) Auth::id(),
+            ]);
+        }
 
         // Get exchange rate from currency helper (cached)
         $exchangeRate = CurrencyHelper::getExchangeRate();
@@ -78,7 +85,7 @@ class CheckoutController extends Controller
      */
     public function process(Request $request, Checkout $checkout): RedirectResponse
     {
-        abort_if($checkout->status === 'completed', 422, 'This checkout is already completed.');
+        abort_if(in_array($checkout->status, ['completed', 'cancelled']), 422, 'This checkout is already completed or cancelled.');
 
         $data = $request->validate([
             'payment_method'  => 'required|in:cash_usd,cash_tzs,card_usd,card_tzs,split',
@@ -255,7 +262,7 @@ class CheckoutController extends Controller
      */
     public function addCharge(Request $request, Checkout $checkout): RedirectResponse
     {
-        abort_if($checkout->status !== 'pending', 422, 'Cannot add charges to a completed checkout.');
+        abort_if(!in_array($checkout->status, ['pending', 'draft']), 422, 'Cannot add charges to a completed or cancelled checkout.');
 
         $data = $request->validate([
             'charge_type' => 'required|string|max:50',
@@ -280,5 +287,27 @@ class CheckoutController extends Controller
         return redirect()
             ->route('finance.checkout.show', $checkout->booking)
             ->with('success', 'Charge added to folio.');
+    }
+
+    /**
+     * POST /finance/checkout/{checkout}/draft
+     * Save checkout as draft for later completion.
+     */
+    public function saveDraft(Request $request, Checkout $checkout): RedirectResponse
+    {
+        abort_if(in_array($checkout->status, ['completed', 'cancelled']), 422, 'Cannot draft a completed or cancelled checkout.');
+
+        $this->moduleBillingService->syncBookingChargesForBooking($checkout->booking, (string) Auth::id());
+        $checkout->calculateTotals();
+        $checkout->refresh();
+
+        $checkout->update([
+            'status' => 'draft',
+            'notes'  => $request->input('notes') ?: $checkout->notes,
+        ]);
+
+        return redirect()
+            ->route('finance.dashboard')
+            ->with('success', 'Checkout saved as draft. You can return to complete it later.');
     }
 }

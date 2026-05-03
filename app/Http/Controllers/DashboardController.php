@@ -250,9 +250,9 @@ class DashboardController extends Controller {
         ];
 
         // Laundry stats
-        $stats['pending_laundry'] = LaundryOrder::where('status', 'pending')->count();
-        $stats['inprogress_laundry'] = LaundryOrder::where('status', 'in_progress')->count();
-        $stats['completed_laundry'] = LaundryOrder::where('status', 'completed')->count();
+        $stats['pending_laundry'] = LaundryOrder::where('status', 'received')->count();
+        $stats['inprogress_laundry'] = LaundryOrder::where('status', 'processing')->count();
+        $stats['completed_laundry'] = LaundryOrder::where('status', 'ready')->count();
         $stats['delivered_laundry'] = LaundryOrder::where('status', 'delivered')->count();
         $stats['today_laundry'] = LaundryOrder::whereDate('created_at', today())->count();
 
@@ -320,9 +320,9 @@ class DashboardController extends Controller {
 
     private function houseHelpDashboard() {
         $stats = [
-            'pending_orders' => LaundryOrder::where('status', 'pending')->count(),
-            'inprogress_orders' => LaundryOrder::where('status', 'in_progress')->count(),
-            'completed_orders' => LaundryOrder::where('status', 'completed')->count(),
+            'pending_orders' => LaundryOrder::where('status', 'received')->count(),
+            'inprogress_orders' => LaundryOrder::where('status', 'processing')->count(),
+            'completed_orders' => LaundryOrder::where('status', 'ready')->count(),
             'delivered_orders' => LaundryOrder::where('status', 'delivered')->count(),
             'today_orders' => LaundryOrder::whereDate('created_at', today())->count(),
             'total_orders' => LaundryOrder::count(),

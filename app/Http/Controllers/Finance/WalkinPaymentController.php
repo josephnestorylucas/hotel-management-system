@@ -536,7 +536,7 @@ class WalkinPaymentController extends Controller
         $paymentMethod = $data['payment_method'] === 'mobile' ? 'mobile_money' : $data['payment_method'];
 
         if ($order instanceof LaundryOrder) {
-            // For laundry, also mark as collected if it was ready
+            // For laundry, mark as collected if not already collected
             $updateData = [
                 'status'         => 'settled',
                 'payment_method' => $paymentMethod,
@@ -544,7 +544,7 @@ class WalkinPaymentController extends Controller
                 'settled_at'     => now(),
             ];
 
-            if ($order->status === 'ready') {
+            if (in_array($order->status, ['ready', 'collected']) && !$order->collected_at) {
                 $updateData['collected_at'] = now();
             }
 

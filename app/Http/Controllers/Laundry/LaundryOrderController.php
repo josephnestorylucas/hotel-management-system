@@ -163,7 +163,7 @@ class LaundryOrderController extends Controller
     {
         $laundryOrder->load([
             'items.serviceItem.service',
-            'receiver', 'processor', 'deliverer', 'settler',
+            'receiver', 'processor', 'deliverer', 'settler', 'confirmer',
         ]);
 
         return view('laundry.orders.show', compact('laundryOrder'));
@@ -190,8 +190,24 @@ class LaundryOrderController extends Controller
         abort_if($laundryOrder->status !== 'processing', 422, 'Order must be processing before marking ready.');
 
         $laundryOrder->update([
-            'status'   => 'ready',
-            'ready_at' => now(),
+            'status' => 'pending_confirmation',
+        ]);
+
+        return redirect()
+            ->route('laundry.orders.show', $laundryOrder)
+            ->with('success', "Order {$laundryOrder->order_number} submitted for supervisor confirmation.");
+    }
+
+    // POST /laundry/orders/{laundryOrder}/confirm  (supervisor only)
+    public function confirm(LaundryOrder $laundryOrder): RedirectResponse
+    {
+        abort_if($laundryOrder->status !== 'pending_confirmation', 422, 'Order must be pending confirmation before it can be confirmed.');
+
+        $laundryOrder->update([
+            'status'       => 'ready',
+            'ready_at'     => now(),
+            'confirmed_by' => (string) Auth::id(),
+            'confirmed_at' => now(),
         ]);
 
         // Notify FRONT_DESK for guest orders
@@ -222,7 +238,7 @@ class LaundryOrderController extends Controller
 
         return redirect()
             ->route('laundry.orders.show', $laundryOrder)
-            ->with('success', "Order {$laundryOrder->order_number} is ready.");
+            ->with('success', "Order {$laundryOrder->order_number} confirmed and marked ready.");
     }
 
     // POST /laundry/orders/{laundryOrder}/deliver
@@ -249,12 +265,22 @@ class LaundryOrderController extends Controller
     // POST /laundry/orders/{laundryOrder}/collected
     public function collected(LaundryOrder $laundryOrder): RedirectResponse
     {
-        abort_if($laundryOrder->status !== 'ready', 422, 'Order must be ready before collection.');
+        abort_if(!in_array($laundryOrder->status, ['ready', 'delivered', 'settled']), 422, 'Order must be ready, delivered, or settled before collection.');
         abort_if($laundryOrder->customer_type !== 'walkin', 422, 'Collected is only for walk-in orders.');
+        abort_if($laundryOrder->status === 'settled' && $laundryOrder->collected_at, 422, 'Order already collected.');
+
+        $updateData = ['collected_at' => now()];
+
+        // Only change status if not already settled (payment done, now collecting)
+        if ($laundryOrder->status !== 'settled') {
+            $updateData['status'] = 'collected';
+        }
+
+        $laundryOrder->update($updateData);
 
         return redirect()
             ->route('laundry.orders.show', $laundryOrder)
-            ->with('error', 'Walk-in laundry orders must be settled through payment before collection is completed.');
+            ->with('success', "Order {$laundryOrder->order_number} marked as collected.");
     }
 
     /**
@@ -336,7 +362,7 @@ class LaundryOrderController extends Controller
     // POST /laundry/orders/{laundryOrder}/cancel
     public function cancel(LaundryOrder $laundryOrder): RedirectResponse
     {
-        abort_if($laundryOrder->status === 'settled', 422, 'Cannot cancel a settled order.');
+        abort_if(in_array($laundryOrder->status, ['settled', 'charged']), 422, 'Cannot cancel a settled or charged order.');
 
         app(ModuleBillingService::class)->voidChargeForLaundry($laundryOrder);
 

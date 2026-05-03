@@ -24,11 +24,12 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         @foreach([
-            'received'   => ['label' => __('laundry.status.received'),   'color' => 'yellow', 'icon' => 'M19 14l-7 7m0 0l-7-7m7 7V3'],
-            'processing' => ['label' => __('laundry.status.processing'), 'color' => 'blue', 'icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
-            'ready'      => ['label' => __('laundry.status.ready'),      'color' => 'orange', 'icon' => 'M5 13l4 4L19 7'],
-            'delivered'  => ['label' => __('laundry.status.delivered'),   'color' => 'indigo', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
-            'collected'  => ['label' => __('laundry.status.collected'),   'color' => 'teal', 'icon' => 'M5 13l4 4L19 7'],
+            'received'              => ['label' => __('laundry.status.received'),              'color' => 'yellow',  'icon' => 'M19 14l-7 7m0 0l-7-7m7 7V3'],
+            'processing'            => ['label' => __('laundry.status.processing'),            'color' => 'blue',    'icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
+            'pending_confirmation'  => ['label' => 'Pending Confirmation',                     'color' => 'purple',  'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
+            'ready'                 => ['label' => __('laundry.status.ready'),                 'color' => 'orange',  'icon' => 'M5 13l4 4L19 7'],
+            'delivered'             => ['label' => __('laundry.status.delivered'),             'color' => 'indigo',  'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+            'collected'             => ['label' => __('laundry.status.collected'),             'color' => 'teal',    'icon' => 'M5 13l4 4L19 7'],
         ] as $status => $meta)
         <a href="{{ route('laundry.orders.index', ['status' => $status]) }}" 
            class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 hover:shadow-xl transition-all">
@@ -64,7 +65,7 @@
             <div>
                 <select name="status" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all">
                     <option value="">{{ __('laundry.filters.all_statuses') }}</option>
-                    @foreach(['received','processing','ready','delivered','collected','settled','cancelled'] as $s)
+                    @foreach(['received','processing','pending_confirmation','ready','delivered','collected','settled','cancelled'] as $s)
                     <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
                         {{ __('laundry.status.' . $s) }}
                     </option>
@@ -145,6 +146,7 @@
                             <span class="px-2 py-1 text-xs rounded-full font-medium
                                 @if($order->status === 'received')      bg-yellow-100 text-yellow-700
                                 @elseif($order->status === 'processing') bg-blue-100 text-blue-700
+                                @elseif($order->status === 'pending_confirmation') bg-purple-100 text-purple-700
                                 @elseif($order->status === 'ready')     bg-orange-100 text-orange-700
                                 @elseif($order->status === 'delivered') bg-indigo-100 text-indigo-700
                                 @elseif($order->status === 'collected') bg-teal-100 text-teal-700

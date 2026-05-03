@@ -37,7 +37,7 @@
             </svg>
             <span>{{ __('laundry.laundry_orders') }}</span>
             @php
-                $pendingLaundry = \App\Models\LaundryOrder::whereIn('status', ['pending', 'in_progress'])->count();
+                $pendingLaundry = \App\Models\LaundryOrder::whereIn('status', ['received', 'processing', 'pending_confirmation'])->count();
             @endphp
             @if($pendingLaundry > 0)
                 <span class="ml-auto bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full">{{ $pendingLaundry }}</span>
@@ -50,68 +50,6 @@
             </svg>
             <span>{{ __('laundry.price_list') }}</span>
         </a>
-    </div>
-
-    <!-- Operations Section -->
-    <div class="pt-4">
-        <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ __('dashboard.sections.quick_actions') }}</p>
-        
-        <a href="{{ route('reservations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('reservations.*') ? 'bg-blue-50 text-primary' : 'text-gray-700 hover:bg-gray-50' }} transition-colors font-medium">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <span>{{ __('general.nav.reservations') }}</span>
-        </a>
-
-        <a href="{{ route('bookings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('bookings.*') ? 'bg-blue-50 text-primary' : 'text-gray-700 hover:bg-gray-50' }} transition-colors font-medium">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
-            <span>{{ __('general.nav.bookings') }}</span>
-        </a>
-
-        <a href="{{ route('guests.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('guests.*') ? 'bg-blue-50 text-primary' : 'text-gray-700 hover:bg-gray-50' }} transition-colors font-medium">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            <span>{{ __('general.nav.guests') }}</span>
-        </a>
-
-        <a href="{{ route('procurement.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('procurement.*') ? 'bg-blue-50 text-primary' : 'text-gray-700 hover:bg-gray-50' }} transition-colors font-medium">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            <span>{{ __('general.nav.procurement') }}</span>
-        </a>
-    </div>
-
-    <!-- Future Modules -->
-    <div class="pt-4">
-        <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ __('general.loading') }}</p>
-        
-        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 cursor-not-allowed opacity-60">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-            </svg>
-            <span>{{ __('general.nav.housekeeping') }}</span>
-            <span class="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{{ __('general.loading') }}</span>
-        </div>
-
-        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 cursor-not-allowed opacity-60">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <span>{{ __('general.nav.finance') }}</span>
-            <span class="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{{ __('general.loading') }}</span>
-        </div>
-
-        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 cursor-not-allowed opacity-60">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            <span>{{ __('general.nav.inventory') }}</span>
-            <span class="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{{ __('general.loading') }}</span>
-        </div>
     </div>
 
     <!-- Settings -->

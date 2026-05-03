@@ -22,6 +22,7 @@ class LaundryOrder extends Model implements ReceiptPrintable
         'expected_ready_at', 'ready_at',
         'delivered_at', 'collected_at', 'settled_at',
         'received_by', 'processed_by', 'delivered_by', 'settled_by',
+        'confirmed_by', 'confirmed_at',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class LaundryOrder extends Model implements ReceiptPrintable
         'delivered_at'      => 'datetime',
         'collected_at'      => 'datetime',
         'settled_at'        => 'datetime',
+        'confirmed_at'      => 'datetime',
     ];
 
     // Auto-generate order number
@@ -63,7 +65,7 @@ class LaundryOrder extends Model implements ReceiptPrintable
     {
         return $this->expected_ready_at
             && now()->isAfter($this->expected_ready_at)
-            && !in_array($this->status, ['ready', 'delivered', 'collected', 'settled', 'cancelled']);
+            && !in_array($this->status, ['ready', 'delivered', 'collected', 'settled', 'cancelled', 'pending_confirmation']);
     }
 
     // ── Relationships ────────────────────────────────────────────────────────
@@ -126,11 +128,16 @@ class LaundryOrder extends Model implements ReceiptPrintable
         return $this->belongsTo(User::class, 'settled_by');
     }
 
+    public function confirmer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by');
+    }
+
     // ── Scopes ───────────────────────────────────────────────────────────────
 
     public function scopeActive($query)
     {
-        return $query->whereNotIn('status', ['settled', 'cancelled']);
+        return $query->whereNotIn('status', ['settled', 'cancelled', 'charged']);
     }
 
     // ── Accessors ────────────────────────────────────────────────────────────
@@ -138,14 +145,15 @@ class LaundryOrder extends Model implements ReceiptPrintable
     public function getStatusBadgeColorAttribute(): string
     {
         return match ($this->status) {
-            'received'   => 'yellow',
-            'processing' => 'blue',
-            'ready'      => 'orange',
-            'delivered'  => 'indigo',
-            'collected'  => 'teal',
-            'settled'    => 'green',
-            'cancelled'  => 'gray',
-            default      => 'gray',
+            'received'              => 'yellow',
+            'processing'            => 'blue',
+            'pending_confirmation'  => 'purple',
+            'ready'                 => 'orange',
+            'delivered'             => 'indigo',
+            'collected'             => 'teal',
+            'settled'               => 'green',
+            'cancelled'             => 'gray',
+            default                 => 'gray',
         };
     }
 

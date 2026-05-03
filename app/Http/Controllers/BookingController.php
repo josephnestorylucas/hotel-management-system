@@ -474,22 +474,22 @@ class BookingController extends Controller
 
         $this->moduleBillingService->syncBookingChargesForBooking($booking, (string) Auth::id());
 
-        // Check for pending/undelivered laundry orders
+        // Check for undelivered laundry orders (charged/settled are allowed — they're in the folio)
         $pendingLaundry = $booking->laundryOrders()
-            ->whereIn('status', ['received', 'processing', 'ready', 'delivered', 'charged'])
+            ->whereIn('status', ['received', 'processing', 'ready'])
             ->count();
 
         if ($pendingLaundry > 0) {
-            return back()->with('error', 'Cannot check out: there are ' . $pendingLaundry . ' pending/undelivered laundry order(s). Please deliver all laundry first.');
+            return back()->with('error', 'Cannot check out: there are ' . $pendingLaundry . ' undelivered laundry order(s). Please deliver all laundry first.');
         }
 
-        // Check for unsettled restaurant/bar orders (status = 'charged' but not 'settled')
+        // Check for unserved restaurant/bar orders (charged are in the folio, settled are done)
         $pendingOrders = \App\Models\Order::where('booking_id', $booking->id)
-            ->whereIn('status', ['open', 'sent', 'ready', 'served', 'charged'])
+            ->whereIn('status', ['open', 'sent', 'ready', 'served'])
             ->count();
 
         if ($pendingOrders > 0) {
-            return back()->with('error', 'Cannot check out: there are ' . $pendingOrders . ' pending restaurant/bar order(s). Please settle all orders first.');
+            return back()->with('error', 'Cannot check out: there are ' . $pendingOrders . ' unserved restaurant/bar order(s). Please serve all orders first.');
         }
 
         // Check for unpaid charges

@@ -12,6 +12,7 @@
             <h2 class="text-2xl font-extrabold text-secondary">{{ __('rooms.rooms') }}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ __('rooms.manage_subtitle') }}</p>
         </div>
+        @if(auth()->user()->hasAnyRole(['admin']))
         <a href="{{ route('rooms.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,6 +20,7 @@
             </svg>
             {{ __('rooms.add_room') }}
         </a>
+        @endif
     </div>
 
     <!-- Filter Stats -->
@@ -112,14 +114,14 @@
                 @forelse($rooms as $room)
                 <tr class="hover:bg-blue-50/50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                        <a href="{{ route('rooms.show', $room) }}" class="flex items-center group">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all">
                                 {{ substr($room->room_number, -2) }}
                             </div>
                             <div class="ml-3">
-                                <div class="text-sm font-semibold text-secondary">{{ $room->room_number }}</div>
+                                <div class="text-sm font-semibold text-secondary group-hover:text-primary transition-colors">{{ $room->room_number }}</div>
                             </div>
-                        </div>
+                        </a>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-secondary">{{ $room->floor->building->name }}</div>
@@ -142,12 +144,15 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <div class="flex items-center gap-3">
+                            <a href="{{ route('rooms.show', $room) }}" class="text-primary hover:text-blue-700 font-semibold">{{ __('rooms.actions.view') }}</a>
+                            @if(auth()->user()->hasAnyRole(['admin']))
                             <a href="{{ route('rooms.edit', $room) }}" class="text-primary hover:text-blue-700 font-semibold">{{ __('rooms.actions.edit') }}</a>
                             <form method="POST" action="{{ route('rooms.destroy', $room) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-red-600 hover:text-red-700 font-semibold" onclick="return confirm(&quot;{{ __('rooms.actions.confirm_delete') }}&quot;)">{{ __('rooms.actions.delete') }}</button>
                             </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

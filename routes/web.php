@@ -139,9 +139,17 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', UserController::class);
     });
 
-    // Admin & Supervisor Routes
-    Route::middleware(['role:admin,supervisor'])->group(function () {
-        Route::resource('rooms', RoomController::class);
+    // Rooms — supervisor: view only, admin: full CRUD
+    Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index')
+        ->middleware('role:admin,supervisor');
+    Route::get('rooms/{room}', [RoomController::class, 'show'])->name('rooms.show')
+        ->middleware('role:admin,supervisor');
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('rooms/create', [RoomController::class, 'create'])->name('rooms.create');
+        Route::post('rooms', [RoomController::class, 'store'])->name('rooms.store');
+        Route::get('rooms/{room}/edit', [RoomController::class, 'edit'])->name('rooms.edit');
+        Route::put('rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
+        Route::delete('rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
         Route::post('rooms/{room}/toggle-status', [RoomController::class, 'toggleStatus'])->name('rooms.toggle-status');
     });
 
@@ -150,8 +158,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
-    // Reservations, Bookings, Guests — restricted to authorized roles (NO admin - admin is system only)
-    Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
+    // Reservations, Bookings — restricted to authorized roles (NO admin - admin is system only)
+    Route::middleware(['role:front_desk,manager'])->group(function () {
         Route::resource('reservations', ReservationController::class);
         Route::post('reservations/{reservation}/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
         Route::post('reservations/{reservation}/check-in', [ReservationController::class, 'checkIn'])->name('reservations.check-in');
@@ -170,17 +178,27 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
         Route::post('bookings/{booking}/check-out', [BookingController::class, 'checkOut'])->name('bookings.check-out');
         Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+    });
 
-        // Guest Management Routes
-        Route::resource('guests', GuestController::class);
+    // Guest Management — supervisor: view only, front_desk/manager: full CRUD
+    Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
+        Route::get('guests', [GuestController::class, 'index'])->name('guests.index');
+        Route::get('guests/{guest}', [GuestController::class, 'show'])->name('guests.show');
         Route::get('guests-search', [GuestController::class, 'search'])->name('guests.search');
+    });
+    Route::middleware(['role:front_desk,manager'])->group(function () {
+        Route::get('guests/create', [GuestController::class, 'create'])->name('guests.create');
+        Route::post('guests', [GuestController::class, 'store'])->name('guests.store');
+        Route::get('guests/{guest}/edit', [GuestController::class, 'edit'])->name('guests.edit');
+        Route::put('guests/{guest}', [GuestController::class, 'update'])->name('guests.update');
+        Route::delete('guests/{guest}', [GuestController::class, 'destroy'])->name('guests.destroy');
         Route::delete('guests/{guest}/media/{media}', [GuestController::class, 'removeMedia'])->name('guests.media.destroy');
+    });
 
-        // Reception Drink Requests
-        Route::prefix('drinks')->name('reception.drinks.')->group(function () {
-            Route::get('request', [DrinkRequestController::class, 'create'])->name('create');
-            Route::post('request', [DrinkRequestController::class, 'store'])->name('store');
-        });
+    // Reception Drink Requests
+    Route::middleware(['role:supervisor,front_desk,manager'])->prefix('drinks')->name('reception.drinks.')->group(function () {
+        Route::get('request', [DrinkRequestController::class, 'create'])->name('create');
+        Route::post('request', [DrinkRequestController::class, 'store'])->name('store');
     });
 
     // ═══ LAUNDRY MODULE ═══ (NO admin - admin is system only; manager has oversight)
@@ -206,10 +224,10 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager');
         Route::get('orders/create', [NewLaundryOrderController::class, 'create'])
              ->name('orders.create')
-             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager');
+             ->middleware('role:house_help,front_desk,laundry_manager,manager');
         Route::post('orders', [NewLaundryOrderController::class, 'store'])
              ->name('orders.store')
-             ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager');
+             ->middleware('role:house_help,front_desk,laundry_manager,manager');
         Route::get('orders/{laundryOrder}', [NewLaundryOrderController::class, 'show'])
              ->name('orders.show')
              ->middleware('role:house_help,front_desk,supervisor,laundry_manager,manager,ACCOUNTANT');
@@ -219,18 +237,21 @@ Route::middleware(['auth'])->group(function () {
         Route::post('orders/{laundryOrder}/ready', [NewLaundryOrderController::class, 'markReady'])
              ->name('orders.ready')
              ->middleware('role:house_help,supervisor,laundry_manager,manager');
+        Route::post('orders/{laundryOrder}/confirm', [NewLaundryOrderController::class, 'confirm'])
+             ->name('orders.confirm')
+             ->middleware('role:supervisor');
         Route::post('orders/{laundryOrder}/deliver', [NewLaundryOrderController::class, 'deliver'])
              ->name('orders.deliver')
-             ->middleware('role:house_help,supervisor,laundry_manager,manager');
+             ->middleware('role:house_help,front_desk,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/collected', [NewLaundryOrderController::class, 'collected'])
              ->name('orders.collected')
-             ->middleware('role:house_help,supervisor,laundry_manager,manager');
+             ->middleware('role:house_help,front_desk,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/settle', [NewLaundryOrderController::class, 'settle'])
              ->name('orders.settle')
-             ->middleware('role:front_desk,laundry_manager,supervisor,manager');
+             ->middleware('role:front_desk,laundry_manager,manager');
         Route::post('orders/{laundryOrder}/cancel', [NewLaundryOrderController::class, 'cancel'])
              ->name('orders.cancel')
-             ->middleware('role:supervisor,laundry_manager,manager');
+             ->middleware('role:laundry_manager,manager');
 
         // ── Reports ───────────────────────────────────────────────────────────
         Route::get('reports/daily', [LaundryReportController::class, 'daily'])
@@ -508,6 +529,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('checkout/{checkout}/process',    [FinanceCheckoutController::class, 'process'])->name('checkout.process')
              ->middleware('role:front_desk,manager');
         Route::post('checkout/{checkout}/add-charge', [FinanceCheckoutController::class, 'addCharge'])->name('checkout.add-charge')
+             ->middleware('role:front_desk,manager');
+        Route::post('checkout/{checkout}/draft',     [FinanceCheckoutController::class, 'saveDraft'])->name('checkout.draft')
              ->middleware('role:front_desk,manager');
 
         // ── Walk-in Payments ──────────────────────────────────────────────────────

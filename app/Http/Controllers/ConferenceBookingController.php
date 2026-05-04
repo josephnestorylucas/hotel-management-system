@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConferenceBooking;
 use App\Models\ConferenceHall;
-use App\Models\Guest;
+use App\Models\Institution;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -13,7 +13,7 @@ class ConferenceBookingController extends Controller
 {
     public function index()
     {
-        $bookings = ConferenceBooking::with(['conferenceHall', 'guest', 'conference'])
+        $bookings = ConferenceBooking::with(['conferenceHall', 'institution', 'conference'])
             ->orderBy('booking_date', 'desc')
             ->orderBy('start_time', 'desc')
             ->paginate(20);
@@ -24,19 +24,19 @@ class ConferenceBookingController extends Controller
     public function create()
     {
         $halls = ConferenceHall::where('status', 'available')->orderBy('name')->get();
-        $guests = Guest::orderBy('first_name')->get();
+        $institutions = Institution::orderBy('name')->get();
 
-        return view('conference-bookings.create', compact('halls', 'guests'));
+        return view('conference-bookings.create', compact('halls', 'institutions'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'conference_hall_id' => 'required|uuid|exists:conference_halls,id',
-            'guest_id' => 'required|uuid|exists:guests,id',
-            'booking_date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'institution_id'     => 'required|uuid|exists:institutions,id',
+            'booking_date'       => 'required|date|after_or_equal:today',
+            'start_time'         => 'required|date_format:H:i',
+            'end_time'           => 'required|date_format:H:i|after:start_time',
         ]);
 
         // Validate availability with 30-minute buffer
@@ -58,13 +58,13 @@ class ConferenceBookingController extends Controller
 
         $booking = ConferenceBooking::create([
             'conference_hall_id' => $validated['conference_hall_id'],
-            'guest_id' => $validated['guest_id'],
-            'booking_date' => $validated['booking_date'],
-            'start_time' => $validated['start_time'],
-            'end_time' => $validated['end_time'],
-            'total_cost' => $totalCost,
-            'status' => 'pending',
-            'created_by' => auth()->id(),
+            'institution_id'     => $validated['institution_id'],
+            'booking_date'       => $validated['booking_date'],
+            'start_time'         => $validated['start_time'],
+            'end_time'           => $validated['end_time'],
+            'total_cost'         => $totalCost,
+            'status'             => 'pending',
+            'created_by'         => auth()->id(),
         ]);
 
         return redirect()->route('conference-bookings.show', $booking)
@@ -73,7 +73,7 @@ class ConferenceBookingController extends Controller
 
     public function show(ConferenceBooking $conferenceBooking)
     {
-        $conferenceBooking->load(['conferenceHall', 'guest', 'conference.participants', 'creator']);
+        $conferenceBooking->load(['conferenceHall', 'institution', 'conference.participants', 'creator']);
         
         return view('conference-bookings.show', compact('conferenceBooking'));
     }
@@ -81,20 +81,20 @@ class ConferenceBookingController extends Controller
     public function edit(ConferenceBooking $conferenceBooking)
     {
         $halls = ConferenceHall::where('status', 'available')->orderBy('name')->get();
-        $guests = Guest::orderBy('first_name')->get();
+        $institutions = Institution::orderBy('name')->get();
 
-        return view('conference-bookings.edit', compact('conferenceBooking', 'halls', 'guests'));
+        return view('conference-bookings.edit', compact('conferenceBooking', 'halls', 'institutions'));
     }
 
     public function update(Request $request, ConferenceBooking $conferenceBooking)
     {
         $validated = $request->validate([
             'conference_hall_id' => 'required|uuid|exists:conference_halls,id',
-            'guest_id' => 'required|uuid|exists:guests,id',
-            'booking_date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
+            'institution_id'     => 'required|uuid|exists:institutions,id',
+            'booking_date'       => 'required|date',
+            'start_time'         => 'required|date_format:H:i',
+            'end_time'           => 'required|date_format:H:i|after:start_time',
+            'status'             => 'required|in:pending,confirmed,cancelled,completed',
         ]);
 
         // Validate availability (excluding current booking)
@@ -117,12 +117,12 @@ class ConferenceBookingController extends Controller
 
         $conferenceBooking->update([
             'conference_hall_id' => $validated['conference_hall_id'],
-            'guest_id' => $validated['guest_id'],
-            'booking_date' => $validated['booking_date'],
-            'start_time' => $validated['start_time'],
-            'end_time' => $validated['end_time'],
-            'total_cost' => $totalCost,
-            'status' => $validated['status'],
+            'institution_id'     => $validated['institution_id'],
+            'booking_date'       => $validated['booking_date'],
+            'start_time'         => $validated['start_time'],
+            'end_time'           => $validated['end_time'],
+            'total_cost'         => $totalCost,
+            'status'             => $validated['status'],
         ]);
 
         return redirect()->route('conference-bookings.show', $conferenceBooking)
@@ -195,9 +195,9 @@ class ConferenceBookingController extends Controller
     {
         $validated = $request->validate([
             'conference_hall_id' => 'required|uuid|exists:conference_halls,id',
-            'booking_date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
+            'booking_date'       => 'required|date',
+            'start_time'         => 'required|date_format:H:i',
+            'end_time'           => 'required|date_format:H:i',
         ]);
 
         $available = $this->isTimeSlotAvailable(

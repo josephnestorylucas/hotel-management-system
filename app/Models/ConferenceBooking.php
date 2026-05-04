@@ -16,6 +16,7 @@ class ConferenceBooking extends Model
     protected $fillable = [
         'booking_number',
         'conference_hall_id',
+        'institution_id',
         'guest_id',
         'booking_date',
         'start_time',
@@ -44,6 +45,11 @@ class ConferenceBooking extends Model
     public function conferenceHall(): BelongsTo
     {
         return $this->belongsTo(ConferenceHall::class);
+    }
+
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
     }
 
     public function guest(): BelongsTo

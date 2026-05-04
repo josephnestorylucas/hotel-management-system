@@ -63,14 +63,15 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-100">
-                    <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Organizer</label>
+                    <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Organising Institution</label>
                     <div class="mt-2 flex items-center gap-3">
                         <div class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
-                            {{ strtoupper(substr($conference->organizer->first_name, 0, 1) . substr($conference->organizer->last_name, 0, 1)) }}
+                            {{ strtoupper(substr($conference->institution->name ?? 'N', 0, 1)) }}
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-secondary">{{ $conference->organizer->full_name }}</p>
-                            <p class="text-xs text-gray-500">{{ $conference->organizer->phone_number }}</p>
+                            <p class="text-sm font-semibold text-secondary">{{ $conference->institution->name ?? 'N/A' }}</p>
+                            <p class="text-xs text-gray-500">{{ $conference->institution->contact_person ?? '' }}</p>
+                            <p class="text-xs text-gray-400">{{ $conference->institution->phone ?? '' }}</p>
                         </div>
                     </div>
                 </div>

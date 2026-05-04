@@ -14,6 +14,7 @@ class Conference extends Model
 
     protected $fillable = [
         'conference_booking_id',
+        'institution_id',
         'guest_id',
         'title',
         'description',
@@ -32,9 +33,14 @@ class Conference extends Model
         return $this->belongsTo(ConferenceBooking::class);
     }
 
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
     public function organizer(): BelongsTo
     {
-        return $this->belongsTo(Guest::class, 'guest_id');
+        return $this->belongsTo(Institution::class, 'institution_id');
     }
 
     public function participants(): HasMany

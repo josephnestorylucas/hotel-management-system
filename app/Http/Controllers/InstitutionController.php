@@ -69,6 +69,15 @@ class InstitutionController extends Controller
 
     public function destroy(Institution $institution)
     {
+        $activeBookingsCount = $institution->conferenceBookings()
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+
+        if ($activeBookingsCount > 0) {
+            return redirect()->route('institutions.show', $institution)
+                ->with('error', "Cannot delete institution: it has {$activeBookingsCount} active booking(s). Cancel or complete all bookings first.");
+        }
+
         $institution->delete();
 
         return redirect()->route('institutions.index')

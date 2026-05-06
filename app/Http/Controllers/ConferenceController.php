@@ -11,7 +11,7 @@ class ConferenceController extends Controller
 {
     public function index()
     {
-        $conferences = Conference::with(['conferenceBooking.conferenceHall', 'organizer'])
+        $conferences = Conference::with(['conferenceBooking.conferenceHall', 'institution'])
             ->withCount('participants')
             ->orderBy('start_datetime', 'desc')
             ->paginate(20);
@@ -21,7 +21,7 @@ class ConferenceController extends Controller
 
     public function create()
     {
-        $bookings = ConferenceBooking::with(['conferenceHall', 'guest'])
+        $bookings = ConferenceBooking::with(['conferenceHall', 'institution'])
             ->whereIn('status', ['confirmed'])
             ->whereDoesntHave('conference')
             ->orderBy('booking_date')
@@ -34,22 +34,22 @@ class ConferenceController extends Controller
     {
         $validated = $request->validate([
             'conference_booking_id' => 'required|uuid|exists:conference_bookings,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_datetime' => 'required|date',
-            'end_datetime' => 'required|date|after:start_datetime',
+            'title'                 => 'required|string|max:255',
+            'description'           => 'nullable|string',
+            'start_datetime'        => 'required|date',
+            'end_datetime'          => 'required|date|after:start_datetime',
         ]);
 
         $booking = ConferenceBooking::findOrFail($validated['conference_booking_id']);
 
         $conference = Conference::create([
             'conference_booking_id' => $validated['conference_booking_id'],
-            'guest_id' => $booking->guest_id,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'start_datetime' => $validated['start_datetime'],
-            'end_datetime' => $validated['end_datetime'],
-            'status' => 'draft',
+            'institution_id'        => $booking->institution_id,
+            'title'                 => $validated['title'],
+            'description'           => $validated['description'],
+            'start_datetime'        => $validated['start_datetime'],
+            'end_datetime'          => $validated['end_datetime'],
+            'status'                => 'draft',
         ]);
 
         return redirect()->route('conferences.show', $conference)
@@ -60,8 +60,8 @@ class ConferenceController extends Controller
     {
         $conference->load([
             'conferenceBooking.conferenceHall',
-            'conferenceBooking.guest',
-            'organizer',
+            'conferenceBooking.institution',
+            'institution',
             'participants.guest'
         ]);
 
@@ -76,11 +76,11 @@ class ConferenceController extends Controller
     public function update(Request $request, Conference $conference)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'title'          => 'required|string|max:255',
+            'description'    => 'nullable|string',
             'start_datetime' => 'required|date',
-            'end_datetime' => 'required|date|after:start_datetime',
-            'status' => 'required|in:draft,scheduled,ongoing,completed,cancelled',
+            'end_datetime'   => 'required|date|after:start_datetime',
+            'status'         => 'required|in:draft,scheduled,ongoing,completed,cancelled',
         ]);
 
         $conference->update($validated);

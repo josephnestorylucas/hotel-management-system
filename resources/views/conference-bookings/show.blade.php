@@ -63,21 +63,32 @@
 
         <!-- Right Column -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-secondary mb-4">Guest Information</h3>
+            <h3 class="text-lg font-bold text-secondary mb-4">Institution Information</h3>
             
             <div class="space-y-4">
                 <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                    <span class="text-sm text-gray-500">Guest Name</span>
-                    <span class="text-sm font-semibold text-secondary">{{ $conferenceBooking->guest->full_name }}</span>
+                    <span class="text-sm text-gray-500">Institution</span>
+                    <span class="text-sm font-semibold text-secondary">{{ $conferenceBooking->institution->name ?? 'N/A' }}</span>
+                </div>
+                <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span class="text-sm text-gray-500">Contact Person</span>
+                    <span class="text-sm text-secondary">{{ $conferenceBooking->institution->contact_person ?? 'N/A' }}</span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b border-gray-100">
                     <span class="text-sm text-gray-500">Phone</span>
-                    <span class="text-sm text-secondary">{{ $conferenceBooking->guest->phone_number }}</span>
+                    <span class="text-sm text-secondary">{{ $conferenceBooking->institution->phone ?? 'N/A' }}</span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b border-gray-100">
                     <span class="text-sm text-gray-500">Email</span>
-                    <span class="text-sm text-secondary">{{ $conferenceBooking->guest->email ?? 'N/A' }}</span>
+                    <span class="text-sm text-secondary">{{ $conferenceBooking->institution->email ?? 'N/A' }}</span>
                 </div>
+                @if($conferenceBooking->institution)
+                <div class="pt-1">
+                    <a href="{{ route('institutions.show', $conferenceBooking->institution) }}" class="text-xs text-primary hover:text-blue-700 font-semibold">
+                        View Institution Profile →
+                    </a>
+                </div>
+                @endif
             </div>
         </div>
     </div>

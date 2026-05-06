@@ -122,7 +122,8 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-secondary">{{ $conference->organizer->full_name }}</div>
+                        <div class="text-sm font-medium text-secondary">{{ $conference->institution->name ?? 'N/A' }}</div>
+                        <div class="text-xs text-gray-500">{{ $conference->institution->contact_person ?? '' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-secondary">{{ $conference->conferenceBooking->conferenceHall->name }}</div>

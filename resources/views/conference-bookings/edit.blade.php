@@ -1,8 +1,8 @@
-{{-- resources/views/conference-bookings/create.blade.php --}}
+{{-- resources/views/conference-bookings/edit.blade.php --}}
 @php use App\Helpers\CurrencyHelper; @endphp
 @extends('layouts.app')
 
-@section('title', 'Create Hall Booking')
+@section('title', 'Edit Hall Booking')
 @section('page-title', 'Conference Hall Bookings')
 
 @section('content')
@@ -10,13 +10,14 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Create Hall Booking</h2>
-            <p class="text-sm text-gray-500 mt-1">Reserve a conference hall on behalf of an institution</p>
+            <h2 class="text-xl font-semibold text-gray-900">Edit Hall Booking</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ $conferenceBooking->booking_number }}</p>
         </div>
 
         <!-- Form -->
-        <form method="POST" action="{{ route('conference-bookings.store') }}" class="p-6">
+        <form method="POST" action="{{ route('conference-bookings.update', $conferenceBooking) }}" class="p-6">
             @csrf
+            @method('PUT')
 
             <div class="space-y-6">
                 <!-- Institution Selection -->
@@ -42,7 +43,7 @@
                             <option value="{{ $institution->id }}"
                                     data-contact="{{ $institution->contact_person }}"
                                     data-phone="{{ $institution->phone }}"
-                                    {{ old('institution_id') == $institution->id ? 'selected' : '' }}>
+                                    {{ old('institution_id', $conferenceBooking->institution_id) == $institution->id ? 'selected' : '' }}>
                                 {{ $institution->name }} — {{ $institution->contact_person }}
                             </option>
                             @endforeach
@@ -50,16 +51,6 @@
                         @error('institution_id')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1.5 text-xs text-gray-500">
-                            Institution not listed?
-                            <a href="{{ route('institutions.create') }}" class="text-blue-600 hover:underline">Add a new institution</a>
-                        </p>
-                    </div>
-
-                    <!-- Institution detail preview -->
-                    <div id="institution-preview" class="hidden mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-                        <p class="text-xs text-indigo-700 font-medium">Contact: <span id="preview-contact" class="font-semibold"></span></p>
-                        <p class="text-xs text-indigo-700 mt-0.5">Phone: <span id="preview-phone"></span></p>
                     </div>
                 </div>
 
@@ -88,7 +79,7 @@
                             @foreach($halls as $hall)
                             <option value="{{ $hall->id }}"
                                     data-rate="{{ $hall->hourly_rate }}"
-                                    {{ old('conference_hall_id') == $hall->id ? 'selected' : '' }}>
+                                    {{ old('conference_hall_id', $conferenceBooking->conference_hall_id) == $hall->id ? 'selected' : '' }}>
                                 {{ $hall->name }} - {{ $hall->location }} (Capacity: {{ $hall->capacity }}, {{ $hall->formatted_rate }}/hr)
                             </option>
                             @endforeach
@@ -107,8 +98,7 @@
                             type="date"
                             name="booking_date"
                             id="booking_date"
-                            value="{{ old('booking_date', now()->format('Y-m-d')) }}"
-                            min="{{ now()->format('Y-m-d') }}"
+                            value="{{ old('booking_date', $conferenceBooking->booking_date->format('Y-m-d')) }}"
                             required
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('booking_date') border-red-500 @enderror">
                         @error('booking_date')
@@ -117,7 +107,7 @@
                     </div>
 
                     <!-- Time Range -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
                                 Start Time <span class="text-red-500">*</span>
@@ -126,7 +116,7 @@
                                 type="time"
                                 name="start_time"
                                 id="start_time"
-                                value="{{ old('start_time') }}"
+                                value="{{ old('start_time', \Carbon\Carbon::parse($conferenceBooking->start_time)->format('H:i')) }}"
                                 required
                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('start_time') border-red-500 @enderror">
                             @error('start_time')
@@ -142,7 +132,7 @@
                                 type="time"
                                 name="end_time"
                                 id="end_time"
-                                value="{{ old('end_time') }}"
+                                value="{{ old('end_time', \Carbon\Carbon::parse($conferenceBooking->end_time)->format('H:i')) }}"
                                 required
                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('end_time') border-red-500 @enderror">
                             @error('end_time')
@@ -151,44 +141,48 @@
                         </div>
                     </div>
 
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                            Status <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            name="status"
+                            id="status"
+                            required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('status') border-red-500 @enderror">
+                            @foreach(['pending', 'confirmed', 'cancelled', 'completed'] as $statusOption)
+                            <option value="{{ $statusOption }}" {{ old('status', $conferenceBooking->status) === $statusOption ? 'selected' : '' }}>
+                                {{ ucfirst($statusOption) }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('status')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Cost Preview -->
                     <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <div class="flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-700">Estimated Cost:</span>
-                            <span id="cost-preview" class="text-lg font-bold text-primary">{{ CurrencyHelper::formatCurrency(0) }}</span>
+                            <span id="cost-preview" class="text-lg font-bold text-primary">{{ CurrencyHelper::formatCurrency($conferenceBooking->total_cost) }}</span>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Based on hourly rate and duration</p>
-                    </div>
-                </div>
-
-                <!-- Info Box -->
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div class="flex gap-3">
-                        <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        <div class="text-sm text-yellow-800">
-                            <p class="font-medium mb-1">Important Booking Rules:</p>
-                            <ul class="list-disc list-inside space-y-1 text-yellow-700">
-                                <li>30-minute cleanup buffer is automatically added after your booking</li>
-                                <li>Next booking cannot start until buffer period ends</li>
-                                <li>Check availability before confirming your time slot</li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                <a href="{{ route('conference-bookings.index') }}"
+                <a href="{{ route('conference-bookings.show', $conferenceBooking) }}"
                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
                     Cancel
                 </a>
                 <button
                     type="submit"
                     class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                    Create Booking
+                    Save Changes
                 </button>
             </div>
         </form>
@@ -197,11 +191,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const institutionSelect = document.getElementById('institution_id');
-    const institutionPreview = document.getElementById('institution-preview');
-    const previewContact = document.getElementById('preview-contact');
-    const previewPhone = document.getElementById('preview-phone');
-
     const hallSelect = document.getElementById('conference_hall_id');
     const startTime = document.getElementById('start_time');
     const endTime = document.getElementById('end_time');
@@ -218,17 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return formatted + ' ' + currencySymbol;
     }
 
-    institutionSelect.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        if (selected.value) {
-            previewContact.textContent = selected.dataset.contact;
-            previewPhone.textContent = selected.dataset.phone;
-            institutionPreview.classList.remove('hidden');
-        } else {
-            institutionPreview.classList.add('hidden');
-        }
-    });
-
     function calculateCost() {
         const selectedHall = hallSelect.options[hallSelect.selectedIndex];
         const rate = parseFloat(selectedHall.dataset.rate || 0);
@@ -239,8 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const hours = (end - start) / (1000 * 60 * 60);
 
             if (hours > 0) {
-                const cost = hours * rate;
-                costPreview.textContent = formatMoney(cost);
+                costPreview.textContent = formatMoney(hours * rate);
             } else {
                 costPreview.textContent = formatMoney(0);
             }
@@ -250,11 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
     hallSelect.addEventListener('change', calculateCost);
     startTime.addEventListener('change', calculateCost);
     endTime.addEventListener('change', calculateCost);
-
-    // Trigger if pre-selected via old()
-    if (institutionSelect.value) {
-        institutionSelect.dispatchEvent(new Event('change'));
-    }
 });
 </script>
 @endsection

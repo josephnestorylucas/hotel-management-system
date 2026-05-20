@@ -27,6 +27,7 @@ use App\Http\Controllers\ConferenceHallController;
 use App\Http\Controllers\ConferenceBookingController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\ConferenceParticipantController;
+use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\Store\ProductController;
 use App\Http\Controllers\Store\StockController;
 use App\Http\Controllers\Store\AdjustmentController;
@@ -295,6 +296,15 @@ Route::middleware(['auth'])->group(function () {
 
     // Conference Management Routes (Manager has hall booking/conference access but NOT hall management)
     Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
+        // Institutions (organisations that book conference halls)
+        Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
+        Route::get('institutions/create', [InstitutionController::class, 'create'])->name('institutions.create');
+        Route::post('institutions', [InstitutionController::class, 'store'])->name('institutions.store');
+        Route::get('institutions/{institution}', [InstitutionController::class, 'show'])->name('institutions.show');
+        Route::get('institutions/{institution}/edit', [InstitutionController::class, 'edit'])->name('institutions.edit');
+        Route::put('institutions/{institution}', [InstitutionController::class, 'update'])->name('institutions.update');
+        Route::delete('institutions/{institution}', [InstitutionController::class, 'destroy'])->name('institutions.destroy');
+
         // Conference Bookings (Hall Bookings) - Manager has full access
         Route::get('conference-bookings', [ConferenceBookingController::class, 'index'])->name('conference-bookings.index');
         Route::get('conference-bookings/create', [ConferenceBookingController::class, 'create'])->name('conference-bookings.create');

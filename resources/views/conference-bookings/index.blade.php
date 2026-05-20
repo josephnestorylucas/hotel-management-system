@@ -86,7 +86,7 @@
             <thead class="bg-gradient-to-r from-blue-50 to-white">
                 <tr>
                     <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Booking #</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Guest</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Institution</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Hall</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Date & Time</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Duration</th>
@@ -109,8 +109,8 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-secondary">{{ $booking->guest->full_name }}</div>
-                        <div class="text-xs text-gray-500">{{ $booking->guest->phone_number }}</div>
+                        <div class="text-sm font-medium text-secondary">{{ $booking->institution->name ?? 'N/A' }}</div>
+                        <div class="text-xs text-gray-500">{{ $booking->institution->contact_person ?? '' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-secondary">{{ $booking->conferenceHall->name }}</div>

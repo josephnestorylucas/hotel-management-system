@@ -45,7 +45,7 @@
                                     {{ old('conference_booking_id') == $booking->id ? 'selected' : '' }}>
                                 {{ $booking->conferenceHall->name }} - {{ $booking->booking_date->format('M d, Y') }} 
                                 ({{ \Carbon\Carbon::parse($booking->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('h:i A') }}) 
-                                - {{ $booking->guest->full_name }}
+                                - {{ $booking->institution->name ?? 'N/A' }}
                             </option>
                             @endforeach
                         </select>

@@ -21,8 +21,21 @@ return new class extends Migration {
             return;
         }
 
+        if ($driver === 'pgsql') {
+            Schema::table('laundry_orders', function (Blueprint $table) {
+                $table->uuid('confirmed_by')->nullable();
+                $table->timestamp('confirmed_at')->nullable();
+                $table->foreign('confirmed_by')->references('id')->on('users');
+            });
+
+            return;
+        }
+
         // SQLite: rebuild table
-        DB::statement('PRAGMA foreign_keys = OFF');
+        $isSqlite = $driver === 'sqlite';
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        }
 
         DB::transaction(function () {
             DB::statement("
@@ -100,7 +113,9 @@ return new class extends Migration {
             ");
         });
 
-        DB::statement('PRAGMA foreign_keys = ON');
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
     }
 
     public function down(): void
@@ -117,8 +132,20 @@ return new class extends Migration {
             return;
         }
 
+        if ($driver === 'pgsql') {
+            Schema::table('laundry_orders', function (Blueprint $table) {
+                $table->dropForeign(['confirmed_by']);
+                $table->dropColumn(['confirmed_by', 'confirmed_at']);
+            });
+
+            return;
+        }
+
         // SQLite: rebuild without new columns
-        DB::statement('PRAGMA foreign_keys = OFF');
+        $isSqlite = $driver === 'sqlite';
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        }
 
         DB::transaction(function () {
             DB::statement("
@@ -193,6 +220,8 @@ return new class extends Migration {
             ");
         });
 
-        DB::statement('PRAGMA foreign_keys = ON');
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
     }
 };

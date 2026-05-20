@@ -23,8 +23,15 @@ return new class extends Migration {
             return;
         }
 
+        if ($driver !== 'sqlite') {
+            return;
+        }
+
         // SQLite workaround: rebuild table with expanded status check
-        DB::statement('PRAGMA foreign_keys = OFF');
+        $isSqlite = $driver === 'sqlite';
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        }
 
         DB::transaction(function () {
             // 1. Create new table with 'charged' in the status enum
@@ -91,7 +98,9 @@ return new class extends Migration {
             ");
         });
 
-        DB::statement('PRAGMA foreign_keys = ON');
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
     }
 
     public function down(): void
@@ -102,8 +111,15 @@ return new class extends Migration {
             return;
         }
 
+        if ($driver !== 'sqlite') {
+            return;
+        }
+
         // Revert: rebuild without 'charged'
-        DB::statement('PRAGMA foreign_keys = OFF');
+        $isSqlite = $driver === 'sqlite';
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        }
 
         DB::transaction(function () {
             DB::statement("
@@ -164,6 +180,8 @@ return new class extends Migration {
             ");
         });
 
-        DB::statement('PRAGMA foreign_keys = ON');
+        if ($isSqlite) {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
     }
 };

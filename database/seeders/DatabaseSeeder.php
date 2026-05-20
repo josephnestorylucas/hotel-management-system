@@ -12,8 +12,6 @@ class DatabaseSeeder extends Seeder {
             FloorSeeder::class,
             RoomTypeSeeder::class,
             RoomSeeder::class,
-            ReservationSeeder::class,
-            BookingSeeder::class,
             LaundryServiceSeeder::class,
             StockLocationSeeder::class,
             SystemSettingsSeeder::class,

@@ -66,7 +66,7 @@ class Payment extends Model
 
         static::creating(function ($payment) {
             if (empty($payment->payment_number)) {
-                $payment->payment_number = 'PAY-' . strtoupper(uniqid());
+                $payment->payment_number = 'PAY-' . strtoupper(Str::random(10));
             }
         });
     }

@@ -41,7 +41,7 @@ class LaundryTask extends Model
         parent::boot();
         
         static::creating(function ($task) {
-            $task->task_number = 'LND-' . strtoupper(uniqid());
+            $task->task_number = 'LND-' . strtoupper(Str::random(10));
         });
     }
 

@@ -61,7 +61,7 @@ class ProductController extends Controller
 
         if (empty($data['sku'])) {
             $prefix      = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $data['name']), 0, 3));
-            $data['sku'] = $prefix . '-' . strtoupper(substr(uniqid(), -6));
+            $data['sku'] = $prefix . '-' . strtoupper(Str::random(6));
         }
 
         $data['created_by'] = auth()->id();

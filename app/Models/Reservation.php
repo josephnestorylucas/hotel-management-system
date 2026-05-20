@@ -40,7 +40,7 @@ class Reservation extends Model {
     protected static function boot() {
         parent::boot();
         static::creating(function ($reservation) {
-            $reservation->reservation_number = 'RES-' . strtoupper(uniqid());
+            $reservation->reservation_number = 'RES-' . strtoupper(Str::random(10));
         });
     }
 

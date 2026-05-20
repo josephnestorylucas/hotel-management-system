@@ -32,12 +32,12 @@ class SendBookingConfirmationJob implements ShouldQueue
                 $sent['email'] = true;
                 Log::info("Booking confirmation email sent", [
                     'reference' => $this->booking['reference'],
-                    'email' => $this->booking['email'],
+                    'email_hash' => hash('sha256', $this->booking['email']),
                 ]);
             } catch (\Exception $e) {
                 Log::error("Booking confirmation email failed", [
                     'reference' => $this->booking['reference'],
-                    'email' => $this->booking['email'],
+                    'email_hash' => hash('sha256', $this->booking['email']),
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -55,13 +55,13 @@ class SendBookingConfirmationJob implements ShouldQueue
                 if ($result) {
                     Log::info("Booking confirmation SMS sent", [
                         'reference' => $this->booking['reference'],
-                        'phone' => $this->booking['phone'],
+                        'phone_hash' => hash('sha256', $this->booking['phone']),
                     ]);
                 }
             } catch (\Exception $e) {
                 Log::error("Booking confirmation SMS failed", [
                     'reference' => $this->booking['reference'],
-                    'phone' => $this->booking['phone'],
+                    'phone_hash' => hash('sha256', $this->booking['phone']),
                     'error' => $e->getMessage(),
                 ]);
             }

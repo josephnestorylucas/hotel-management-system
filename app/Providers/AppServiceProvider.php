@@ -4,11 +4,13 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Blade;
 use App\Models\Reservation;
 use App\Models\Booking;
+use App\Policies\BookingPolicy;
 use App\Observers\ReservationObserver;
 use App\Observers\BookingObserver;
 use App\Helpers\CurrencyHelper;
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         Reservation::observe(ReservationObserver::class);
         Booking::observe(BookingObserver::class);
+        Gate::policy(Booking::class, BookingPolicy::class);
 
         // Register Blade directives for currency formatting
         Blade::directive('currency', function ($expression) {

@@ -7,6 +7,7 @@ use App\Models\BookingCharge;
 use App\Models\Payment;
 use App\Services\Payment\PaymentEngine;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -161,11 +162,17 @@ class PaymentController extends Controller
             ?? $request->query('token');
 
         if ($reference) {
-            $payment = Payment::where('provider_reference', $reference)->first();
+            $payment = DB::transaction(function () use ($reference) {
+                $payment = Payment::where('provider_reference', $reference)
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($payment && $payment->isPending()) {
-                $payment = $this->engine->verify($payment);
-            }
+                if ($payment && $payment->isPending()) {
+                    $payment = $this->engine->verify($payment);
+                }
+
+                return $payment;
+            });
 
             if ($payment) {
                 return redirect()->route('payments.status', $payment);

@@ -318,7 +318,8 @@ class SnippeProvider implements PaymentProvider
             return false;
         }
 
-        $computed = hash_hmac('sha256', json_encode($payload), $this->webhookSecret);
+        ksort($payload);
+        $computed = hash_hmac('sha256', json_encode($payload, JSON_UNESCAPED_SLASHES), $this->webhookSecret);
         return hash_equals($computed, $signature);
     }
 

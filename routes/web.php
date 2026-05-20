@@ -733,7 +733,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ═══ ADMIN — Broadcasts & Offers ═══
-    Route::middleware(['role:admin,manager,supervisor,laundry_manager'])->prefix('admin')->name('admin.')->group(function () {
+     Route::middleware(['role:admin,manager'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('broadcasts',                       [BroadcastController::class, 'index'])->name('broadcasts.index');
         Route::get('broadcasts/create',                [BroadcastController::class, 'create'])->name('broadcasts.create');
         Route::post('broadcasts',                      [BroadcastController::class, 'store'])->name('broadcasts.store');
@@ -749,10 +749,10 @@ Route::middleware(['auth'])->group(function () {
     // ═══ ADMIN — System Settings ═══
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('settings',                         [SettingsController::class, 'index'])->name('settings.index');
-        Route::post('settings',                        [SettingsController::class, 'updateSettings'])->name('settings.update');
-          Route::post('settings/sms',                    [SettingsController::class, 'updateSmsSettings'])->name('settings.sms');
-          Route::post('settings/email',                  [SettingsController::class, 'updateEmailSettings'])->name('settings.email');
-          Route::post('settings/snipe',                  [SettingsController::class, 'updateSnipeSettings'])->name('settings.snipe');
+                    Route::post('settings',                        [SettingsController::class, 'updateSettings'])->name('settings.update')->middleware('throttle:10,1');
+                         Route::post('settings/sms',                    [SettingsController::class, 'updateSmsSettings'])->name('settings.sms')->middleware('throttle:5,1');
+                         Route::post('settings/email',                  [SettingsController::class, 'updateEmailSettings'])->name('settings.email')->middleware('throttle:5,1');
+                         Route::post('settings/snipe',                  [SettingsController::class, 'updateSnipeSettings'])->name('settings.snipe')->middleware('throttle:5,1');
         Route::post('settings/password',               [SettingsController::class, 'updatePassword'])->name('settings.password');
     });
 

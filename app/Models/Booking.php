@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Booking = active guest stay + billing.
@@ -61,7 +62,7 @@ class Booking extends Model
 
         static::creating(function ($booking) {
             if (empty($booking->booking_number)) {
-                $booking->booking_number = 'BK-' . strtoupper(uniqid());
+                $booking->booking_number = 'BK-' . strtoupper(Str::random(10));
             }
         });
     }

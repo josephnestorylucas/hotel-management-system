@@ -218,19 +218,15 @@ class GuestController extends Controller
         
         $guests = Guest::where(function ($query) use ($search) {
             $query->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone_number', 'like', "%{$search}%");
+                  ->orWhere('last_name', 'like', "%{$search}%");
         })
         ->limit(10)
-        ->get(['id', 'first_name', 'last_name', 'email', 'phone_number']);
+        ->get(['id', 'first_name', 'last_name']);
 
         return response()->json($guests->map(function ($guest) {
             return [
                 'id' => $guest->id,
                 'name' => $guest->full_name,
-                'email' => $guest->email,
-                'phone' => $guest->phone_number,
             ];
         }));
     }

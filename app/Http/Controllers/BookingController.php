@@ -250,6 +250,8 @@ class BookingController extends Controller
      */
     public function show(Booking $booking)
     {
+        $this->authorize('view', $booking);
+
         $booking->load(['room.roomType', 'room.floor.building', 'guest', 'creator', 'reservation', 'laundryOrders', 'bookingCharges']);
 
         return view('bookings.show', compact('booking'));
@@ -260,6 +262,8 @@ class BookingController extends Controller
      */
     public function edit(Booking $booking)
     {
+        $this->authorize('update', $booking);
+
         if (!$booking->canBeEdited()) {
             return back()->with('error', 'Only active (checked-in) bookings can be edited.');
         }
@@ -289,6 +293,8 @@ class BookingController extends Controller
      */
     public function update(Request $request, Booking $booking)
     {
+        $this->authorize('update', $booking);
+
         if (!$booking->canBeEdited()) {
             return back()->with('error', 'Only active (checked-in) bookings can be edited.');
         }
@@ -349,6 +355,8 @@ class BookingController extends Controller
      */
     public function checkOut(Booking $booking)
     {
+        $this->authorize('update', $booking);
+
         if (!$booking->canBeCheckedOut()) {
             return back()->with('error', 'Only checked-in bookings can be checked out.');
         }
@@ -408,6 +416,8 @@ class BookingController extends Controller
      */
     public function cancel(Request $request, Booking $booking)
     {
+        $this->authorize('update', $booking);
+
         if (!$booking->canBeCancelled()) {
             return back()->with('error', 'Only active (checked-in) bookings can be cancelled.');
         }
@@ -439,6 +449,8 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
+        $this->authorize('delete', $booking);
+
         if (!in_array($booking->status, ['cancelled', 'checked_out'])) {
             return back()->with('error', 'Only checked-out or cancelled bookings can be deleted.');
         }

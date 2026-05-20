@@ -17,10 +17,17 @@ class User extends Authenticatable
     protected $fillable = ['name', 'email', 'password', 'phone'];
 
     /**
-     * Guarded attributes — role_id and is_active must be set explicitly,
-     * never via mass assignment from user input.
+     * Guard sensitive attributes from mass assignment.
      */
-    protected $guarded_extra = ['role_id', 'is_active'];
+    protected $guarded = [
+        'role_id',
+        'is_active',
+        'must_change_password',
+        'password_reset_requested_at',
+        'password_reset_completed_at',
+        'password_reset_phone',
+        'email_verified_at',
+    ];
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array

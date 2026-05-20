@@ -36,7 +36,7 @@ class ForgotPasswordController extends Controller
         if (!empty($validated['email'])) {
             Password::sendResetLink(['email' => $validated['email']]);
             Log::info('Password reset link requested via email.', [
-                'email' => $validated['email'],
+                'email_hash' => hash('sha256', $validated['email']),
                 'ip' => $request->ip(),
             ]);
 
@@ -64,7 +64,6 @@ class ForgotPasswordController extends Controller
         ) {
             Log::warning('Phone password reset throttled.', [
                 'ip' => $ip,
-                'phone_hash' => $phoneHash,
                 'cooldown_remaining' => RateLimiter::availableIn($cooldownKey),
                 'phone_lock_remaining' => RateLimiter::availableIn($phoneLockKey),
                 'ip_lock_remaining' => RateLimiter::availableIn($ipLockKey),
@@ -84,7 +83,6 @@ class ForgotPasswordController extends Controller
         if (!$user) {
             Log::info('Phone password reset requested for unknown or inactive user.', [
                 'ip' => $ip,
-                'phone_hash' => $phoneHash,
             ]);
 
             return back()->with('success', $safeMessage);
@@ -104,7 +102,6 @@ class ForgotPasswordController extends Controller
         Log::info('Phone password reset completed (self-service).', [
             'user_id' => $user->id,
             'actor' => 'self-service',
-            'phone_hash' => $phoneHash,
             'requested_at' => $requestedAt->toIso8601String(),
             'completed_at' => now()->toIso8601String(),
             'ip' => $ip,
@@ -121,20 +118,17 @@ class ForgotPasswordController extends Controller
             if ($sent) {
                 Log::info('Temporary password SMS sent.', [
                     'user_id' => $user->id,
-                    'phone_hash' => $phoneHash,
                     'ip' => $ip,
                 ]);
             } else {
                 Log::error('Temporary password SMS failed to send.', [
                     'user_id' => $user->id,
-                    'phone_hash' => $phoneHash,
                     'ip' => $ip,
                 ]);
             }
         } catch (\Throwable $exception) {
             Log::error('Temporary password SMS threw exception.', [
                 'user_id' => $user->id,
-                'phone_hash' => $phoneHash,
                 'ip' => $ip,
                 'error' => $exception->getMessage(),
             ]);
@@ -145,7 +139,7 @@ class ForgotPasswordController extends Controller
 
     private function generateTemporaryPassword(): string
     {
-        return Str::random(8) . Str::upper(Str::random(2)) . random_int(10, 99) . '!';
+        return Str::password(16);
     }
 }
 

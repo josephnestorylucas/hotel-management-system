@@ -38,7 +38,7 @@ class ConferenceBooking extends Model
         parent::boot();
         
         static::creating(function ($booking) {
-            $booking->booking_number = 'CNF-' . strtoupper(uniqid());
+            $booking->booking_number = 'CNF-' . strtoupper(Str::random(10));
         });
     }
 

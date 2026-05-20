@@ -40,8 +40,10 @@ class SmsService
     public function send(string $phone, string $message): bool
     {
         if (!$this->enabled) {
-            Log::info("SMS (disabled/sandbox): To={$phone} | Message={$message}");
-            return true; // Simulate success when SMS provider not configured
+            Log::error('SMS not sent: provider not configured', [
+                'phone_hash' => hash('sha256', $phone),
+            ]);
+            return false;
         }
 
         try {
@@ -53,10 +55,15 @@ class SmsService
                 'from'    => config('services.africastalking.sender_id'),
             ]);
 
-            Log::info("SMS sent successfully to {$phone}");
+            Log::info('SMS sent successfully', [
+                'phone_hash' => hash('sha256', $phone),
+            ]);
             return true;
         } catch (\Exception $e) {
-            Log::error("SMS send failed to {$phone}: " . $e->getMessage());
+            Log::error('SMS send failed', [
+                'phone_hash' => hash('sha256', $phone),
+                'error' => $e->getMessage(),
+            ]);
             return false;
         }
     }
@@ -70,7 +77,9 @@ class SmsService
     public function sendBulk(array $phones, string $message): void
     {
         if (!$this->enabled) {
-            Log::info("SMS Bulk (disabled/sandbox): To=" . implode(',', $phones) . " | Message={$message}");
+            Log::error('Bulk SMS not sent: provider not configured', [
+                'recipient_count' => count($phones),
+            ]);
             return;
         }
 

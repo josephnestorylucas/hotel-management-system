@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendBroadcastJob implements ShouldQueue
@@ -60,6 +61,12 @@ class SendBroadcastJob implements ShouldQueue
     private function getTargetGuests()
     {
         $query = Guest::query();
+
+        $validTargets = ['all', 'Silver', 'Gold', 'Platinum', 'walkin', 'guests'];
+        if (!in_array($this->broadcast->target, $validTargets, true)) {
+            Log::error('Invalid broadcast target', ['target' => $this->broadcast->target]);
+            return collect();
+        }
 
         return match ($this->broadcast->target) {
             'Silver'   => $query->whereIn('loyalty_tier', ['Silver', 'Gold', 'Platinum'])->get(),

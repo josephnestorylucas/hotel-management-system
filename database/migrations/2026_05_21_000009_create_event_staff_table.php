@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('display_photo')->nullable();
             $table->json('session_ids')->nullable();
             $table->json('permissions')->nullable();
-            $table->dateTime('assigned_at')->default(now());
+            $table->dateTime('assigned_at')->useCurrent();
             $table->dateTime('removed_at')->nullable();
             $table->timestamps();
 

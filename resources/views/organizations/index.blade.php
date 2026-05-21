@@ -66,7 +66,7 @@
                         <div class="flex items-center gap-2">
                             <a href="{{ route('organizations.show', $org) }}" class="text-gray-600 hover:text-gray-800 font-semibold">View</a>
                             <a href="{{ route('organizations.edit', $org) }}" class="text-primary hover:text-blue-700 font-semibold">Edit</a>
-                            <a href="{{ route('organizations.events', $org) }}" class="text-purple-600 hover:text-purple-700 font-semibold">Events</a>
+                            <a href="{{ route('organizations.events-list', $org) }}" class="text-purple-600 hover:text-purple-700 font-semibold">Events</a>
                         </div>
                     </td>
                 </tr>

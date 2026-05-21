@@ -17,7 +17,7 @@
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">Verify</button>
             </form>
             @endif
-            <a href="{{ route('organizations.events', $organization) }}" class="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors">View Events</a>
+            <a href="{{ route('organizations.events-list', $organization) }}" class="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors">View Events</a>
             <a href="{{ route('organizations.edit', $organization) }}" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">Edit</a>
         </div>
     </div>

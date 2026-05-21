@@ -7,6 +7,7 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class ConferenceBooking extends Model

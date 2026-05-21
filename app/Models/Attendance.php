@@ -169,16 +169,11 @@ class Attendance extends Model
 
     public function toArray(): array
     {
-        return [
-            'ticket_number' => $this->ticket_number,
-            'name' => $this->full_name,
-            'email' => $this->email,
-            'company' => $this->company,
-            'qr_token' => $this->qr_token,
-            'manual_code' => $this->manual_code,
-            'event' => $this->event?->title,
-            'ticket_tier' => $this->eventTicket?->tier_name,
-        ];
+        $array = parent::toArray();
+        $array['full_name'] = $this->full_name;
+        $array['event_title'] = $this->event?->title;
+        $array['ticket_tier_name'] = $this->eventTicket?->tier_name;
+        return $array;
     }
 
     public static function generateTicketNumber(?string $eventId = null): string

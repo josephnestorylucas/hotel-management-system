@@ -18,7 +18,7 @@ class AttendanceMetrics extends Model
         'checked_in_count',
         'no_show_count',
         'cancellations',
-        'avg_check_in_time',
+        'avg_check_in_minutes',
         'peak_check_in_hour',
         'total_revenue_collected',
     ];
@@ -52,7 +52,14 @@ class AttendanceMetrics extends Model
             ? $checkInTimes->countBy()->sortDesc()->keys()->first()
             : null;
 
-        $avgCheckIn = $attendances->whereNotNull('first_check_in_at')->avg('first_check_in_at');
+        // Calculate average check-in time in minutes from midnight
+        $checkInMinutes = $attendances->whereNotNull('first_check_in_at')
+            ->pluck('first_check_in_at')
+            ->map(fn($t) => $c = \Carbon\Carbon::parse($t); return $c->hour * 60 + $c->minute);
+
+        $avgCheckInMinutes = $checkInMinutes->isNotEmpty()
+            ? (int) $checkInMinutes->avg()
+            : null;
 
         $revenue = $attendances->where('registration_status', 'confirmed')
             ->whereNotNull('event_ticket_id')
@@ -67,6 +74,7 @@ class AttendanceMetrics extends Model
                 'checked_in_count' => $checkedInCount,
                 'no_show_count' => $noShowCount,
                 'cancellations' => $cancellations,
+                'avg_check_in_minutes' => $avgCheckInMinutes,
                 'peak_check_in_hour' => $peakHour,
                 'total_revenue_collected' => $revenue,
             ]

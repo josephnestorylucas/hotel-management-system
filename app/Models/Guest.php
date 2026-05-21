@@ -29,12 +29,18 @@ class Guest extends Model implements HasMedia
         'tier_upgraded_at',
         'total_stays',
         'total_spent',
+        'organization_id',
+        'total_events_attended',
+        'event_preferences',
+        'communication_preferences',
     ];
 
     protected $casts = [
         'date_of_birth'    => 'date',
         'total_spent'      => 'decimal:2',
         'tier_upgraded_at' => 'datetime',
+        'event_preferences' => 'array',
+        'communication_preferences' => 'array',
     ];
 
     /**

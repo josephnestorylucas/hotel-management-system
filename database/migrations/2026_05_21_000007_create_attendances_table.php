@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('ticket_number')->unique();
             $table->string('qr_token', 64)->unique();
             $table->string('manual_code', 8)->unique();
-            $table->dateTime('registration_date')->default(now());
+            $table->dateTime('registration_date')->useCurrent();
             $table->enum('registration_status', ['pending', 'confirmed', 'cancelled', 'no_show'])->default('pending');
             $table->string('dietary_requirements')->nullable();
             $table->string('special_accommodations')->nullable();

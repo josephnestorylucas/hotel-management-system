@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('checked_in_count')->default(0);
             $table->integer('no_show_count')->default(0);
             $table->integer('cancellations')->default(0);
-            $table->time('avg_check_in_time')->nullable();
+            $table->integer('avg_check_in_minutes')->nullable()->comment('Average check-in time in minutes from midnight');
             $table->integer('peak_check_in_hour')->nullable();
             $table->decimal('total_revenue_collected', 15, 2)->default(0);
             $table->timestamps();

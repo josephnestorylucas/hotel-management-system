@@ -123,5 +123,45 @@ function showResult(data) {
 
 // Focus on manual code input
 document.getElementById('manual-code').focus();
+
+// Staff Override - Search attendees
+let searchTimeout;
+document.getElementById('override-search').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    if (query.length < 2) {
+        document.getElementById('override-results').classList.add('hidden');
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        fetch('{{ route("organizations.events.attendances.index", [$organization, $event]) }}?search=' + encodeURIComponent(query), {
+            headers: { 'Accept': 'text/html' }
+        })
+        .then(r => r.text())
+        .then(html => {
+            // Parse attendees from the response and show override buttons
+            const resultsDiv = document.getElementById('override-results');
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '<p class="text-sm text-gray-500">Use the Attendees page to find the attendee ID, then use Manual Code entry above with their 8-character code.</p>';
+        });
+    }, 500);
+});
+
+// Staff Override - Direct check-in by attendance ID
+function staffOverride(attendanceId) {
+    fetch('{{ route("organizations.events.check-in.staff-override", [$organization, $event]) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ attendance_id: attendanceId }),
+    })
+    .then(r => r.json())
+    .then(data => showResult(data))
+    .catch(() => showResult({ success: false, message: 'Network error.' }));
+}
 </script>
 @endsection

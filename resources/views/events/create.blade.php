@@ -10,7 +10,7 @@
             <h2 class="text-2xl font-extrabold text-secondary">Create Event</h2>
             <p class="text-sm text-gray-500 mt-1">For {{ $organization->name }}</p>
         </div>
-        <a href="{{ route('organizations.events', $organization) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Events</a>
+        <a href="{{ route('organizations.events-list', $organization) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Events</a>
     </div>
 
     <form method="POST" action="{{ route('organizations.events.store', $organization) }}" class="space-y-6">
@@ -69,7 +69,7 @@
         </div>
 
         <div class="flex items-center justify-end gap-3">
-            <a href="{{ route('organizations.events', $organization) }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</a>
+            <a href="{{ route('organizations.events-list', $organization) }}" class="px-6 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</a>
             <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all">Create Event</button>
         </div>
     </form>

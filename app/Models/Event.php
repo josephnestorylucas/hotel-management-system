@@ -6,6 +6,7 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
 
 class Event extends Model
@@ -92,7 +93,7 @@ class Event extends Model
         return $this->hasMany(Attendance::class);
     }
 
-    public function checkIns(): HasMany
+    public function checkIns(): HasManyThrough
     {
         return $this->hasManyThrough(CheckIn::class, Attendance::class);
     }

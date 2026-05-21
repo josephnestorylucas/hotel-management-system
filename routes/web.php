@@ -359,7 +359,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{organization}', [OrganizationController::class, 'update'])->name('update');
         Route::delete('/{organization}', [OrganizationController::class, 'destroy'])->name('destroy');
         Route::post('/{organization}/verify', [OrganizationController::class, 'verify'])->name('verify');
-        Route::get('/{organization}/events', [OrganizationController::class, 'events'])->name('events');
+        Route::get('/{organization}/events-list', [OrganizationController::class, 'events'])->name('events-list');
 
         // Events (nested under organization)
         Route::prefix('{organization}/events')->name('events.')->group(function () {
@@ -450,9 +450,9 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // Mobile scanner API routes (for check-in app)
-    Route::post('/api/check-in', [CheckInController::class, 'apiProcess'])->middleware('api');
-    Route::post('/api/check-in/manual', [CheckInController::class, 'apiManual'])->middleware('api');
+    // Mobile scanner API routes (for check-in app - requires web auth)
+    Route::post('/api/check-in', [CheckInController::class, 'apiProcess']);
+    Route::post('/api/check-in/manual', [CheckInController::class, 'apiManual']);
 
     // Conference Halls CRUD (Admin only - infrastructure management)
     // NOTE: Create route must come BEFORE the {conferenceHall} wildcard route

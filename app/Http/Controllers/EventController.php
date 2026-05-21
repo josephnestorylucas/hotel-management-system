@@ -121,7 +121,7 @@ class EventController extends Controller
 
         $event->delete();
 
-        return redirect()->route('organizations.events', $organization)
+        return redirect()->route('organizations.events-list', $organization)
             ->with('success', 'Event deleted successfully.');
     }
 

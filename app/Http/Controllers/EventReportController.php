@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Attendance;
-use App\Models\AttendanceMetrics;
 use App\Models\CheckIn;
 use App\Models\Organization;
 use Illuminate\Http\Request;

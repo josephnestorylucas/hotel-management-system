@@ -178,7 +178,7 @@
     </div>
 
     <div class="flex items-center justify-between">
-        <a href="{{ route('organizations.events', $organization) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Events</a>
+        <a href="{{ route('organizations.events-list', $organization) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Events</a>
         @if($event->isDraft())
         <div class="flex items-center gap-3">
             <form method="POST" action="{{ route('organizations.events.duplicate', [$organization, $event]) }}" class="inline">@csrf

@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder {
             SystemSettingsSeeder::class,
             MenuCategorySeeder::class,
             AccountSeeder::class,
+            ConferenceTypeSeeder::class,
+            OrganizationSeeder::class,
         ]);
     }
 }

@@ -1,0 +1,261 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Attendance;
+use App\Models\Event;
+use App\Models\EventTicket;
+use App\Models\Guest;
+use App\Models\Organization;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class AttendanceController extends Controller
+{
+    public function index(Organization $organization, Event $event)
+    {
+        $query = $event->attendances()->with('eventTicket');
+
+        if ($status = request('status')) {
+            $query->where('registration_status', $status);
+        }
+
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('ticket_number', 'like', "%{$search}%");
+            });
+        }
+
+        $attendances = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        $stats = [
+            'total' => $event->attendances()->count(),
+            'confirmed' => $event->attendances()->where('registration_status', 'confirmed')->count(),
+            'pending' => $event->attendances()->where('registration_status', 'pending')->count(),
+            'checked_in' => $event->attendances()->where('total_check_ins', '>', 0)->count(),
+            'no_shows' => $event->attendances()->where('registration_status', 'no_show')->count(),
+        ];
+
+        return view('attendances.index', compact('organization', 'event', 'attendances', 'stats'));
+    }
+
+    public function create(Organization $organization, Event $event)
+    {
+        $tickets = $event->tickets()->where('status', 'on_sale')->get();
+        return view('attendances.create', compact('organization', 'event', 'tickets'));
+    }
+
+    public function store(Request $request, Organization $organization, Event $event)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'company' => 'nullable|string|max:255',
+            'job_title' => 'nullable|string|max:255',
+            'event_ticket_id' => 'nullable|uuid|exists:event_tickets,id',
+            'guest_id' => 'nullable|uuid|exists:guests,id',
+            'dietary_requirements' => 'nullable|string|max:255',
+            'special_accommodations' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+            'registration_type' => 'nullable|in:individual,walked_in,complimentary',
+        ]);
+
+        // Check for duplicate email in same event
+        $exists = $event->attendances()->where('email', $validated['email'])->exists();
+        if ($exists) {
+            return back()->withInput()->with('error', 'An attendee with this email already exists for this event.');
+        }
+
+        $validated['event_id'] = $event->id;
+        $validated['registration_status'] = 'confirmed';
+        $validated['registration_type'] = $validated['registration_type'] ?? 'individual';
+
+        $attendance = Attendance::create($validated);
+
+        // Record ticket sale
+        if (!empty($validated['event_ticket_id'])) {
+            $ticket = EventTicket::find($validated['event_ticket_id']);
+            if ($ticket) {
+                $ticket->recordSale();
+            }
+        }
+
+        // Try to link to existing guest by email
+        if (empty($validated['guest_id'])) {
+            $guest = Guest::where('email', $validated['email'])->first();
+            if ($guest) {
+                $attendance->update(['guest_id' => $guest->id]);
+            }
+        }
+
+        return redirect()->route('organizations.events.attendances.show', [$organization, $event, $attendance])
+            ->with('success', 'Attendee registered successfully.');
+    }
+
+    public function show(Organization $organization, Event $event, Attendance $attendance)
+    {
+        $attendance->load(['eventTicket', 'guest', 'checkIns.eventSchedule']);
+        return view('attendances.show', compact('organization', 'event', 'attendance'));
+    }
+
+    public function edit(Organization $organization, Event $event, Attendance $attendance)
+    {
+        $tickets = $event->tickets()->get();
+        return view('attendances.edit', compact('organization', 'event', 'attendance', 'tickets'));
+    }
+
+    public function update(Request $request, Organization $organization, Event $event, Attendance $attendance)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'company' => 'nullable|string|max:255',
+            'job_title' => 'nullable|string|max:255',
+            'event_ticket_id' => 'nullable|uuid|exists:event_tickets,id',
+            'dietary_requirements' => 'nullable|string|max:255',
+            'special_accommodations' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+            'registration_status' => 'nullable|in:pending,confirmed,cancelled,no_show',
+        ]);
+
+        $attendance->update($validated);
+
+        return redirect()->route('organizations.events.attendances.show', [$organization, $event, $attendance])
+            ->with('success', 'Attendee updated successfully.');
+    }
+
+    public function destroy(Organization $organization, Event $event, Attendance $attendance)
+    {
+        $attendance->delete();
+
+        return back()->with('success', 'Attendee removed.');
+    }
+
+    public function bulkUpload(Organization $organization, Event $event)
+    {
+        return view('attendances.bulk_upload', compact('organization', 'event'));
+    }
+
+    public function processBulkUpload(Request $request, Organization $organization, Event $event)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:5120',
+            'event_ticket_id' => 'nullable|uuid|exists:event_tickets,id',
+        ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getRealPath(), 'r');
+        $header = fgetcsv($handle);
+
+        $results = ['success' => 0, 'failed' => 0, 'errors' => []];
+        $lineNumber = 1;
+
+        $ticketId = $request->input('event_ticket_id');
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $lineNumber++;
+            $data = array_combine($header, $row);
+
+            if (empty($data['email']) || empty($data['first_name']) || empty($data['last_name'])) {
+                $results['errors'][] = "Line {$lineNumber}: Missing required fields (email, first_name, last_name)";
+                $results['failed']++;
+                continue;
+            }
+
+            // Check duplicate
+            if ($event->attendances()->where('email', $data['email'])->exists()) {
+                $results['errors'][] = "Line {$lineNumber}: Email {$data['email']} already registered";
+                $results['failed']++;
+                continue;
+            }
+
+            try {
+                $attendance = Attendance::create([
+                    'event_id' => $event->id,
+                    'event_ticket_id' => $ticketId,
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'] ?? null,
+                    'company' => $data['company'] ?? null,
+                    'job_title' => $data['job_title'] ?? null,
+                    'dietary_requirements' => $data['dietary'] ?? null,
+                    'notes' => $data['notes'] ?? null,
+                    'registration_type' => 'bulk_registered',
+                    'registration_status' => 'confirmed',
+                ]);
+
+                // Try linking to guest
+                $guest = Guest::where('email', $data['email'])->first();
+                if ($guest) {
+                    $attendance->update(['guest_id' => $guest->id]);
+                }
+
+                $results['success']++;
+            } catch (\Exception $e) {
+                $results['errors'][] = "Line {$lineNumber}: " . $e->getMessage();
+                $results['failed']++;
+            }
+        }
+
+        fclose($handle);
+
+        // Record ticket sales
+        if ($ticketId && $results['success'] > 0) {
+            $ticket = EventTicket::find($ticketId);
+            if ($ticket) {
+                $ticket->increment('quantity_sold', $results['success']);
+            }
+        }
+
+        return back()->with('bulk_results', $results);
+    }
+
+    public function linkGuest(Request $request, Organization $organization, Event $event, Attendance $attendance)
+    {
+        $validated = $request->validate([
+            'guest_id' => 'required|uuid|exists:guests,id',
+        ]);
+
+        $attendance->linkToGuest($validated['guest_id']);
+
+        return back()->with('success', 'Attendee linked to guest successfully.');
+    }
+
+    public function ticketPdf(Organization $organization, Event $event, Attendance $attendance)
+    {
+        return view('attendances.ticket', compact('organization', 'event', 'attendance'));
+    }
+
+    public function printBadges(Request $request, Organization $organization, Event $event)
+    {
+        $query = $event->attendances()->where('registration_status', 'confirmed');
+
+        if ($request->has('ids')) {
+            $query->whereIn('id', $request->input('ids'));
+        }
+
+        $attendances = $query->get();
+
+        return view('attendances.badges', compact('organization', 'event', 'attendances'));
+    }
+
+    public function markNoShow(Organization $organization, Event $event, Attendance $attendance)
+    {
+        $attendance->markAsNoShow();
+        return back()->with('success', 'Attendee marked as no-show.');
+    }
+
+    public function confirm(Organization $organization, Event $event, Attendance $attendance)
+    {
+        $attendance->update(['registration_status' => 'confirmed']);
+        return back()->with('success', 'Attendee confirmed.');
+    }
+}

@@ -28,6 +28,14 @@ use App\Http\Controllers\ConferenceBookingController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\ConferenceParticipantController;
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventScheduleController;
+use App\Http\Controllers\EventTicketController;
+use App\Http\Controllers\EventVenueController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\Store\ProductController;
 use App\Http\Controllers\Store\StockController;
 use App\Http\Controllers\Store\AdjustmentController;
@@ -339,6 +347,112 @@ Route::middleware(['auth'])->group(function () {
         Route::post('conference-check-in/scan', [ConferenceParticipantController::class, 'checkInByScan'])->name('conference-check-in.scan');
         Route::post('conference-check-in/manual', [ConferenceParticipantController::class, 'checkInByCode'])->name('conference-check-in.manual');
     });
+
+    // ═══ REVAMPED CONFERENCE MANAGEMENT SYSTEM ═══
+    Route::middleware(['role:supervisor,front_desk,manager'])->prefix('organizations')->name('organizations.')->group(function () {
+        // Organization CRUD
+        Route::get('/', [OrganizationController::class, 'index'])->name('index');
+        Route::get('/create', [OrganizationController::class, 'create'])->name('create');
+        Route::post('/', [OrganizationController::class, 'store'])->name('store');
+        Route::get('/{organization}', [OrganizationController::class, 'show'])->name('show');
+        Route::get('/{organization}/edit', [OrganizationController::class, 'edit'])->name('edit');
+        Route::put('/{organization}', [OrganizationController::class, 'update'])->name('update');
+        Route::delete('/{organization}', [OrganizationController::class, 'destroy'])->name('destroy');
+        Route::post('/{organization}/verify', [OrganizationController::class, 'verify'])->name('verify');
+        Route::get('/{organization}/events', [OrganizationController::class, 'events'])->name('events');
+
+        // Events (nested under organization)
+        Route::prefix('{organization}/events')->name('events.')->group(function () {
+            Route::get('/', [EventController::class, 'index'])->name('index');
+            Route::get('/create', [EventController::class, 'create'])->name('create');
+            Route::post('/', [EventController::class, 'store'])->name('store');
+            Route::get('/{event}', [EventController::class, 'show'])->name('show');
+            Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
+            Route::put('/{event}', [EventController::class, 'update'])->name('update');
+            Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
+
+            // Event state transitions
+            Route::post('/{event}/publish', [EventController::class, 'publish'])->name('publish');
+            Route::post('/{event}/start', [EventController::class, 'start'])->name('start');
+            Route::post('/{event}/complete', [EventController::class, 'complete'])->name('complete');
+            Route::post('/{event}/cancel', [EventController::class, 'cancel'])->name('cancel');
+            Route::post('/{event}/duplicate', [EventController::class, 'duplicate'])->name('duplicate');
+
+            // Event Schedules
+            Route::prefix('{event}/schedules')->name('schedules.')->group(function () {
+                Route::get('/', [EventScheduleController::class, 'index'])->name('index');
+                Route::get('/create', [EventScheduleController::class, 'create'])->name('create');
+                Route::post('/', [EventScheduleController::class, 'store'])->name('store');
+                Route::get('/{schedule}', [EventScheduleController::class, 'show'])->name('show');
+                Route::get('/{schedule}/edit', [EventScheduleController::class, 'edit'])->name('edit');
+                Route::put('/{schedule}', [EventScheduleController::class, 'update'])->name('update');
+                Route::delete('/{schedule}', [EventScheduleController::class, 'destroy'])->name('destroy');
+            });
+
+            // Event Tickets
+            Route::prefix('{event}/tickets')->name('tickets.')->group(function () {
+                Route::get('/', [EventTicketController::class, 'index'])->name('index');
+                Route::get('/create', [EventTicketController::class, 'create'])->name('create');
+                Route::post('/', [EventTicketController::class, 'store'])->name('store');
+                Route::get('/{ticket}', [EventTicketController::class, 'show'])->name('show');
+                Route::get('/{ticket}/edit', [EventTicketController::class, 'edit'])->name('edit');
+                Route::put('/{ticket}', [EventTicketController::class, 'update'])->name('update');
+                Route::delete('/{ticket}', [EventTicketController::class, 'destroy'])->name('destroy');
+                Route::post('/{ticket}/put-on-sale', [EventTicketController::class, 'putOnSale'])->name('put-on-sale');
+                Route::post('/{ticket}/archive', [EventTicketController::class, 'archive'])->name('archive');
+            });
+
+            // Event Venues
+            Route::prefix('{event}/venues')->name('venues.')->group(function () {
+                Route::get('/', [EventVenueController::class, 'index'])->name('index');
+                Route::get('/create', [EventVenueController::class, 'create'])->name('create');
+                Route::post('/', [EventVenueController::class, 'store'])->name('store');
+                Route::get('/{venue}', [EventVenueController::class, 'show'])->name('show');
+                Route::get('/{venue}/edit', [EventVenueController::class, 'edit'])->name('edit');
+                Route::put('/{venue}', [EventVenueController::class, 'update'])->name('update');
+                Route::delete('/{venue}', [EventVenueController::class, 'destroy'])->name('destroy');
+            });
+
+            // Attendances
+            Route::prefix('{event}/attendances')->name('attendances.')->group(function () {
+                Route::get('/', [AttendanceController::class, 'index'])->name('index');
+                Route::get('/create', [AttendanceController::class, 'create'])->name('create');
+                Route::post('/', [AttendanceController::class, 'store'])->name('store');
+                Route::get('/{attendance}', [AttendanceController::class, 'show'])->name('show');
+                Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
+                Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
+                Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
+                Route::get('/{attendance}/ticket-pdf', [AttendanceController::class, 'ticketPdf'])->name('ticket-pdf');
+                Route::post('/{attendance}/link-guest', [AttendanceController::class, 'linkGuest'])->name('link-guest');
+                Route::post('/{attendance}/mark-no-show', [AttendanceController::class, 'markNoShow'])->name('mark-no-show');
+                Route::post('/{attendance}/confirm', [AttendanceController::class, 'confirm'])->name('confirm');
+                Route::get('/bulk-upload', [AttendanceController::class, 'bulkUpload'])->name('bulk-upload');
+                Route::post('/bulk-upload', [AttendanceController::class, 'processBulkUpload'])->name('process-bulk-upload');
+                Route::post('/print-badges', [AttendanceController::class, 'printBadges'])->name('print-badges');
+            });
+
+            // Check-in
+            Route::prefix('{event}/check-in')->name('check-in.')->group(function () {
+                Route::get('/dashboard', [CheckInController::class, 'dashboard'])->name('dashboard');
+                Route::get('/scanner', [CheckInController::class, 'scanner'])->name('scanner');
+                Route::post('/process', [CheckInController::class, 'process'])->name('process');
+                Route::post('/manual', [CheckInController::class, 'manualEntry'])->name('manual');
+                Route::post('/staff-override', [CheckInController::class, 'staffOverride'])->name('staff-override');
+            });
+
+            // Reports
+            Route::prefix('{event}/reports')->name('reports.')->group(function () {
+                Route::get('/pre-event', [EventReportController::class, 'preEvent'])->name('pre-event');
+                Route::get('/live', [EventReportController::class, 'live'])->name('live');
+                Route::get('/post-event', [EventReportController::class, 'postEvent'])->name('post-event');
+                Route::get('/export', [EventReportController::class, 'export'])->name('export');
+            });
+        });
+    });
+
+    // Mobile scanner API routes (for check-in app)
+    Route::post('/api/check-in', [CheckInController::class, 'apiProcess'])->middleware('api');
+    Route::post('/api/check-in/manual', [CheckInController::class, 'apiManual'])->middleware('api');
 
     // Conference Halls CRUD (Admin only - infrastructure management)
     // NOTE: Create route must come BEFORE the {conferenceHall} wildcard route

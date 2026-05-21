@@ -24,6 +24,8 @@ class ConferenceBooking extends Model
         'total_cost',
         'status',
         'created_by',
+        'event_id',
+        'organization_id',
     ];
 
     protected $casts = [
@@ -65,6 +67,16 @@ class ConferenceBooking extends Model
     public function conference(): HasOne
     {
         return $this->hasOne(Conference::class);
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function getEndTimeWithBufferAttribute(): Carbon

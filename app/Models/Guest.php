@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Mail;
 use Spatie\MediaLibrary\HasMedia;
@@ -201,6 +202,16 @@ class Guest extends Model implements HasMedia
     public function conferenceParticipations(): HasMany
     {
         return $this->hasMany(ConferenceParticipant::class);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     // ═══ LOYALTY PROGRAM ═══

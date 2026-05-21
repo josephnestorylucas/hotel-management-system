@@ -7,20 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * SnippePaymentController — handles Snippe webhooks.
+ * AzamPesaPaymentController — handles AzamPesa callback from Checkout.
  *
- * Webhook endpoint is public (no auth middleware) because Snippe's
+ * Callback endpoint is public (no auth middleware) because AzamPesa's
  * servers call it directly. Signature verification is done via the
- * PaymentEngine → SnippeProvider::validateWebhook().
+ * PaymentEngine → AzamPesaProvider::validateWebhook().
  */
-class SnippePaymentController extends Controller
+class AzamPesaPaymentController extends Controller
 {
     /**
-     * Handle incoming Snippe webhook.
+     * Handle incoming AzamPesa checkout callback.
      *
-     * POST /payments/webhook/snippe
+     * POST /payments/callback/azampesa
      */
-    public function webhook(Request $request)
+    public function callback(Request $request)
     {
         $payload = $request->all();
         $headers = $request->headers->all();
@@ -28,9 +28,11 @@ class SnippePaymentController extends Controller
         // Flatten header arrays (Laravel returns headers as arrays)
         $flatHeaders = array_map(fn($h) => is_array($h) ? ($h[0] ?? '') : $h, $headers);
 
-        Log::info('Snippe webhook received', [
-            'type'      => $payload['type'] ?? 'unknown',
-            'reference' => $payload['data']['reference'] ?? null,
+        Log::info('AzamPesa callback received', [
+            'transactionstatus' => $payload['transactionstatus'] ?? 'unknown',
+            'utilityref'        => $payload['utilityref'] ?? null,
+            'externalreference' => $payload['externalreference'] ?? null,
+            'operator'          => $payload['operator'] ?? null,
         ]);
 
         try {
@@ -41,12 +43,12 @@ class SnippePaymentController extends Controller
                 return response()->json(['status' => 'ok', 'payment_id' => $payment->id], 200);
             }
 
-            // Webhook valid but no matching payment found — still return 200
-            // to prevent Snippe from retrying
+            // Callback valid but no matching payment found — still return 200
+            // to prevent AzamPesa from retrying
             return response()->json(['status' => 'ok', 'message' => 'No matching payment'], 200);
 
         } catch (\Exception $e) {
-            Log::error('Snippe webhook processing error', ['message' => $e->getMessage()]);
+            Log::error('AzamPesa callback processing error', ['message' => $e->getMessage()]);
             return response()->json(['status' => 'error'], 500);
         }
     }

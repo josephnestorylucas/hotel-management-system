@@ -153,7 +153,7 @@ class PaymentController extends Controller
      */
     public function callback(Request $request)
     {
-        $provider = $request->query('provider', 'snippe');
+        $provider = $request->query('provider', 'azampesa');
         $status   = $request->query('status', 'success');
 
         // Try to find the payment from query params

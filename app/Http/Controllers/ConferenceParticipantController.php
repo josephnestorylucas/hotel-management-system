@@ -23,7 +23,7 @@ class ConferenceParticipantController extends Controller
         ]);
 
         $participant = $conference->participants()->create([
-            'guest_id' => $validated['guest_id'],
+            'guest_id' => $validated['guest_id'] ?? null,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],

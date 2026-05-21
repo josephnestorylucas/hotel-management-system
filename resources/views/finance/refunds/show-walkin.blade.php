@@ -152,7 +152,7 @@
                     <div>
                         <p class="text-sm font-medium text-yellow-800">Important Notice</p>
                         <p class="text-sm text-yellow-700 mt-1">
-                            Refunds for {{ $transaction->payment_method }} payments are processed through Snippe and may take 1-5 business days to reflect in the customer's account.
+                            Refunds for {{ $transaction->payment_method }} payments are processed through AzamPesa and may take 1-5 business days to reflect in the customer's account.
                             This action cannot be undone.
                         </p>
                     </div>

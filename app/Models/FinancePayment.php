@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * FinancePayment — tracks walk-in sales payments and checkout payments.
  *
- * This is separate from the existing Payment model (Snippe online payments).
+ * This is separate from the existing Payment model (AzamPesa online payments).
  * Used by the Finance module for cash/card/mobile transactions.
  */
 class FinancePayment extends Model

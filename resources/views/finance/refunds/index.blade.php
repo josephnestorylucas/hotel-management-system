@@ -107,7 +107,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100">
             <h2 class="text-lg font-semibold text-gray-900">Online Payments</h2>
-            <p class="text-sm text-gray-500">Booking payments processed via Snippe</p>
+            <p class="text-sm text-gray-500">Booking payments processed via AzamPesa</p>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">

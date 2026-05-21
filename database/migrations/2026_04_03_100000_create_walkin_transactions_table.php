@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->string('currency', 3)->default('TZS');
             $table->string('payment_method', 20); // cash, card, mobile
-            $table->string('provider_reference')->nullable(); // For Snippe reference
+            $table->string('provider_reference')->nullable(); // AzamPesa reference
             
             // Status tracking
             $table->string('status', 20)->default('pending'); // pending, completed, failed

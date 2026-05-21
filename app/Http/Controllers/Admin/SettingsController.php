@@ -35,11 +35,11 @@ class SettingsController extends Controller
             'mail_from_name' => SystemSetting::getValue('mail_from_name', ''),
             'mail_is_enabled' => filter_var(SystemSetting::getValue('mail_is_enabled', 'false'), FILTER_VALIDATE_BOOLEAN),
             'mail_password_set' => !empty(SystemSetting::getValue('mail_password')),
-            'snipe_base_url' => SystemSetting::getValue('snipe_base_url', ''),
-            'snipe_is_enabled' => filter_var(SystemSetting::getValue('snipe_is_enabled', 'false'), FILTER_VALIDATE_BOOLEAN),
-            'snipe_api_key_set' => !empty(SystemSetting::getValue('snipe_api_key')),
-            'snipe_api_secret_set' => !empty(SystemSetting::getValue('snipe_api_secret')),
-            'snipe_webhook_secret_set' => !empty(SystemSetting::getValue('snipe_webhook_secret')),
+            'azampesa_base_url' => SystemSetting::getValue('azampesa_base_url', ''),
+            'azampesa_is_enabled' => filter_var(SystemSetting::getValue('azampesa_is_enabled', 'false'), FILTER_VALIDATE_BOOLEAN),
+            'azampesa_app_name_set' => !empty(SystemSetting::getValue('azampesa_app_name')),
+            'azampesa_client_id_set' => !empty(SystemSetting::getValue('azampesa_client_id')),
+            'azampesa_client_secret_set' => !empty(SystemSetting::getValue('azampesa_client_secret')),
         ];
 
         $currencies = CurrencyHelper::getCurrencyOptions();
@@ -164,50 +164,52 @@ class SettingsController extends Controller
     }
 
     /**
-     * Update Snipe payment settings.
+     * Update AzamPesa payment settings.
      */
-    public function updateSnipeSettings(Request $request)
+    public function updateAzamPesaSettings(Request $request)
     {
-        $hasSnipeApiKey = !empty(SystemSetting::getValue('snipe_api_key', ''));
-        $hasSnipeApiSecret = !empty(SystemSetting::getValue('snipe_api_secret', ''));
+        $hasAppName = !empty(SystemSetting::getValue('azampesa_app_name', ''));
+        $hasClientId = !empty(SystemSetting::getValue('azampesa_client_id', ''));
 
         $validated = $request->validate([
-            'snipe_is_enabled' => ['nullable', 'boolean'],
-            'snipe_api_key' => [
+            'azampesa_is_enabled' => ['nullable', 'boolean'],
+            'azampesa_app_name' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::requiredIf(fn () => $request->boolean('snipe_is_enabled') && !$hasSnipeApiKey),
+                Rule::requiredIf(fn () => $request->boolean('azampesa_is_enabled') && !$hasAppName),
             ],
-            'snipe_api_secret' => [
+            'azampesa_client_id' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::requiredIf(fn () => $request->boolean('snipe_is_enabled') && !$hasSnipeApiSecret),
+                Rule::requiredIf(fn () => $request->boolean('azampesa_is_enabled') && !$hasClientId),
             ],
-            'snipe_base_url' => ['nullable', 'url'],
-            'snipe_webhook_secret' => ['nullable', 'string', 'max:255'],
+            'azampesa_client_secret' => ['nullable', 'string', 'max:255'],
+            'azampesa_base_url' => ['nullable', 'url'],
+            'azampesa_auth_url' => ['nullable', 'url'],
         ]);
 
         $userId = Auth::id();
-        $isEnabled = $request->boolean('snipe_is_enabled');
+        $isEnabled = $request->boolean('azampesa_is_enabled');
 
-        SystemSetting::setValue('snipe_base_url', $validated['snipe_base_url'] ?? '', 'Snipe base URL', $userId);
-        SystemSetting::setValue('snipe_is_enabled', $isEnabled ? 'true' : 'false', 'Snipe payment enabled flag', $userId);
+        SystemSetting::setValue('azampesa_base_url', $validated['azampesa_base_url'] ?? '', 'AzamPesa base URL', $userId);
+        SystemSetting::setValue('azampesa_auth_url', $validated['azampesa_auth_url'] ?? '', 'AzamPesa auth URL', $userId);
+        SystemSetting::setValue('azampesa_is_enabled', $isEnabled ? 'true' : 'false', 'AzamPesa payment enabled flag', $userId);
 
-        if (!empty($validated['snipe_api_key'])) {
-            SystemSetting::setValue('snipe_api_key', $validated['snipe_api_key'], 'Snipe API key', $userId);
+        if (!empty($validated['azampesa_app_name'])) {
+            SystemSetting::setValue('azampesa_app_name', $validated['azampesa_app_name'], 'AzamPesa app name', $userId);
         }
 
-        if (!empty($validated['snipe_api_secret'])) {
-            SystemSetting::setValue('snipe_api_secret', $validated['snipe_api_secret'], 'Snipe API secret', $userId);
+        if (!empty($validated['azampesa_client_id'])) {
+            SystemSetting::setValue('azampesa_client_id', $validated['azampesa_client_id'], 'AzamPesa client ID', $userId);
         }
 
-        if (!empty($validated['snipe_webhook_secret'])) {
-            SystemSetting::setValue('snipe_webhook_secret', $validated['snipe_webhook_secret'], 'Snipe webhook secret', $userId);
+        if (!empty($validated['azampesa_client_secret'])) {
+            SystemSetting::setValue('azampesa_client_secret', $validated['azampesa_client_secret'], 'AzamPesa client secret', $userId);
         }
 
-        return back()->with('snipe_success', 'Snipe payment settings updated successfully.');
+        return back()->with('azampesa_success', 'AzamPesa payment settings updated successfully.');
     }
 
     /**

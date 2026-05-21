@@ -172,18 +172,18 @@ class ConferenceBookingController extends Controller
             ->where(function ($query) use ($startTime, $endTime, $endTimeWithBuffer) {
                 $query->where(function ($q) use ($startTime, $endTime) {
                     // New booking starts during existing booking (including buffer)
-                    $q->whereRaw("TIME(?) >= start_time", [$startTime])
-                      ->whereRaw("TIME(?) < DATE_ADD(end_time, INTERVAL 30 MINUTE)", [$startTime]);
+                    $q->whereRaw("?::time >= start_time", [$startTime])
+                      ->whereRaw("?::time < end_time + INTERVAL '30 minutes'", [$startTime]);
                 })
                 ->orWhere(function ($q) use ($startTime, $endTime) {
                     // New booking ends during existing booking
-                    $q->whereRaw("TIME(?) > start_time", [$endTime])
-                      ->whereRaw("TIME(?) <= end_time", [$endTime]);
+                    $q->whereRaw("?::time > start_time", [$endTime])
+                      ->whereRaw("?::time <= end_time", [$endTime]);
                 })
                 ->orWhere(function ($q) use ($startTime, $endTimeWithBuffer) {
                     // New booking completely contains existing booking
-                    $q->whereRaw("TIME(?) <= start_time", [$startTime])
-                      ->whereRaw("TIME(?) >= end_time", [$endTimeWithBuffer]);
+                    $q->whereRaw("?::time <= start_time", [$startTime])
+                      ->whereRaw("?::time >= end_time", [$endTimeWithBuffer]);
                 });
             })
             ->exists();

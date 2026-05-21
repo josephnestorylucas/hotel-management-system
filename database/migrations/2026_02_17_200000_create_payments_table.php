@@ -18,7 +18,7 @@ return new class extends Migration
             $table->uuid('reference_id')->nullable();          // FK to booking_charges.id (optional)
 
             // ─── Provider details ───
-            $table->string('provider_name');                   // snippe, stripe, paypal
+            $table->string('provider_name');                   // azampesa, stripe, paypal
             $table->string('provider_reference')->nullable();  // provider transaction id
             $table->string('payment_method')->nullable();      // mobile, card, dynamic-qr, bank_transfer
 

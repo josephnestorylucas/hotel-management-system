@@ -51,13 +51,9 @@
     </div>
     @endif
 
-    @if(session('snipe_success'))
-    <div class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
-        <div class="flex items-center gap-2 text-green-700">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span class="font-medium">{{ session('snipe_success') }}</span>
+    @if(session('azampesa_success'))
+
+            <span class="font-medium">{{ session('azampesa_success') }}</span>
         </div>
     </div>
     @endif
@@ -269,7 +265,7 @@
         </form>
     </div>
 
-    <!-- Snipe Payment Settings Card -->
+    <!-- AzamPesa Payment Settings Card -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
         <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-fuchsia-50 rounded-xl flex items-center justify-center">
@@ -278,54 +274,53 @@
                 </svg>
             </div>
             <div>
-                <h3 class="text-lg font-bold text-secondary">{{ __('settings.sections.snipe') }}</h3>
-                <p class="text-sm text-gray-500">{{ __('settings.subtitles.snipe') }}</p>
+                <h3 class="text-lg font-bold text-secondary">{{ __('settings.sections.azampesa') }}</h3>
+                <p class="text-sm text-gray-500">{{ __('settings.subtitles.azampesa') }}</p>
             </div>
         </div>
 
-        <form method="POST" action="{{ route('admin.settings.snipe') }}">
+        <form method="POST" action="{{ route('admin.settings.azampesa') }}">
             @csrf
 
             <div class="mb-5">
-                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.snipe_base_url') }}</label>
-                <input type="url" name="snipe_base_url" value="{{ old('snipe_base_url', $settings['snipe_base_url']) }}"
+                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.azampesa_base_url') }}</label>
+                <input type="url" name="azampesa_base_url" value="{{ old('azampesa_base_url', $settings['azampesa_base_url']) }}"
                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                @error('snipe_base_url')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
+                @error('azampesa_base_url')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
             </div>
 
             <div class="mb-5">
-                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.snipe_api_key') }}</label>
-                <input type="password" name="snipe_api_key" placeholder="{{ $settings['snipe_api_key_set'] ? __('settings.hints.secret_saved') : __('settings.hints.secret_required') }}"
+                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.azampesa_app_name') }}</label>
+                <input type="text" name="azampesa_app_name" placeholder="{{ $settings['azampesa_app_name_set'] ? __('settings.hints.secret_saved') : __('settings.hints.secret_required') }}"
                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-                <p class="text-xs text-gray-500 mt-1.5">{{ __('settings.hints.secret_masked') }}</p>
-                @error('snipe_api_key')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
+                @error('azampesa_app_name')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
             </div>
 
             <div class="mb-5">
-                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.snipe_api_secret') }}</label>
-                <input type="password" name="snipe_api_secret" placeholder="{{ $settings['snipe_api_secret_set'] ? __('settings.hints.secret_saved') : __('settings.hints.secret_required') }}"
+                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.azampesa_client_id') }}</label>
+                <input type="password" name="azampesa_client_id" placeholder="{{ $settings['azampesa_client_id_set'] ? __('settings.hints.secret_saved') : __('settings.hints.secret_required') }}"
                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                 <p class="text-xs text-gray-500 mt-1.5">{{ __('settings.hints.secret_masked') }}</p>
-                @error('snipe_api_secret')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
+                @error('azampesa_client_id')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
             </div>
 
             <div class="mb-5">
-                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.snipe_webhook_secret') }}</label>
-                <input type="password" name="snipe_webhook_secret" placeholder="{{ $settings['snipe_webhook_secret_set'] ? __('settings.hints.secret_saved') : __('settings.hints.secret_optional') }}"
+                <label class="block text-sm font-semibold text-secondary mb-2">{{ __('settings.fields.azampesa_client_secret') }}</label>
+                <input type="password" name="azampesa_client_secret" placeholder="{{ $settings['azampesa_client_secret_set'] ? __('settings.hints.secret_saved') : __('settings.hints.secret_required') }}"
                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                 <p class="text-xs text-gray-500 mt-1.5">{{ __('settings.hints.secret_masked') }}</p>
-                @error('snipe_webhook_secret')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
+                @error('azampesa_client_secret')<p class="text-red-500 text-sm mt-1.5">{{ $message }}</p>@enderror
             </div>
 
             <div class="mb-6 flex items-center gap-3">
-                <input type="checkbox" name="snipe_is_enabled" value="1" id="snipe_is_enabled"
-                       {{ old('snipe_is_enabled', $settings['snipe_is_enabled']) ? 'checked' : '' }}
+                <input type="checkbox" name="azampesa_is_enabled" value="1" id="azampesa_is_enabled"
+                       {{ old('azampesa_is_enabled', $settings['azampesa_is_enabled']) ? 'checked' : '' }}
                        class="w-5 h-5 text-primary border-gray-200 rounded focus:ring-2 focus:ring-primary">
-                <label for="snipe_is_enabled" class="text-sm font-semibold text-secondary">{{ __('settings.fields.snipe_is_enabled') }}</label>
+                <label for="azampesa_is_enabled" class="text-sm font-semibold text-secondary">{{ __('settings.fields.azampesa_is_enabled') }}</label>
             </div>
 
             <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-fuchsia-600 rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all">
-                {{ __('settings.save_snipe') }}
+                {{ __('settings.save_azampesa') }}
             </button>
         </form>
     </div>

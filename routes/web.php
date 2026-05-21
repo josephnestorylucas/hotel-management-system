@@ -22,7 +22,7 @@ use App\Http\Controllers\Laundry\LaundryOrderController as NewLaundryOrderContro
 use App\Http\Controllers\Laundry\LaundryReportController;
 use App\Http\Controllers\BookingChargeController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\SnippePaymentController;
+use App\Http\Controllers\AzamPesaPaymentController;
 use App\Http\Controllers\ConferenceHallController;
 use App\Http\Controllers\ConferenceBookingController;
 use App\Http\Controllers\ConferenceController;
@@ -104,9 +104,9 @@ Route::get('/features', function () {
     return view('welcome.features');
 })->name('features');
 
-// ═══ PAYMENT WEBHOOKS (no auth — called by payment provider servers) ═══
-Route::post('/payments/webhook/snippe', [SnippePaymentController::class, 'webhook'])
-    ->name('payments.webhook.snippe')
+// ═══ PAYMENT CALLBACKS (no auth — called by payment provider servers) ═══
+Route::post('/payments/callback/azampesa', [AzamPesaPaymentController::class, 'callback'])
+    ->name('payments.callback.azampesa')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 // Payment callback (redirect back from card/QR payments)
@@ -870,7 +870,7 @@ Route::middleware(['auth'])->group(function () {
                     Route::post('settings',                        [SettingsController::class, 'updateSettings'])->name('settings.update')->middleware('throttle:10,1');
                          Route::post('settings/sms',                    [SettingsController::class, 'updateSmsSettings'])->name('settings.sms')->middleware('throttle:5,1');
                          Route::post('settings/email',                  [SettingsController::class, 'updateEmailSettings'])->name('settings.email')->middleware('throttle:5,1');
-                         Route::post('settings/snipe',                  [SettingsController::class, 'updateSnipeSettings'])->name('settings.snipe')->middleware('throttle:5,1');
+                         Route::post('settings/azampesa',               [SettingsController::class, 'updateAzamPesaSettings'])->name('settings.azampesa')->middleware('throttle:5,1');
         Route::post('settings/password',               [SettingsController::class, 'updatePassword'])->name('settings.password');
     });
 

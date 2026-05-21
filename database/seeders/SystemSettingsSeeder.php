@@ -102,29 +102,34 @@ class SystemSettingsSeeder extends Seeder
                 'description' => 'Mail enabled flag',
             ],
             [
-                'key'         => 'snipe_base_url',
+                'key'         => 'azampesa_base_url',
                 'value'       => '',
-                'description' => 'Snipe base URL',
+                'description' => 'AzamPesa base URL',
             ],
             [
-                'key'         => 'snipe_api_key',
+                'key'         => 'azampesa_auth_url',
                 'value'       => '',
-                'description' => 'Snipe API key',
+                'description' => 'AzamPesa auth URL',
             ],
             [
-                'key'         => 'snipe_api_secret',
+                'key'         => 'azampesa_app_name',
                 'value'       => '',
-                'description' => 'Snipe API secret',
+                'description' => 'AzamPesa app name',
             ],
             [
-                'key'         => 'snipe_webhook_secret',
+                'key'         => 'azampesa_client_id',
                 'value'       => '',
-                'description' => 'Snipe webhook secret',
+                'description' => 'AzamPesa client ID',
             ],
             [
-                'key'         => 'snipe_is_enabled',
+                'key'         => 'azampesa_client_secret',
+                'value'       => '',
+                'description' => 'AzamPesa client secret',
+            ],
+            [
+                'key'         => 'azampesa_is_enabled',
                 'value'       => 'false',
-                'description' => 'Snipe payment enabled flag',
+                'description' => 'AzamPesa payment enabled flag',
             ],
         ];
 

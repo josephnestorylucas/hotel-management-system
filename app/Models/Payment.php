@@ -26,7 +26,7 @@ class Payment extends Model
     const STATUS_EXPIRED            = 'expired';
 
     // ─── Provider constants ────────────────────────────────────────
-    const PROVIDER_SNIPPE  = 'snippe';
+    const PROVIDER_AZAMPESA = 'azampesa';
 
     protected $fillable = [
         'payment_number',
@@ -193,8 +193,8 @@ class Payment extends Model
     public function getProviderLabelAttribute(): string
     {
         return match ($this->provider_name) {
-            'snippe' => 'Snippe',
-            default  => ucfirst($this->provider_name),
+            'azampesa' => 'AzamPesa',
+            default    => ucfirst($this->provider_name),
         };
     }
 }

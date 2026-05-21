@@ -1,10 +1,10 @@
 {{--
     Walk-in Payment Modal Component
     
-    All payments are processed via Snippe integration:
+    All payments are processed via AzamPesa integration:
     - Cash: Records payment directly (handled at POS)
-    - Card: Redirects to Snippe payment page for card entry
-    - Mobile: Sends USSD push to customer's phone
+    - Card: Redirects to AzamPesa payment page for card entry
+    - Mobile: Sends MNO checkout request to customer's phone
     
     Usage:
     <x-walkin-payment-modal 
@@ -192,7 +192,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 <div>
-                                    <p class="text-sm font-medium text-blue-700">{{ __('Card Payment via Snippe') }}</p>
+                                    <p class="text-sm font-medium text-blue-700">{{ __('Card Payment via AzamPesa') }}</p>
                                     <p class="text-xs text-blue-600 mt-1">{{ __('You will be redirected to a secure payment page to enter card details (Visa, Mastercard).') }}</p>
                                 </div>
                             </div>
@@ -383,7 +383,7 @@ function walkinPayment(config) {
                 if (data.success) {
                     // Handle different payment methods
                     if (data.payment_url) {
-                        // Card payment - redirect to Snippe payment page
+                        // Card payment - redirect to AzamPesa payment page
                         this.successMessage = '{{ __('Redirecting to payment page...') }}';
                         setTimeout(() => {
                             window.location.href = data.payment_url;

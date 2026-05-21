@@ -16,7 +16,7 @@ use Illuminate\View\View;
  * RefundController — Handles full and partial refunds.
  *
  * Supports refunds for:
- * - Online payments (Payment model via Snippe)
+ * - Online payments (Payment model via AzamPesa)
  * - Walk-in transactions (WalkinTransaction model)
  *
  * Features:

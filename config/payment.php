@@ -7,11 +7,11 @@ return [
     | Default Payment Provider
     |----------------------------------------------------------------------
     |
-    | The payment provider to use by default. Currently only 'snippe'
-    | is supported (Mobile Money, Card, Dynamic QR).
+    | The payment provider to use by default. Currently 'azampesa'
+    | is supported (Mobile Money, Bank/Card).
     |
     */
-    'default' => env('PAYMENT_PROVIDER', 'snippe'),
+    'default' => env('PAYMENT_PROVIDER', 'azampesa'),
 
     /*
     |----------------------------------------------------------------------
@@ -30,12 +30,17 @@ return [
     */
     'providers' => [
 
-        'snippe' => [
-            'base_url'       => env('SNIPPE_BASE_URL', 'https://api.snippe.sh'),
-            'api_key'        => env('SNIPPE_API_KEY', ''),
-            'webhook_secret' => env('SNIPPE_WEBHOOK_SECRET', ''),
-            'timeout'        => env('SNIPPE_TIMEOUT', 30),
-            'use_webhooks'   => env('SNIPPE_USE_WEBHOOKS', false), // Set to true in production with HTTPS
+        'azampesa' => [
+            'auth_url'        => env('AZAMPESA_AUTH_URL', 'https://authenticator-sandbox.azampay.co.tz'),
+            'base_url'        => env('AZAMPESA_BASE_URL', 'https://sandbox.azampay.co.tz'),
+            'app_name'        => env('AZAMPESA_APP_NAME', ''),
+            'client_id'       => env('AZAMPESA_CLIENT_ID', ''),
+            'client_secret'   => env('AZAMPESA_CLIENT_SECRET', ''),
+            'merchant_account'=> env('AZAMPESA_MERCHANT_ACCOUNT', ''),
+            'merchant_phone'  => env('AZAMPESA_MERCHANT_PHONE', ''),
+            'merchant_name'   => env('AZAMPESA_MERCHANT_NAME', null),
+            'webhook_secret'  => env('AZAMPESA_WEBHOOK_SECRET', ''),
+            'timeout'         => env('AZAMPESA_TIMEOUT', 30),
         ],
 
     ],

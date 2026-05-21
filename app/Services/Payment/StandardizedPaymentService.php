@@ -22,17 +22,17 @@ use Illuminate\Support\Str;
  * - Organization/system payments → use business/org data from settings
  *
  * Supports:
- * - USSD payments (phone-based, requires customer phone)
+ * - Mobile money payments (phone-based, requires customer phone)
  * - Card payments (redirect flow)
  * - Full and partial refunds with proper tracking
  */
 class StandardizedPaymentService
 {
-    protected SnippeProvider $provider;
+    protected AzamPesaProvider $provider;
 
-    public function __construct(?SnippeProvider $provider = null)
+    public function __construct(?AzamPesaProvider $provider = null)
     {
-        $this->provider = $provider ?? new SnippeProvider();
+        $this->provider = $provider ?? new AzamPesaProvider();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -145,7 +145,7 @@ class StandardizedPaymentService
     // ═══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Validate and format phone number for Snippe.
+     * Validate and format phone number for AzamPesa.
      *
      * @param string|null $phone
      * @return array{valid: bool, phone: string|null, error: string|null}
@@ -156,7 +156,7 @@ class StandardizedPaymentService
             return [
                 'valid' => false,
                 'phone' => null,
-                'error' => 'Phone number is required for USSD payments',
+                'error' => 'Phone number is required for mobile payments',
             ];
         }
 
@@ -200,7 +200,7 @@ class StandardizedPaymentService
     // ═══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Initiate a USSD (mobile money) payment.
+     * Initiate a mobile money payment via AzamPesa MNO checkout.
      *
      * @param float $amount
      * @param string $currency
@@ -213,7 +213,7 @@ class StandardizedPaymentService
         // Validate phone number
         $phoneValidation = $this->validatePhone($identity['phone'] ?? null);
         if (!$phoneValidation['valid']) {
-            Log::warning('USSD payment failed: invalid phone', [
+            Log::warning('Mobile payment failed: invalid phone', [
                 'phone' => $identity['phone'] ?? null,
                 'error' => $phoneValidation['error'],
             ]);
@@ -232,7 +232,7 @@ class StandardizedPaymentService
             'idempotency_key'  => $metadata['idempotency_key'] ?? Str::uuid()->toString(),
         ], $metadata);
 
-        Log::info('Initiating USSD payment', [
+        Log::info('Initiating mobile payment', [
             'amount'   => $amount,
             'currency' => $currency,
             'customer' => $identity['name'],
@@ -243,7 +243,7 @@ class StandardizedPaymentService
     }
 
     /**
-     * Initiate a card payment (redirect flow).
+     * Initiate a card/bank payment via AzamPesa bank checkout.
      *
      * @param float $amount
      * @param string $currency
@@ -275,7 +275,7 @@ class StandardizedPaymentService
      *
      * @param float $amount
      * @param string $currency
-     * @param string $method 'mobile', 'card', or 'dynamic-qr'
+     * @param string $method 'mobile' or 'card'
      * @param array $identity Customer identity
      * @param array $metadata
      * @return array
@@ -289,8 +289,8 @@ class StandardizedPaymentService
     ): array {
         return match ($method) {
             'mobile' => $this->initiateUssdPayment($amount, $currency, $identity, $metadata),
-            'card', 'dynamic-qr' => $this->initiateCardPayment($amount, $currency, $identity, $metadata),
-            default => [
+            'card'   => $this->initiateCardPayment($amount, $currency, $identity, $metadata),
+            default  => [
                 'success' => false,
                 'error'   => "Unsupported payment method: {$method}",
                 'status'  => 'failed',
@@ -368,7 +368,7 @@ class StandardizedPaymentService
         $isFullRefund = $amount === null || $amount >= (float) $payment->amount;
 
         try {
-            // Call Snippe refund API
+            // Call AzamPesa refund API
             $result = $this->provider->refundPayment($payment->provider_reference, $isFullRefund ? null : $refundAmount);
 
             if (!$result['success']) {
@@ -577,7 +577,7 @@ class StandardizedPaymentService
         $isFullRefund = $refundAmount >= $maxRefundable;
 
         try {
-            // Call Snippe
+            // Call AzamPesa
             $result = $this->provider->refundPayment($transaction->provider_reference, $isFullRefund ? null : $refundAmount);
 
             if (!$result['success']) {
@@ -648,11 +648,11 @@ class StandardizedPaymentService
     // ═══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Get the underlying Snippe provider instance.
+     * Get the underlying AzamPesa provider instance.
      *
-     * @return SnippeProvider
+     * @return AzamPesaProvider
      */
-    public function getProvider(): SnippeProvider
+    public function getProvider(): AzamPesaProvider
     {
         return $this->provider;
     }

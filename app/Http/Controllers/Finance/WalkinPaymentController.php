@@ -13,7 +13,7 @@ use App\Models\WalkinTransaction;
 use App\Services\Bartender\BarOrderStockService;
 use App\Services\AccountingService;
 use App\Services\Payment\StandardizedPaymentService;
-use App\Services\Payment\SnippeProvider;
+use App\Services\Payment\AzamPesaProvider;
 use App\Services\ReceiptService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,15 +30,15 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  * across Laundry, Restaurant, and Bar modules.
  * 
  * Uses StandardizedPaymentService to ensure correct customer identity
- * is passed to Snippe for all payment types:
+ * is passed to AzamPesa for all payment types:
  * - Cash: Records payment directly (physical cash handled at POS)
- * - Card: Redirects to Snippe payment page for card entry
- * - Mobile: Sends USSD push to customer's phone via Snippe
+ * - Card: Redirects to AzamPesa payment page for card entry
+ * - Mobile: Sends MNO checkout request via AzamPesa
  */
 class WalkinPaymentController extends Controller
 {
     protected StandardizedPaymentService $paymentService;
-    protected SnippeProvider $snippeProvider;
+    protected AzamPesaProvider $azampesaProvider;
 
     public function __construct(
         StandardizedPaymentService $paymentService,
@@ -46,7 +46,7 @@ class WalkinPaymentController extends Controller
     )
     {
         $this->paymentService = $paymentService;
-        $this->snippeProvider = $paymentService->getProvider();
+        $this->azampesaProvider = $paymentService->getProvider();
     }
 
     /**
@@ -149,9 +149,9 @@ class WalkinPaymentController extends Controller
             ], 404);
         }
 
-        // If still pending, check with Snippe
+        // If still pending, check with AzamPesa
         if ($walkinTxn->status === 'pending' && $walkinTxn->provider_reference) {
-            $result = $this->snippeProvider->verifyPayment($walkinTxn->provider_reference);
+            $result = $this->azampesaProvider->verifyPayment($walkinTxn->provider_reference);
             
             if ($result['success']) {
                 $providerStatus = $result['status'] ?? 'unknown';
@@ -304,7 +304,7 @@ class WalkinPaymentController extends Controller
     }
 
     /**
-     * Process card payment via Snippe - redirects to payment page.
+     * Process card payment via AzamPesa - redirects to payment page.
      * Uses StandardizedPaymentService to ensure correct customer identity.
      */
     protected function processCardPayment($order, array $data): JsonResponse
@@ -332,7 +332,7 @@ class WalkinPaymentController extends Controller
             'customer_phone' => $data['customer_phone'],
         ]);
 
-        // Call Snippe via standardized service
+        // Call AzamPesa via standardized service
         $result = $this->paymentService->initiateCardPayment(
             amount: (float) $data['amount'],
             currency: 'TZS',
@@ -355,11 +355,11 @@ class WalkinPaymentController extends Controller
         );
 
         if ($result['success'] && !empty($result['payment_url'])) {
-            // Update transaction with Snippe reference
+            // Update transaction with AzamPesa reference
             $walkinTxn->update([
                 'provider_reference' => $result['reference'],
                 'metadata'           => array_merge($walkinTxn->metadata ?? [], [
-                    'snippe_response' => $result['raw'] ?? [],
+                    'provider_response' => $result['raw'] ?? [],
                     'customer_identity' => $identity,
                 ]),
             ]);
@@ -382,7 +382,7 @@ class WalkinPaymentController extends Controller
     }
 
     /**
-     * Process mobile money payment via Snippe - sends USSD push.
+     * Process mobile money payment via AzamPesa - sends MNO checkout request.
      * Uses StandardizedPaymentService to ensure correct customer identity and phone validation.
      */
     protected function processMobilePayment($order, array $data): JsonResponse
@@ -420,7 +420,7 @@ class WalkinPaymentController extends Controller
             'customer_phone' => $mobilePhone,
         ]);
 
-        // Call Snippe via standardized service (phone already validated)
+        // Call AzamPesa via standardized service (phone already validated)
         $result = $this->paymentService->initiateUssdPayment(
             amount: (float) $data['amount'],
             currency: 'TZS',
@@ -435,11 +435,11 @@ class WalkinPaymentController extends Controller
         );
 
         if ($result['success']) {
-            // Update transaction with Snippe reference
+            // Update transaction with AzamPesa reference
             $walkinTxn->update([
                 'provider_reference' => $result['reference'],
                 'metadata'           => array_merge($walkinTxn->metadata ?? [], [
-                    'snippe_response' => $result['raw'] ?? [],
+                    'provider_response' => $result['raw'] ?? [],
                     'customer_identity' => $identity,
                 ]),
             ]);
@@ -462,7 +462,7 @@ class WalkinPaymentController extends Controller
     }
 
     /**
-     * Handle callback from Snippe after card payment.
+     * Handle callback from AzamPesa after card payment.
      */
     public function callback(Request $request, string $transaction): \Illuminate\Http\RedirectResponse
     {
@@ -470,8 +470,8 @@ class WalkinPaymentController extends Controller
         $status = $request->query('status', 'cancel');
 
         if ($status === 'success' && $walkinTxn->provider_reference) {
-            // Verify payment with Snippe
-            $result = $this->snippeProvider->verifyPayment($walkinTxn->provider_reference);
+            // Verify payment with AzamPesa
+            $result = $this->azampesaProvider->verifyPayment($walkinTxn->provider_reference);
             
             if ($result['success'] && ($result['status'] ?? '') === 'completed') {
                 // Payment confirmed - settle the order

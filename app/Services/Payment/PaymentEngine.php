@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * PaymentEngine — orchestrates payment operations.
  *
  * Uses the PaymentProvider contract to interact with the configured
- * payment provider (Snippe). Creates Payment records, calls the provider,
+ * payment provider (AzamPesa). Creates Payment records, calls the provider,
  * and updates statuses accordingly.
  */
 class PaymentEngine
@@ -30,11 +30,11 @@ class PaymentEngine
      */
     protected function resolveProvider(): PaymentProvider
     {
-        $default = config('payment.default', 'snippe');
+        $default = config('payment.default', 'azampesa');
 
         return match ($default) {
-            'snippe' => new SnippeProvider(),
-            default  => throw new \InvalidArgumentException("Unsupported payment provider: {$default}"),
+            'azampesa' => new AzamPesaProvider(),
+            default    => throw new \InvalidArgumentException("Unsupported payment provider: {$default}"),
         };
     }
 
@@ -273,18 +273,11 @@ class PaymentEngine
     }
 
     /**
-     * Trigger a mobile money push notification (Snippe-specific).
+     * Trigger a mobile money push notification.
+     * Not supported by AzamPesa — returns error.
      */
     public function triggerPush(Payment $payment, ?string $phone = null): array
     {
-        if (!$this->provider instanceof SnippeProvider) {
-            return ['success' => false, 'error' => 'Push only available for Snippe provider'];
-        }
-
-        if (!$payment->provider_reference) {
-            return ['success' => false, 'error' => 'No provider reference'];
-        }
-
-        return $this->provider->triggerPush($payment->provider_reference, $phone);
+        return ['success' => false, 'error' => 'Push notifications are not supported by AzamPesa'];
     }
 }

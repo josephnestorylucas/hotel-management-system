@@ -20,8 +20,8 @@
                 <p class="text-sm font-semibold text-secondary mt-1">{{ $venue->conferenceHall->name }}</p>
             </div>
             <div>
-                <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Location</label>
-                <p class="text-sm text-secondary mt-1">{{ $venue->conferenceHall->location }}</p>
+                <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Building</label>
+                <p class="text-sm text-secondary mt-1">{{ $venue->conferenceHall->building->name ?? '-' }}</p>
             </div>
             <div>
                 <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</label>

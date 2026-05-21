@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Building;
 use App\Models\ConferenceHall;
 use Illuminate\Http\Request;
 
@@ -10,7 +11,8 @@ class ConferenceHallController extends Controller
 {
     public function index()
     {
-        $halls = ConferenceHall::withCount('conferenceBookings')
+        $halls = ConferenceHall::with(['building'])
+            ->withCount('conferenceBookings')
             ->orderBy('name')
             ->paginate(20);
 
@@ -19,14 +21,16 @@ class ConferenceHallController extends Controller
 
     public function create()
     {
-        return view('conference-halls.create');
+        $buildings = Building::where('is_active', true)->orderBy('name')->get();
+        
+        return view('conference-halls.create', compact('buildings'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
+            'building_id' => 'nullable|uuid|exists:buildings,id',
             'capacity' => 'required|integer|min:1',
             'hourly_rate' => 'required|numeric|min:0',
             'currency' => 'required|in:USD,TZS',
@@ -43,21 +47,23 @@ class ConferenceHallController extends Controller
 
     public function show(ConferenceHall $conferenceHall)
     {
-        $conferenceHall->load(['conferenceBookings.guest', 'conferenceBookings.conference']);
+        $conferenceHall->load(['building', 'conferenceBookings.guest', 'conferenceBookings.conference']);
         
         return view('conference-halls.show', compact('conferenceHall'));
     }
 
     public function edit(ConferenceHall $conferenceHall)
     {
-        return view('conference-halls.edit', compact('conferenceHall'));
+        $buildings = Building::where('is_active', true)->orderBy('name')->get();
+        
+        return view('conference-halls.edit', compact('conferenceHall', 'buildings'));
     }
 
     public function update(Request $request, ConferenceHall $conferenceHall)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
+            'building_id' => 'nullable|uuid|exists:buildings,id',
             'capacity' => 'required|integer|min:1',
             'hourly_rate' => 'required|numeric|min:0',
             'currency' => 'required|in:USD,TZS',

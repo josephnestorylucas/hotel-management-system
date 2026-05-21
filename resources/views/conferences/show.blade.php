@@ -86,7 +86,9 @@
                 <div class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
                     <p class="text-xs text-gray-600 mb-1">Conference Hall</p>
                     <p class="text-lg font-bold text-secondary">{{ $conference->conferenceBooking->conferenceHall->name }}</p>
-                    <p class="text-xs text-primary mt-1">{{ $conference->conferenceBooking->conferenceHall->location }}</p>
+                    @if($conference->conferenceBooking->conferenceHall->building)
+                    <p class="text-xs text-primary mt-1">{{ $conference->conferenceBooking->conferenceHall->building->name }}</p>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-between py-2 border-b border-gray-100">

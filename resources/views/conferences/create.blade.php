@@ -10,7 +10,7 @@
         <!-- Header -->
         <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-900">Create Conference</h2>
-            <p class="text-sm text-gray-500 mt-1">Create a conference event from an existing hall booking</p>
+            <p class="text-sm text-gray-500 mt-1">Select a conference hall and schedule your event</p>
         </div>
 
         <!-- Form -->
@@ -18,41 +18,115 @@
             @csrf
 
             <div class="space-y-6">
-                <!-- Booking Selection -->
+                <!-- Hall Selection -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        Select Conference Hall
+                    </h3>
+
+                    <div>
+                        <label for="conference_hall_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Conference Hall <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            name="conference_hall_id" 
+                            id="conference_hall_id"
+                            required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('conference_hall_id') border-red-500 @enderror">
+                            <option value="">-- Select Hall --</option>
+                            @foreach($halls as $hall)
+                            <option value="{{ $hall->id }}" 
+                                    data-rate="{{ $hall->hourly_rate }}"
+                                    data-capacity="{{ $hall->capacity }}"
+                                    data-currency="{{ $hall->currency ?? 'USD' }}"
+                                    {{ old('conference_hall_id') == $hall->id ? 'selected' : '' }}>
+                                {{ $hall->name }} (Capacity: {{ $hall->capacity }}) - {{ $hall->formatted_rate }}/hr
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('conference_hall_id')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1.5 text-xs text-gray-500">Only available halls are shown</p>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-200"></div>
+
+                <!-- Schedule -->
                 <div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        Select Hall Booking
+                        Schedule
                     </h3>
 
-                    <div>
-                        <label for="conference_booking_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Conference Booking <span class="text-red-500">*</span>
-                        </label>
-                        <select 
-                            name="conference_booking_id" 
-                            id="conference_booking_id"
-                            required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('conference_booking_id') border-red-500 @enderror">
-                            <option value="">Select a confirmed booking</option>
-                            @foreach($bookings as $booking)
-                            <option value="{{ $booking->id }}" 
-                                    data-date="{{ $booking->booking_date->format('Y-m-d') }}"
-                                    data-start="{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}"
-                                    data-end="{{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}"
-                                    {{ old('conference_booking_id') == $booking->id ? 'selected' : '' }}>
-                                {{ $booking->conferenceHall->name }} - {{ $booking->booking_date->format('M d, Y') }} 
-                                ({{ \Carbon\Carbon::parse($booking->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('h:i A') }}) 
-                                - {{ $booking->institution->name ?? 'N/A' }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('conference_booking_id')
-                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-1.5 text-xs text-gray-500">Only confirmed bookings without conferences are shown</p>
+                    <div class="space-y-4">
+                        <!-- Booking Date -->
+                        <div>
+                            <label for="booking_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                Date <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="date" 
+                                name="booking_date" 
+                                id="booking_date"
+                                value="{{ old('booking_date') }}"
+                                required
+                                min="{{ date('Y-m-d') }}"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('booking_date') border-red-500 @enderror">
+                            @error('booking_date')
+                                <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Time Slots -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Start Time <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="time" 
+                                    name="start_time" 
+                                    id="start_time"
+                                    value="{{ old('start_time') }}"
+                                    required
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('start_time') border-red-500 @enderror">
+                                @error('start_time')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
+                                    End Time <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="time" 
+                                    name="end_time" 
+                                    id="end_time"
+                                    value="{{ old('end_time') }}"
+                                    required
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('end_time') border-red-500 @enderror">
+                                @error('end_time')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Cost Estimate -->
+                        <div id="cost-estimate" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Estimated Cost:</span>
+                                <span id="estimated-cost" class="text-lg font-semibold text-gray-900">-</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Includes 30-minute cleanup buffer between bookings</p>
+                        </div>
                     </div>
                 </div>
 
@@ -100,41 +174,6 @@
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    <!-- Schedule -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="start_datetime" class="block text-sm font-medium text-gray-700 mb-2">
-                                Start Date & Time <span class="text-red-500">*</span>
-                            </label>
-                            <input 
-                                type="datetime-local" 
-                                name="start_datetime" 
-                                id="start_datetime"
-                                value="{{ old('start_datetime') }}"
-                                required
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('start_datetime') border-red-500 @enderror">
-                            @error('start_datetime')
-                                <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="end_datetime" class="block text-sm font-medium text-gray-700 mb-2">
-                                End Date & Time <span class="text-red-500">*</span>
-                            </label>
-                            <input 
-                                type="datetime-local" 
-                                name="end_datetime" 
-                                id="end_datetime"
-                                value="{{ old('end_datetime') }}"
-                                required
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('end_datetime') border-red-500 @enderror">
-                            @error('end_datetime')
-                                <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Info Box -->
@@ -164,7 +203,7 @@
                 <button 
                     type="submit"
                     class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                    Create Conference
+                    Create Conference & Book Hall
                 </button>
             </div>
         </form>
@@ -173,21 +212,40 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const bookingSelect = document.getElementById('conference_booking_id');
-    const startDatetime = document.getElementById('start_datetime');
-    const endDatetime = document.getElementById('end_datetime');
+    const hallSelect = document.getElementById('conference_hall_id');
+    const startTime = document.getElementById('start_time');
+    const endTime = document.getElementById('end_time');
+    const costEstimate = document.getElementById('cost-estimate');
+    const estimatedCost = document.getElementById('estimated-cost');
 
-    bookingSelect.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        if (selected.value) {
-            const date = selected.dataset.date;
-            const start = selected.dataset.start;
-            const end = selected.dataset.end;
-            
-            startDatetime.value = `${date}T${start}`;
-            endDatetime.value = `${date}T${end}`;
+    function calculateCost() {
+        const selectedHall = hallSelect.options[hallSelect.selectedIndex];
+        if (!selectedHall.value || !startTime.value || !endTime.value) {
+            costEstimate.classList.add('hidden');
+            return;
         }
-    });
+
+        const rate = parseFloat(selectedHall.dataset.rate);
+        const currency = selectedHall.dataset.currency || 'USD';
+        
+        const start = new Date(`2000-01-01T${startTime.value}`);
+        const end = new Date(`2000-01-01T${endTime.value}`);
+        
+        if (end <= start) {
+            costEstimate.classList.add('hidden');
+            return;
+        }
+
+        const hours = (end - start) / (1000 * 60 * 60);
+        const cost = (rate * hours).toFixed(2);
+        
+        estimatedCost.textContent = `${currency} ${cost}`;
+        costEstimate.classList.remove('hidden');
+    }
+
+    hallSelect.addEventListener('change', calculateCost);
+    startTime.addEventListener('change', calculateCost);
+    endTime.addEventListener('change', calculateCost);
 });
 </script>
-@endsection 
+@endsection

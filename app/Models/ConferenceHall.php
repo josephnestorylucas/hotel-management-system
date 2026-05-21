@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Helpers\CurrencyHelper;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ConferenceHall extends Model
@@ -14,7 +15,7 @@ class ConferenceHall extends Model
 
     protected $fillable = [
         'name',
-        'location',
+        'building_id',
         'capacity',
         'hourly_rate',
         'currency',
@@ -27,6 +28,11 @@ class ConferenceHall extends Model
         'hourly_rate' => 'decimal:2',
         'amenities' => 'array',
     ];
+
+    public function building(): BelongsTo
+    {
+        return $this->belongsTo(Building::class);
+    }
 
     public function conferenceBookings(): HasMany
     {

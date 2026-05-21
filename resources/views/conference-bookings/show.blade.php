@@ -101,7 +101,9 @@
             <div class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
                 <div class="text-sm text-gray-600 mb-1">Conference Hall</div>
                 <div class="text-lg font-bold text-secondary">{{ $conferenceBooking->conferenceHall->name }}</div>
-                <div class="text-xs text-primary mt-1">{{ $conferenceBooking->conferenceHall->location }}</div>
+                @if($conferenceBooking->conferenceHall->building)
+                <div class="text-xs text-primary mt-1">{{ $conferenceBooking->conferenceHall->building->name }}</div>
+                @endif
                 <div class="text-xs text-gray-500 mt-1">Capacity: {{ $conferenceBooking->conferenceHall->capacity }} people</div>
             </div>
 

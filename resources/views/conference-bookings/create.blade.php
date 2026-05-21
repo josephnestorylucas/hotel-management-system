@@ -89,7 +89,7 @@
                             <option value="{{ $hall->id }}"
                                     data-rate="{{ $hall->hourly_rate }}"
                                     {{ old('conference_hall_id') == $hall->id ? 'selected' : '' }}>
-                                {{ $hall->name }} - {{ $hall->location }} (Capacity: {{ $hall->capacity }}, {{ $hall->formatted_rate }}/hr)
+                                {{ $hall->name }}{{ $hall->building ? " ({$hall->building->name})" : '' }} - Capacity: {{ $hall->capacity }}, {{ $hall->formatted_rate }}/hr
                             </option>
                             @endforeach
                         </select>

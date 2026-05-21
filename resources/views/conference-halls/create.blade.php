@@ -45,22 +45,26 @@
                         @enderror
                     </div>
 
-                    <!-- Location -->
+                    <!-- Building -->
                     <div class="mb-4">
-                        <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
-                            Location <span class="text-red-500">*</span>
+                        <label for="building_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Building
                         </label>
-                        <input 
-                            type="text" 
-                            name="location" 
-                            id="location"
-                            value="{{ old('location') }}"
-                            required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('location') border-red-500 @enderror"
-                            placeholder="e.g., 2nd Floor, Main Building">
-                        @error('location')
+                        <select 
+                            name="building_id" 
+                            id="building_id"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('building_id') border-red-500 @enderror">
+                            <option value="">-- Select Building (Optional) --</option>
+                            @foreach($buildings as $building)
+                            <option value="{{ $building->id }}" {{ old('building_id') == $building->id ? 'selected' : '' }}>
+                                {{ $building->name }} {{ $building->code ? "({$building->code})" : '' }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('building_id')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        <p class="mt-1.5 text-xs text-gray-500">Link this hall to a building for better organization</p>
                     </div>
 
                     <!-- Capacity & Rate -->

@@ -24,7 +24,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-bold text-secondary">{{ $venue->conferenceHall->name }}</h3>
-                <p class="text-sm text-gray-500">{{ $venue->conferenceHall->location }} &middot; Capacity: {{ $venue->conferenceHall->capacity }}</p>
+                <p class="text-sm text-gray-500">{{ $venue->conferenceHall->building->name ?? '-' }} &middot; Capacity: {{ $venue->conferenceHall->capacity }}</p>
             </div>
             <span class="px-2.5 py-1 text-xs font-semibold rounded-full
                 @if($venue->status === 'confirmed') bg-green-100 text-green-700

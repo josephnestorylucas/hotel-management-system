@@ -474,12 +474,14 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('store')->name('store.')->group(function () {
 
         // ── Products ──────────────────────────────────────────────────────
-        Route::get('products',                  [ProductController::class, 'index'])->name('products.index');
+        Route::get('products',                  [ProductController::class, 'index'])->name('products.index')
+             ->middleware('role:store_manager,store_keeper,restaurant_manager,supervisor,manager');
         Route::get('products/create',           [ProductController::class, 'create'])->name('products.create')
              ->middleware('role:store_manager');
         Route::post('products',                 [ProductController::class, 'store'])->name('products.store')
              ->middleware('role:store_manager');
-        Route::get('products/{product}',        [ProductController::class, 'show'])->name('products.show');
+        Route::get('products/{product}',        [ProductController::class, 'show'])->name('products.show')
+             ->middleware('role:store_manager,store_keeper,restaurant_manager,supervisor,manager');
         Route::get('products/{product}/edit',   [ProductController::class, 'edit'])->name('products.edit')
              ->middleware('role:store_manager');
         Route::put('products/{product}',        [ProductController::class, 'update'])->name('products.update')
@@ -512,7 +514,8 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:manager');
 
         // ── Internal Requests ─────────────────────────────────────────────
-        Route::get('internal-requests',                [InternalRequestController::class, 'index'])->name('internal-requests.index');
+        Route::get('internal-requests',                [InternalRequestController::class, 'index'])->name('internal-requests.index')
+             ->middleware('role:house_help,supervisor,store_keeper,store_manager');
         Route::get('internal-requests/create',         [InternalRequestController::class, 'create'])->name('internal-requests.create')
              ->middleware('role:house_help');
         Route::post('internal-requests',               [InternalRequestController::class, 'store'])->name('internal-requests.store')
@@ -523,11 +526,12 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:supervisor');
         Route::post('internal-requests/{internalUsageRequest}/fulfill', [InternalRequestController::class, 'fulfill'])->name('internal-requests.fulfill')
              ->middleware('role:store_keeper');
-        Route::post('internal-requests/{internalUsageRequest}/cancel',  [InternalRequestController::class, 'cancel'])->name('internal-requests.cancel');
+        Route::post('internal-requests/{internalUsageRequest}/cancel',  [InternalRequestController::class, 'cancel'])->name('internal-requests.cancel')
+             ->middleware('role:house_help,supervisor');
 
         // ── Stock Transfers ───────────────────────────────────────────────
         Route::get('transfers',                [StockTransferController::class, 'index'])->name('transfers.index')
-             ->middleware('role:store_manager,store_keeper,manager,admin,restaurant_manager');
+             ->middleware('role:store_manager,store_keeper,manager,restaurant_manager');
         Route::get('transfers/create',         [StockTransferController::class, 'create'])->name('transfers.create')
              ->middleware('role:store_keeper');
         Route::post('transfers',               [StockTransferController::class, 'store'])->name('transfers.store')

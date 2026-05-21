@@ -110,7 +110,13 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-sm text-secondary">{{ $hall->location }}</span>
+                        <span class="text-sm text-secondary">
+                            @if($hall->building)
+                                {{ $hall->building->name }}
+                            @else
+                                -
+                            @endif
+                        </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center gap-1">

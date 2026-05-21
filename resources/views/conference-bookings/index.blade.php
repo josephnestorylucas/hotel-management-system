@@ -114,7 +114,9 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-secondary">{{ $booking->conferenceHall->name }}</div>
-                        <div class="text-xs text-primary">{{ $booking->conferenceHall->location }}</div>
+                        @if($booking->conferenceHall->building)
+                        <div class="text-xs text-primary">{{ $booking->conferenceHall->building->name }}</div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-secondary">{{ $booking->booking_date->format('M d, Y') }}</div>

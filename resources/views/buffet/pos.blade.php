@@ -89,6 +89,9 @@
                     <input type="text" name="customer_name" x-model="customerName"
                         placeholder="Customer name (optional)"
                         class="w-full border-gray-200 rounded-lg text-sm px-3 py-2.5 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" name="notes" x-model="orderNotes"
+                        placeholder="Notes (optional)"
+                        class="w-full border-gray-200 rounded-lg text-sm px-3 py-2.5 focus:ring-blue-500 focus:border-blue-500 mt-2">
                 </div>
             </div>
 
@@ -117,19 +120,22 @@
                 <div class="p-4">
                     <div class="flex gap-2">
                         <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="payment_method" value="cash" class="hidden peer" required>
+                            <input type="radio" name="payment_method" value="cash" class="hidden peer" required
+                                x-on:change="showBookingField = false">
                             <div class="text-center px-3 py-2.5 rounded-lg border border-gray-300 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 text-sm font-semibold hover:border-blue-400 transition">
                                 Cash
                             </div>
                         </label>
                         <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="payment_method" value="mobile" class="hidden peer">
+                            <input type="radio" name="payment_method" value="mobile" class="hidden peer"
+                                x-on:change="showBookingField = false">
                             <div class="text-center px-3 py-2.5 rounded-lg border border-gray-300 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 text-sm font-semibold hover:border-blue-400 transition">
                                 Mobile
                             </div>
                         </label>
                         <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="payment_method" value="card" class="hidden peer">
+                            <input type="radio" name="payment_method" value="card" class="hidden peer"
+                                x-on:change="showBookingField = false">
                             <div class="text-center px-3 py-2.5 rounded-lg border border-gray-300 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 text-sm font-semibold hover:border-blue-400 transition">
                                 Card
                             </div>
@@ -169,6 +175,7 @@ function buffetPos() {
         adultPrice: 0,
         childPrice: 0,
         customerName: '',
+        orderNotes: '',
         showBookingField: false,
         bookingId: '',
 

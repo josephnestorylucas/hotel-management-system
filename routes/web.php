@@ -70,6 +70,7 @@ use App\Http\Controllers\Accounting\ReceiptManagementController;
 use App\Http\Controllers\Manager\OversightController;
 use App\Http\Controllers\Finance\PettyCashController;
 use App\Http\Controllers\Bartender\BartenderController;
+use App\Http\Controllers\BuffetPosController;
 use App\Http\Controllers\Reception\DrinkRequestController;
 use App\Http\Controllers\CleaningController;
 
@@ -643,6 +644,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('reports/popular-items',  [RestaurantReportController::class, 'popularItems'])->name('reports.popularItems')
              ->middleware('role:restaurant_manager,manager,admin');
     });
+
+    // ═══ BUFFET POS MODULE ═══
+    Route::middleware(['role:waiter,restaurant_manager,manager,admin,supervisor'])
+        ->prefix('buffet')
+        ->name('buffet.pos.')
+        ->group(function () {
+            Route::get('/', [BuffetPosController::class, 'index'])->name('index');
+            Route::post('/', [BuffetPosController::class, 'store'])->name('store');
+        });
 
     // ═══ BARTENDER MODULE ═══
     // Bar stock is also viewable by restaurant_manager (bar products only)

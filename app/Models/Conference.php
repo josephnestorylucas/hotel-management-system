@@ -18,6 +18,9 @@ class Conference extends Model
         'guest_id',
         'title',
         'description',
+        'conference_fee',
+        'hall_name',
+        'venue_notes',
         'start_datetime',
         'end_datetime',
         'status',
@@ -26,6 +29,7 @@ class Conference extends Model
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
+        'conference_fee' => 'decimal:2',
     ];
 
     public function conferenceBooking(): BelongsTo
@@ -56,5 +60,21 @@ class Conference extends Model
     public function scopeActive($query)
     {
         return $query->whereIn('status', ['scheduled', 'ongoing']);
+    }
+
+    public function getDisplayVenueAttribute(): string
+    {
+        if ($this->hall_name) {
+            return $this->hall_name;
+        }
+        if ($this->conferenceBooking && $this->conferenceBooking->conferenceHall) {
+            return $this->conferenceBooking->conferenceHall->name;
+        }
+        return 'TBA';
+    }
+
+    public function getNextPassNumber(): int
+    {
+        return ($this->participants()->max('pass_number') ?? 0) + 1;
     }
 }

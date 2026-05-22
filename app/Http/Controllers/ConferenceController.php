@@ -7,7 +7,6 @@ use App\Models\Conference;
 use App\Models\ConferenceBooking;
 use App\Models\ConferenceHall;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class ConferenceController extends Controller
 {
@@ -33,86 +32,57 @@ class ConferenceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'conference_hall_id' => 'required|uuid|exists:conference_halls,id',
             'title'              => 'required|string|max:255',
             'description'        => 'nullable|string',
-            'booking_date'       => 'required|date|after_or_equal:today',
-            'start_time'         => 'required|date_format:H:i',
-            'end_time'           => 'required|date_format:H:i|after:start_time',
+            'conference_fee'     => 'required|numeric|min:0',
+            'hall_name'          => 'nullable|string|max:255',
+            'conference_hall_id' => 'nullable|uuid|exists:conference_halls,id',
+            'booking_date'       => 'required_if:conference_hall_id|nullable|date|after_or_equal:today',
+            'start_time'         => 'required_if:conference_hall_id|nullable|date_format:H:i',
+            'end_time'           => 'required_if:conference_hall_id|nullable|date_format:H:i|after:start_time',
+            'institution_id'     => 'nullable|uuid|exists:institutions,id',
+            'start_datetime'     => 'required|date',
+            'end_datetime'       => 'required|date|after:start_datetime',
         ]);
 
-        // Check hall availability with 30-minute buffer
-        if (!$this->isTimeSlotAvailable(
-            $validated['conference_hall_id'],
-            $validated['booking_date'],
-            $validated['start_time'],
-            $validated['end_time']
-        )) {
-            return back()->withInput()->withErrors([
-                'conference_hall_id' => 'This hall is not available for the selected time slot (including 30-min cleanup buffer).'
-            ]);
-        }
+        $conference = \DB::transaction(function () use ($validated) {
+            $conferenceData = [
+                'title'          => $validated['title'],
+                'description'    => $validated['description'] ?? null,
+                'conference_fee' => $validated['conference_fee'],
+                'hall_name'      => $validated['hall_name'] ?? null,
+                'institution_id' => $validated['institution_id'] ?? null,
+                'start_datetime' => $validated['start_datetime'],
+                'end_datetime'   => $validated['end_datetime'],
+                'status'         => 'draft',
+            ];
 
-        $hall = ConferenceHall::findOrFail($validated['conference_hall_id']);
-        
-        // Calculate cost
-        $start = Carbon::parse($validated['start_time']);
-        $end = Carbon::parse($validated['end_time']);
-        $hours = $start->diffInHours($end, true);
-        $totalCost = round($hours * $hall->hourly_rate, 2);
+            if (!empty($validated['conference_hall_id'])) {
+                $hall = ConferenceHall::findOrFail($validated['conference_hall_id']);
+                $start = \Carbon\Carbon::parse($validated['start_time']);
+                $end = \Carbon\Carbon::parse($validated['end_time']);
+                $hours = $start->diffInHours($end, true);
+                $totalCost = round($hours * $hall->hourly_rate, 2);
 
-        // Create the booking first
-        $booking = ConferenceBooking::create([
-            'conference_hall_id' => $validated['conference_hall_id'],
-            'booking_date'       => $validated['booking_date'],
-            'start_time'         => $validated['start_time'],
-            'end_time'           => $validated['end_time'],
-            'total_cost'         => $totalCost,
-            'status'             => 'confirmed',
-            'created_by'         => auth()->id(),
-        ]);
+                $booking = ConferenceBooking::create([
+                    'conference_hall_id' => $validated['conference_hall_id'],
+                    'booking_date'       => $validated['booking_date'],
+                    'start_time'         => $validated['start_time'],
+                    'end_time'           => $validated['end_time'],
+                    'total_cost'         => $totalCost,
+                    'status'             => 'confirmed',
+                    'created_by'         => auth()->id(),
+                ]);
 
-        // Create conference linked to booking
-        $conference = Conference::create([
-            'conference_booking_id' => $booking->id,
-            'title'                 => $validated['title'],
-            'description'           => $validated['description'],
-            'start_datetime'        => $validated['booking_date'] . ' ' . $validated['start_time'],
-            'end_datetime'          => $validated['booking_date'] . ' ' . $validated['end_time'],
-            'status'                => 'draft',
-        ]);
+                $conferenceData['conference_booking_id'] = $booking->id;
+                $conferenceData['hall_name'] = $conferenceData['hall_name'] ?? $hall->name;
+            }
+
+            return Conference::create($conferenceData);
+        });
 
         return redirect()->route('conferences.show', $conference)
-            ->with('success', 'Conference created and hall booked successfully.');
-    }
-
-    private function isTimeSlotAvailable($hallId, $date, $startTime, $endTime)
-    {
-        $endTimeWithBuffer = Carbon::parse($endTime)->addMinutes(30)->format('H:i:s');
-
-        $conflicts = ConferenceBooking::where('conference_hall_id', $hallId)
-            ->where('booking_date', $date)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->where(function ($query) use ($startTime, $endTime, $endTimeWithBuffer) {
-                $query->where(function ($q) use ($startTime, $endTime) {
-                    // New booking starts during existing booking (including buffer)
-                    $q->whereRaw("?::time >= start_time", [$startTime])
-                      ->whereRaw("?::time < end_time + INTERVAL '30 minutes'", [$startTime]);
-                })
-                ->orWhere(function ($q) use ($startTime, $endTime) {
-                    // New booking ends during existing booking
-                    $q->whereRaw("?::time > start_time", [$endTime])
-                      ->whereRaw("?::time <= end_time", [$endTime]);
-                })
-                ->orWhere(function ($q) use ($startTime, $endTimeWithBuffer) {
-                    // New booking completely contains existing booking
-                    $q->whereRaw("?::time <= start_time", [$startTime])
-                      ->whereRaw("?::time >= end_time", [$endTimeWithBuffer]);
-                });
-            })
-            ->exists();
-
-        return !$conflicts;
+            ->with('success', 'Conference created successfully.');
     }
 
     public function show(Conference $conference)
@@ -137,6 +107,8 @@ class ConferenceController extends Controller
         $validated = $request->validate([
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string',
+            'conference_fee' => 'required|numeric|min:0',
+            'hall_name'      => 'nullable|string|max:255',
             'start_datetime' => 'required|date',
             'end_datetime'   => 'required|date|after:start_datetime',
             'status'         => 'required|in:draft,scheduled,ongoing,completed,cancelled',

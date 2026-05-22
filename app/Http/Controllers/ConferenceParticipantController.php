@@ -8,58 +8,61 @@ use App\Models\ConferenceParticipant;
 use App\Models\Guest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ConferenceParticipantController extends Controller
 {
     public function store(Request $request, Conference $conference)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'role' => 'required|in:speaker,attendee',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255',
+            'phone'    => 'nullable|string|max:20',
+            'role'     => 'required|in:speaker,attendee,organizer',
             'guest_id' => 'nullable|uuid|exists:guests,id',
         ]);
 
-        $participant = $conference->participants()->create([
-            'guest_id' => $validated['guest_id'] ?? null,
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'role' => $validated['role'],
+        $passNumber = $conference->getNextPassNumber();
+
+        $conference->participants()->create([
+            'guest_id'    => $validated['guest_id'] ?? null,
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'phone'       => $validated['phone'],
+            'role'        => $validated['role'],
+            'pass_type'   => $validated['role'],
+            'pass_number' => $passNumber,
             'rsvp_status' => 'pending',
         ]);
 
-        return back()->with('success', 'Participant added successfully.');
+        return back()->with('success', "Participant added. Pass #{$passNumber} assigned.");
     }
 
     public function update(Request $request, ConferenceParticipant $participant)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'role' => 'required|in:speaker,attendee',
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|max:255',
+            'phone'       => 'nullable|string|max:20',
+            'role'        => 'required|in:speaker,attendee,organizer',
             'rsvp_status' => 'required|in:pending,confirmed,declined',
         ]);
 
+        $validated['pass_type'] = $validated['role'];
         $participant->update($validated);
 
-        return back()->with('success', 'Participant updated successfully.');
+        return back()->with('success', 'Participant updated.');
     }
 
     public function destroy(ConferenceParticipant $participant)
     {
         $participant->delete();
 
-        return back()->with('success', 'Participant removed successfully.');
+        return back()->with('success', 'Participant removed.');
     }
 
     public function printBadge(ConferenceParticipant $participant)
     {
         $participant->load('conference');
-        
         return view('conference-participants.badge', compact('participant'));
     }
 
@@ -67,6 +70,7 @@ class ConferenceParticipantController extends Controller
     {
         $participants = $conference->participants()
             ->where('rsvp_status', 'confirmed')
+            ->orderBy('pass_number')
             ->get();
 
         return view('conference-participants.badges-all', compact('conference', 'participants'));
@@ -90,12 +94,17 @@ class ConferenceParticipantController extends Controller
     public function checkInDashboard(Conference $conference)
     {
         $conference->load(['participants' => function ($query) {
-            $query->where('rsvp_status', 'confirmed')
-                  ->orderBy('checked_in_count', 'desc')
-                  ->orderBy('name');
+            $query->orderBy('pass_number');
         }]);
 
-        return view('conferences.check-in', compact('conference'));
+        $stats = [
+            'total'      => $conference->participants->count(),
+            'confirmed'  => $conference->participants->where('rsvp_status', 'confirmed')->count(),
+            'checked_in' => $conference->participants->where('checked_in_count', '>', 0)->count(),
+            'pending'    => $conference->participants->where('rsvp_status', 'pending')->count(),
+        ];
+
+        return view('conferences.check-in', compact('conference', 'stats'));
     }
 
     public function checkInByScan(Request $request)
@@ -109,7 +118,7 @@ class ConferenceParticipantController extends Controller
         if (!$participant) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid access token.',
+                'message' => 'Invalid pass. Token not found.',
             ], 404);
         }
 
@@ -136,9 +145,8 @@ class ConferenceParticipantController extends Controller
 
     private function processCheckIn(ConferenceParticipant $participant)
     {
-        $participant->load('conference.conferenceBooking');
+        $participant->load('conference');
 
-        // Validate conference status
         if (!$participant->conference->isActive()) {
             return response()->json([
                 'success' => false,
@@ -146,36 +154,134 @@ class ConferenceParticipantController extends Controller
             ], 400);
         }
 
-        // Validate RSVP
         if ($participant->rsvp_status !== 'confirmed') {
             return response()->json([
                 'success' => false,
                 'message' => 'Participant has not confirmed attendance.',
+                'data' => [
+                    'name'   => $participant->name,
+                    'status' => $participant->rsvp_status,
+                ],
             ], 400);
         }
 
-        // Validate booking is active
-        $booking = $participant->conference->conferenceBooking;
-        if (!in_array($booking->status, ['confirmed', 'pending'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Booking is not active.',
-            ], 400);
-        }
-
-        // Check in
         $participant->checkIn();
 
         return response()->json([
             'success' => true,
             'message' => 'Check-in successful!',
             'data' => [
-                'participant' => $participant->name,
-                'role' => $participant->role,
-                'conference' => $participant->conference->title,
+                'participant'   => $participant->name,
+                'role'          => $participant->pass_type_label,
+                'pass_number'   => $participant->pass_number,
+                'conference'    => $participant->conference->title,
                 'check_in_count' => $participant->checked_in_count,
-                'time' => now()->format('h:i A'),
+                'time'          => now()->format('h:i A'),
             ],
         ]);
+    }
+
+    public function scanningPortal(Conference $conference)
+    {
+        $conference->loadCount('participants');
+
+        return view('conferences.scan-portal', compact('conference'));
+    }
+
+    public function verifyPass(Request $request, Conference $conference)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:64',
+        ]);
+
+        $code = trim($validated['code']);
+
+        $participant = $conference->participants()
+            ->where('access_code', strtoupper($code))
+            ->orWhere('access_token', $code)
+            ->first();
+
+        if (!$participant) {
+            return response()->json([
+                'valid'   => false,
+                'status'  => 'invalid',
+                'message' => 'Pass not found. Invalid code.',
+            ]);
+        }
+
+        if ($participant->rsvp_status === 'declined') {
+            return response()->json([
+                'valid'   => false,
+                'status'  => 'declined',
+                'message' => 'This pass has been declined.',
+                'data'    => [
+                    'name'       => $participant->name,
+                    'pass_number' => $participant->pass_number,
+                    'pass_type'  => $participant->pass_type_label,
+                ],
+            ]);
+        }
+
+        if ($participant->rsvp_status === 'pending') {
+            return response()->json([
+                'valid'   => false,
+                'status'  => 'pending',
+                'message' => 'Attendance not confirmed yet.',
+                'data'    => [
+                    'name'       => $participant->name,
+                    'pass_number' => $participant->pass_number,
+                    'pass_type'  => $participant->pass_type_label,
+                ],
+            ]);
+        }
+
+        if (!$participant->conference->isActive()) {
+            return response()->json([
+                'valid'   => false,
+                'status'  => 'inactive',
+                'message' => 'Conference is not active.',
+            ]);
+        }
+
+        $alreadyCheckedIn = $participant->hasCheckedIn();
+
+        return response()->json([
+            'valid'   => true,
+            'status'  => $alreadyCheckedIn ? 'already_checked_in' : 'valid',
+            'message' => $alreadyCheckedIn
+                ? 'Pass already scanned. Re-entry allowed.'
+                : 'Pass is valid. Ready for check-in.',
+            'data' => [
+                'name'       => $participant->name,
+                'email'      => $participant->email,
+                'pass_number' => $participant->pass_number,
+                'pass_type'  => $participant->pass_type_label,
+                'check_ins'  => $participant->checked_in_count,
+                'access_code' => $participant->access_code,
+            ],
+        ]);
+    }
+
+    public function checkInFromPortal(Request $request, Conference $conference)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:64',
+        ]);
+
+        $code = trim($validated['code']);
+
+        $participant = $conference->participants()
+            ->where('access_code', strtoupper($code))
+            ->orWhere('access_token', $code)
+            ->first();
+
+        if (!$participant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pass not found.',
+            ], 404);
+        }
+
+        return $this->processCheckIn($participant);
     }
 }

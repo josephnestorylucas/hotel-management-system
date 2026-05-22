@@ -347,6 +347,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('conferences/{conference}/check-in', [ConferenceParticipantController::class, 'checkInDashboard'])->name('conferences.check-in');
         Route::post('conference-check-in/scan', [ConferenceParticipantController::class, 'checkInByScan'])->name('conference-check-in.scan');
         Route::post('conference-check-in/manual', [ConferenceParticipantController::class, 'checkInByCode'])->name('conference-check-in.manual');
+        
+        // Scanning Portal
+        Route::get('conferences/{conference}/scan-portal', [ConferenceParticipantController::class, 'scanningPortal'])->name('conferences.scan-portal');
+        Route::post('conferences/{conference}/verify-pass', [ConferenceParticipantController::class, 'verifyPass'])->name('conferences.verify-pass');
+        Route::post('conferences/{conference}/check-in-pass', [ConferenceParticipantController::class, 'checkInFromPortal'])->name('conferences.check-in-pass');
     });
 
     // ═══ REVAMPED CONFERENCE MANAGEMENT SYSTEM ═══

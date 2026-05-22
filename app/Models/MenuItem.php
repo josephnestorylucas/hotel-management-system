@@ -14,14 +14,19 @@ class MenuItem extends Model implements HasMedia
 
     protected $fillable = [
         'category_id', 'name', 'description',
-        'selling_price', 'is_available', 'service_location_tag', 'is_active', 'created_by', 'varieties',
+        'selling_price', 'is_available', 'service_location_tag', 'destination',
+        'is_buffet', 'available_from', 'available_until',
+        'is_active', 'created_by', 'varieties',
     ];
 
     protected $casts = [
         'selling_price' => 'decimal:2',
         'is_available'  => 'boolean',
         'is_active'     => 'boolean',
+        'is_buffet'     => 'boolean',
         'varieties'     => 'array',
+        'available_from'  => 'datetime:H:i',
+        'available_until' => 'datetime:H:i',
     ];
 
     public function registerMediaCollections(): void
@@ -76,6 +81,35 @@ class MenuItem extends Model implements HasMedia
             ->orderByPivot('sort_order');
     }
     public function createdBy()   { return $this->belongsTo(User::class, 'created_by'); }
+
+    public function scopeAvailableNow($query)
+    {
+        return $query->where('is_active', true)
+            ->where('is_available', true)
+            ->where(function ($q) {
+                $q->whereNull('available_from')
+                  ->orWhere('available_from', '<=', now()->format('H:i:s'));
+            })
+            ->where(function ($q) {
+                $q->whereNull('available_until')
+                  ->orWhere('available_until', '>=', now()->format('H:i:s'));
+            });
+    }
+
+    public function scopeForKitchen($query)
+    {
+        return $query->where('destination', 'kitchen');
+    }
+
+    public function scopeForBar($query)
+    {
+        return $query->where('destination', 'bar');
+    }
+
+    public function scopeExcludeBuffet($query)
+    {
+        return $query->where('is_buffet', false);
+    }
 
     /**
      * Check if all ingredients have enough stock in their location.

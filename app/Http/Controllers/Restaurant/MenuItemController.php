@@ -216,6 +216,42 @@ class MenuItemController extends Controller
     }
 
     /**
+     * GET /restaurant/menu-items/{menuItem}/options
+     * Return active options for a menu item (JSON).
+     */
+    public function options(MenuItem $menuItem): \Illuminate\Http\JsonResponse
+    {
+        $menuItem->load(['optionGroups' => function ($q) {
+            $q->where('is_active', true)->with(['values' => function ($v) {
+                $v->where('is_active', true);
+            }]);
+        }]);
+
+        $options = $menuItem->optionGroups->map(function ($group) {
+            return [
+                'id'            => $group->id,
+                'name'          => $group->name,
+                'selection_type' => $group->selection_type,
+                'is_required'   => $group->is_required,
+                'values'        => $group->values->map(function ($value) {
+                    return [
+                        'id'          => $value->id,
+                        'label'       => $value->label,
+                        'price_delta' => (float) $value->price_delta,
+                    ];
+                })->values()->all(),
+            ];
+        })->values()->all();
+
+        return response()->json([
+            'item_id'   => $menuItem->id,
+            'item_name' => $menuItem->name,
+            'base_price' => (float) $menuItem->selling_price,
+            'options'   => $options,
+        ]);
+    }
+
+    /**
      * POST /restaurant/menu/sync-beverages
      * Sync store bar products as menu items in a given category.
      */

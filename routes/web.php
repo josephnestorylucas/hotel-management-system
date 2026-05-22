@@ -643,6 +643,27 @@ Route::middleware(['auth'])->group(function () {
         Route::post('pos',                         [OrderController::class, 'storePos'])->name('pos.store')
              ->middleware('role:waiter');
 
+        // ── Kitchen Queue (kitchen_staff, restaurant_manager, manager, admin, supervisor) ──
+        Route::get('kitchen/queue',                    [\App\Http\Controllers\Restaurant\KitchenController::class, 'queue'])->name('kitchen.queue')
+             ->middleware('role:restaurant_manager,manager,admin,supervisor');
+        Route::post('kitchen/tickets/{ticket}/preparing', [\App\Http\Controllers\Restaurant\KitchenController::class, 'markPreparing'])->name('kitchen.preparing')
+             ->middleware('role:restaurant_manager,manager,admin,supervisor');
+        Route::post('kitchen/tickets/{ticket}/ready',     [\App\Http\Controllers\Restaurant\KitchenController::class, 'markReady'])->name('kitchen.ready')
+             ->middleware('role:restaurant_manager,manager,admin,supervisor');
+
+        // ── Bar Queue & Tabs (bar_tender, restaurant_manager, manager, admin, supervisor) ──
+        Route::get('bar/queue',                        [\App\Http\Controllers\Restaurant\BarController::class, 'queue'])->name('bar.queue')
+             ->middleware('role:bar_tender,restaurant_manager,manager,admin,supervisor');
+        Route::get('bar/tabs',                         [\App\Http\Controllers\Restaurant\BarController::class, 'tabs'])->name('bar.tabs')
+             ->middleware('role:bar_tender,restaurant_manager,manager,admin,supervisor');
+        Route::post('bar/tickets/{ticket}/preparing',  [\App\Http\Controllers\Restaurant\BarController::class, 'markPreparing'])->name('bar.preparing')
+             ->middleware('role:bar_tender,restaurant_manager,manager,admin,supervisor');
+        Route::post('bar/tickets/{ticket}/ready',      [\App\Http\Controllers\Restaurant\BarController::class, 'markReady'])->name('bar.ready')
+             ->middleware('role:bar_tender,restaurant_manager,manager,admin,supervisor');
+
+        // ── Menu Item Options API ─────────────────────────────────────────
+        Route::get('menu-items/{menuItem}/options',    [\App\Http\Controllers\Restaurant\MenuItemController::class, 'options'])->name('menu.items.options');
+
         // ── Reports (restaurant_manager / admin only) ─────────────────────
         Route::get('reports/daily-sales',    [RestaurantReportController::class, 'dailySales'])->name('reports.dailySales')
              ->middleware('role:restaurant_manager,manager,admin');

@@ -264,6 +264,60 @@
             </div>
         </div>
     </div>
+
+    <!-- Options Popup Modal (for items with option groups) -->
+    <div x-show="showOptionsModal" class="fixed inset-0 z-50 flex items-center justify-center" x-cloak>
+        <div class="absolute inset-0 bg-black bg-opacity-40" @click="showOptionsModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h3 class="text-lg font-bold text-gray-800" x-text="optionsItem?.name || 'Select Options'"></h3>
+                <button @click="showOptionsModal = false" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <div class="p-4 space-y-4">
+                <template x-for="group in optionsGroups" :key="group.id">
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-bold text-gray-700" x-text="group.name"></h4>
+                            <span x-show="group.is_required" class="text-xs text-red-500 font-medium">Required</span>
+                        </div>
+                        <div class="space-y-1">
+                            <template x-for="value in group.values" :key="value.id">
+                                <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                                    <input :type="group.selection_type === 'single' ? 'radio' : 'checkbox'"
+                                        :name="'option_group_' + group.id"
+                                        :value="value.id"
+                                        x-model="selectedOptions[group.id]"
+                                        class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    <div class="flex-1">
+                                        <span class="text-sm text-gray-800" x-text="value.label"></span>
+                                    </div>
+                                    <span x-show="value.price_delta !== 0" class="text-sm font-semibold text-primary" x-text="'+' + formatCurrency(value.price_delta)"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <div class="pt-2 border-t border-gray-200">
+                    <div class="flex justify-between text-sm mb-3">
+                        <span class="text-gray-600">Base Price</span>
+                        <span class="font-medium" x-text="formatCurrency(optionsItem?.base_price || 0)"></span>
+                    </div>
+                    <div class="flex justify-between text-sm mb-3">
+                        <span class="text-gray-600">Options</span>
+                        <span class="font-medium" x-text="formatCurrency(optionsExtraCost())"></span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Total</span>
+                        <span x-text="formatCurrency((optionsItem?.base_price || 0) + optionsExtraCost())"></span>
+                    </div>
+                </div>
+                <button @click="addWithOptions()"
+                    class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
+                    Add to Order
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -284,12 +338,29 @@ $menuStockJson = collect($categories)
         $item->id => $stockMap[mb_strtolower(trim($item->name))] ?? 999
     ])
     ->toJson();
+
+$menuOptionsJson = collect($categories)
+    ->flatMap(fn($cat) => $cat->menuItems)
+    ->filter(fn($item) => $item->optionGroups->isNotEmpty())
+    ->mapWithKeys(fn($item) => [$item->id => $item->optionGroups->map(fn($g) => [
+        'id' => $g->id,
+        'name' => $g->name,
+        'selection_type' => $g->selection_type,
+        'is_required' => $g->is_required,
+        'values' => $g->values->map(fn($v) => [
+            'id' => $v->id,
+            'label' => $v->label,
+            'price_delta' => (float) $v->price_delta,
+        ])->values()->all(),
+    ])->values()->all()])
+    ->toJson();
 @endphp
 <script>
 function restaurantPos() {
     const menuPrices = JSON.parse({!! json_encode($menuPricesJson) !!});
     const menuVarieties = JSON.parse({!! json_encode($menuVarietiesJson) !!});
     const menuStock = JSON.parse({!! json_encode($menuStockJson) !!});
+    const menuOptions = JSON.parse({!! json_encode($menuOptionsJson) !!});
 
     return {
         // Customer
@@ -301,6 +372,12 @@ function restaurantPos() {
         showVarietyModal: false,
         selectingProduct: null,
         selectingVarieties: [],
+
+        // Options
+        showOptionsModal: false,
+        optionsItem: null,
+        optionsGroups: [],
+        selectedOptions: {},
 
         // Cart
         cart: [],
@@ -318,6 +395,13 @@ function restaurantPos() {
         bookingId: '',
 
         selectProduct(menuItemId, name, basePrice) {
+            // Check if item has options
+            const options = menuOptions[menuItemId];
+            if (options && options.length > 0) {
+                this.openOptionsModal(menuItemId, name, basePrice, options);
+                return;
+            }
+
             const varieties = menuVarieties[menuItemId];
             if (varieties && varieties.length > 0) {
                 this.selectingProduct = { id: menuItemId, name, basePrice };
@@ -326,6 +410,116 @@ function restaurantPos() {
                 return;
             }
             this.addToCart(menuItemId, name, basePrice);
+        },
+
+        openOptionsModal(menuItemId, name, basePrice, options) {
+            this.optionsItem = { id: menuItemId, name, base_price: basePrice };
+            this.optionsGroups = options;
+            this.selectedOptions = {};
+            // Pre-select single required options with first value
+            options.forEach(group => {
+                if (group.selection_type === 'single' && group.is_required && group.values.length > 0) {
+                    this.selectedOptions[group.id] = group.values[0].id;
+                }
+            });
+            this.showOptionsModal = true;
+        },
+
+        optionsExtraCost() {
+            let extra = 0;
+            for (const groupId in this.selectedOptions) {
+                const selectedVal = this.selectedOptions[groupId];
+                if (Array.isArray(selectedVal)) {
+                    // Multiple selection
+                    selectedVal.forEach(valId => {
+                        const group = this.optionsGroups.find(g => g.id === groupId);
+                        if (group) {
+                            const val = group.values.find(v => v.id === valId);
+                            if (val) extra += Number(val.price_delta || 0);
+                        }
+                    });
+                } else if (selectedVal) {
+                    // Single selection
+                    const group = this.optionsGroups.find(g => g.id === groupId);
+                    if (group) {
+                        const val = group.values.find(v => v.id === selectedVal);
+                        if (val) extra += Number(val.price_delta || 0);
+                    }
+                }
+            }
+            return extra;
+        },
+
+        addWithOptions() {
+            if (!this.optionsItem) return;
+
+            // Validate required groups
+            for (const group of this.optionsGroups) {
+                if (group.is_required) {
+                    const selected = this.selectedOptions[group.id];
+                    if (!selected || (Array.isArray(selected) && selected.length === 0)) {
+                        alert('Please select an option for: ' + group.name);
+                        return;
+                    }
+                }
+            }
+
+            const basePrice = Number(this.optionsItem.base_price || 0);
+            const extraCost = this.optionsExtraCost();
+            const unitPrice = basePrice + extraCost;
+
+            // Build option label
+            let optionLabels = [];
+            let selectedOptionsSnapshot = [];
+            for (const group of this.optionsGroups) {
+                const selected = this.selectedOptions[group.id];
+                if (!selected) continue;
+
+                const selectedIds = Array.isArray(selected) ? selected : [selected];
+                const selectedValues = selectedIds.map(id => group.values.find(v => v.id === id)).filter(Boolean);
+
+                if (selectedValues.length > 0) {
+                    optionLabels.push(group.name + ': ' + selectedValues.map(v => v.label).join(', '));
+                    selectedOptionsSnapshot.push({
+                        group_id: group.id,
+                        group_name: group.name,
+                        selection_type: group.selection_type,
+                        required: group.is_required,
+                        values: selectedValues.map(v => ({
+                            id: v.id,
+                            label: v.label,
+                            price_delta: v.price_delta,
+                        })),
+                    });
+                }
+            }
+
+            const label = optionLabels.length > 0
+                ? this.optionsItem.name + ' (' + optionLabels.join(' | ') + ')'
+                : this.optionsItem.name;
+
+            // Create a unique key for this option combination
+            const optionKey = this.optionsItem.id + '|' + JSON.stringify(selectedOptionsSnapshot);
+
+            const existing = this.cart.find(i => i._optionKey === optionKey);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                this.cart.push({
+                    menu_item_id: this.optionsItem.id,
+                    name: label,
+                    base_price: basePrice,
+                    unit_price: unitPrice,
+                    quantity: 1,
+                    _optionKey: optionKey,
+                    selected_options: selectedOptionsSnapshot,
+                });
+            }
+
+            this.showOptionsModal = false;
+            this.optionsItem = null;
+            this.optionsGroups = [];
+            this.selectedOptions = {};
         },
 
         addVarietyToCart(variety) {
@@ -350,7 +544,7 @@ function restaurantPos() {
         },
 
         addToCart(menuItemId, name, unitPrice) {
-            const existing = this.cart.find(i => i.menu_item_id === menuItemId);
+            const existing = this.cart.find(i => i.menu_item_id === menuItemId && !i._optionKey && !i._varietyKey);
             if (existing) {
                 existing.quantity++;
             } else {
@@ -482,6 +676,19 @@ function restaurantPos() {
                 qty.name = `items[${idx}][quantity]`;
                 qty.value = item.quantity;
                 form.appendChild(qty);
+
+                // Add selected option value IDs if present
+                if (item.selected_options && item.selected_options.length > 0) {
+                    item.selected_options.forEach((optGroup, gi) => {
+                        optGroup.values.forEach((val, vi) => {
+                            const optInput = document.createElement('input');
+                            optInput.type = 'hidden';
+                            optInput.name = `items[${idx}][selected_option_value_ids][]`;
+                            optInput.value = val.id;
+                            form.appendChild(optInput);
+                        });
+                    });
+                }
             });
 
             const buffetItems = this.cart.filter(i => i._type === 'buffet');

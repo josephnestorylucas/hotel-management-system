@@ -1,26 +1,30 @@
 # Task 04 — Fix Menu Selection & Remove Mixed Elements
 
 ## Problem
-The menu selection on the POS screen has mixed/broken elements. Items from different categories or types (normal items, buffet, bar, kitchen) are displayed together without proper separation, causing confusion for cashiers.
+The POS menu selection screen is not organized clearly enough for daily cashier use. Items from different categories and service types are currently appearing together in one mixed view, which makes the screen hard to scan and creates a risk of selecting the wrong product during checkout. Regular items, buffet items, bar items, and kitchen items should not all be treated as if they belong to the same display path. The experience needs to be made cleaner, more predictable, and easier to operate quickly during busy service periods.
+
+The goal of this task is to separate the menu experience into the correct logical sections, make the regular POS grid display only the items that belong there, and ensure that item options are handled in a clear follow-up interaction instead of being mixed into the initial selection grid. This prompt should guide a careful cleanup of the menu query, the display structure, and the supporting item logic so that the screen no longer shows confusing or duplicate entries.
 
 ---
 
 ## Expected Behavior
-- Menu items are displayed **by category** (clean, separated)
-- Buffet items are on their **own separate screen** — NOT mixed with regular items
-- Bar items and Kitchen items filtered correctly per POS context
-- Options (Beef/Chicken, Milk/Black) appear as a **popup** after item selection
-- No duplicate or ghost items visible
+- Menu items must be displayed in a clean category-based layout so that each category is visually separated from the next and the cashier can move through the list without guessing where one group ends and another begins.
+- Buffet items must never appear in the regular POS menu grid. They need their own dedicated screen or dedicated flow and should be completely excluded from the standard selection interface.
+- Bar items and kitchen items must be filtered according to the current POS context so that the user only sees items relevant to the station or workflow they are working with.
+- If a menu item has selectable options, those options must appear in a popup or modal after the item is clicked, rather than being shown alongside unrelated items in the main grid.
+- The UI must not show duplicate items, ghost items, partially loaded elements, or stale cards left over from another category or filter state.
+- The overall menu interaction should feel stable and intentional, with no mixing between item types and no ambiguity about which items are available at a given moment.
 
 ---
 
 ## Root Cause Areas to Check
 
-1. Category filter not applied on menu query
-2. `is_active = false` items still showing
-3. Buffet items mixed into the regular item grid
-4. `available_from / available_to` time filter not enforced
-5. Menu item types (normal, option-based, buffet) not separated in UI
+1. The category filter may not be applied early enough in the menu query, which can cause items from different groups to be loaded into the same list.
+2. Inactive items may still be passing through the query or the view layer, which would explain why products marked as unavailable are still visible to the cashier.
+3. Buffet items may be included in the normal POS item set instead of being isolated into their own dedicated screen or workflow.
+4. The time-based availability window may not be enforced consistently, allowing items to show even when they should be hidden outside their active hours.
+5. The UI may not be distinguishing properly between normal items, option-based items, and buffet items, which would make the screen behave as if everything is the same kind of product.
+6. The menu rendering may be reusing stale client-side state or old panel content, which can produce duplicate cards or ghost elements when switching categories.
 
 ---
 
@@ -28,238 +32,88 @@ The menu selection on the POS screen has mixed/broken elements. Items from diffe
 
 ### Step 1 — Fix Menu Query (Controller)
 
-```php
-// app/Http/Controllers/PosController.php
+The controller logic that builds the regular POS menu must be tightened so that only the correct records are sent to the view. The menu collection should be built from active categories only, and each category should only include active items that are valid for the regular POS flow. Buffet products must be excluded at the query level, not only hidden in the template, so they never become part of the standard grid by mistake.
 
-public function index()
-{
-    // ONLY active, non-buffet items for regular POS
-    $categories = MenuCategory::where('is_active', true)
-        ->orderBy('display_order')
-        ->with(['items' => function ($query) {
-            $query->where('is_active', true)
-                  ->where('is_buffet', false) // ← EXCLUDE buffet
-                  ->where(function ($q) {
-                      // Time availability filter
-                      $now = now()->format('H:i:s');
-                      $q->whereNull('available_from')
-                        ->orWhere(function ($inner) use ($now) {
-                            $inner->where('available_from', '<=', $now)
-                                  ->where('available_to', '>=', $now);
-                        });
-                  })
-                  ->orderBy('name');
-        }])
-        ->get()
-        ->filter(fn($cat) => $cat->items->count() > 0); // hide empty categories
+The availability window also needs to be respected consistently. If an item has defined active hours, the query should only include it when the current time falls inside that valid range. Items that are not active right now should not appear just because they belong to a category or were previously cached. Categories that end up with no visible items after filtering should be removed from the final result so the UI stays compact and does not show empty sections.
 
-    return view('pos.index', compact('categories'));
-}
-```
-
-- [ ] `is_active = false` items excluded
-- [ ] `is_buffet = true` items excluded from regular POS
-- [ ] `available_from / available_to` time window enforced
-- [ ] Empty categories hidden from view
-- [ ] Items sorted by name within each category
+- [ ] Inactive items are excluded before rendering.
+- [ ] Buffet items are excluded from the regular POS flow.
+- [ ] Time-restricted items only appear within their valid window.
+- [ ] Empty categories are hidden from the screen.
+- [ ] Items remain sorted in a consistent, readable order inside each category.
+- [ ] The query should be predictable enough that the view layer only handles presentation, not business filtering.
 
 ---
 
 ### Step 2 — Fix POS Category Tabs UI
 
-```blade
-{{-- resources/views/pos/index.blade.php --}}
+The POS screen should present categories as a clear tabbed or grouped interface, with only one category visible at a time unless the design intentionally supports a broader multi-panel layout. The important part is that each category remains visually isolated and that switching categories does not cause items to leak into neighboring sections. When a category is selected, only the items for that category should be visible.
 
-{{-- Category tabs --}}
-<div class="flex gap-2 overflow-x-auto pb-2 border-b mb-4">
-    @foreach($categories as $category)
-        <button 
-            class="tab-btn px-4 py-2 rounded whitespace-nowrap
-                   {{ $loop->first ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }}"
-            data-category="{{ $category->id }}">
-            {{ $category->name }}
-        </button>
-    @endforeach
-</div>
+Each menu item card should communicate the essential information quickly: item name, price, and image if available. The presentation should avoid clutter and should not mix buffet or other unrelated item types into the same list. If an item belongs to a special flow, it should not be shown in the regular grid unless the current screen is specifically designed for that flow.
 
-{{-- Items grid per category --}}
-@foreach($categories as $category)
-    <div class="category-panel grid grid-cols-3 gap-3"
-         id="cat-{{ $category->id }}"
-         style="{{ $loop->first ? '' : 'display:none' }}">
-        
-        @foreach($category->items as $item)
-            <div class="menu-item-card bg-white rounded-lg shadow p-3 cursor-pointer hover:ring-2 hover:ring-blue-500"
-                 data-id="{{ $item->id }}"
-                 data-name="{{ $item->name }}"
-                 data-price="{{ $item->base_price }}"
-                 data-has-options="{{ $item->options->count() > 0 ? 'true' : 'false' }}"
-                 onclick="selectItem(this)">
-                
-                @if($item->image)
-                    <img src="{{ asset('storage/' . $item->image) }}" 
-                         class="w-full h-24 object-cover rounded mb-2">
-                @endif
-                
-                <p class="font-semibold text-sm">{{ $item->name }}</p>
-                <p class="text-blue-600 font-bold">
-                    TZS {{ number_format($item->base_price) }}
-                </p>
-            </div>
-        @endforeach
-    </div>
-@endforeach
-```
-
-- [ ] Category tabs show — clicking switches item grid
-- [ ] Items show name + price (+ image if uploaded)
-- [ ] Buffet items NOT in this grid
+- [ ] Category controls are visible and usable.
+- [ ] Switching categories swaps the item display cleanly.
+- [ ] Each card clearly shows the item name and price.
+- [ ] Images appear only when available and should not break the layout.
+- [ ] Buffet items are not shown in this screen.
+- [ ] The category experience should feel deliberate, not like a loosely filtered dump of menu data.
 
 ---
 
 ### Step 3 — Options Popup (After Item Click)
 
-```blade
-{{-- Option selection modal --}}
-<div id="option-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-80 shadow-xl">
-        <h3 class="font-bold text-lg mb-4" id="option-modal-title">Select Option</h3>
-        
-        <div id="option-list" class="space-y-2">
-            {{-- Populated by JS --}}
-        </div>
+Some menu items require an additional choice after the main card is selected. Those items should not be forced directly into the order without clarifying the chosen variant. Instead, clicking the item should open a modal or popup that presents the available options in a simple, readable list. This keeps the main grid clean and avoids cluttering the selection screen with secondary choices.
 
-        <button onclick="closeOptionModal()" class="mt-4 w-full btn btn-ghost">
-            Cancel
-        </button>
-    </div>
-</div>
-```
+The option experience should explain the item clearly, show the option labels in a usable order, and make it obvious how each option affects the final price. Once the cashier selects a variant, the item should be added to the order with the chosen option attached, and the modal should close automatically. Items that do not have any options should continue to add directly to the order without forcing the cashier through an extra step.
 
-```javascript
-// JS to handle item click and show options
-
-function selectItem(card) {
-    const hasOptions = card.dataset.hasOptions === 'true';
-    const itemId     = card.dataset.id;
-    const itemName   = card.dataset.name;
-    const itemPrice  = parseFloat(card.dataset.price);
-
-    if (hasOptions) {
-        // Fetch options and show modal
-        fetch(`/pos/menu-items/${itemId}/options`)
-            .then(res => res.json())
-            .then(options => {
-                showOptionModal(itemName, itemPrice, itemId, options);
-            });
-    } else {
-        // Add directly to order
-        addToOrder(itemId, itemName, itemPrice, null);
-    }
-}
-
-function showOptionModal(name, basePrice, itemId, options) {
-    document.getElementById('option-modal-title').textContent = `Select Option: ${name}`;
-    
-    const list = document.getElementById('option-list');
-    list.innerHTML = '';
-
-    options.forEach(opt => {
-        const total = basePrice + opt.price_adjustment;
-        const btn   = document.createElement('button');
-        btn.className = 'w-full text-left p-3 rounded border hover:bg-blue-50 hover:border-blue-500';
-        btn.innerHTML  = `
-            <span class="font-medium">${opt.name}</span>
-            <span class="float-right text-blue-600">TZS ${total.toLocaleString()}</span>
-        `;
-        btn.onclick = () => {
-            addToOrder(itemId, `${name} (${opt.name})`, total, opt.id);
-            closeOptionModal();
-        };
-        list.appendChild(btn);
-    });
-
-    document.getElementById('option-modal').classList.remove('hidden');
-}
-
-function closeOptionModal() {
-    document.getElementById('option-modal').classList.add('hidden');
-}
-
-function addToOrder(itemId, name, price, optionId) {
-    // Add to order cart (see POS cart logic)
-    console.log('Adding:', { itemId, name, price, optionId });
-}
-```
-
-- [ ] Clicking item with options shows popup modal
-- [ ] Options show name + total price (base + adjustment)
-- [ ] Clicking option adds to order and closes modal
-- [ ] Clicking item without options adds directly
+- [ ] Clicking an item with options opens a popup.
+- [ ] The popup shows only valid options for that item.
+- [ ] Each option clearly displays the final price impact.
+- [ ] Selecting an option adds the item to the order and closes the popup.
+- [ ] Items without options skip the popup and add immediately.
+- [ ] The modal should not leak stale option data from a previously selected item.
 
 ---
 
 ### Step 4 — Options API Endpoint
 
-```php
-// routes/web.php
-Route::get('/pos/menu-items/{item}/options', [PosController::class, 'getItemOptions']);
+The backend needs a dedicated endpoint for loading the options that belong to a selected menu item. This endpoint should return a clean JSON response containing only the fields required for rendering the popup. Options that are inactive should be excluded so the cashier never sees something that should no longer be available.
 
-// PosController.php
-public function getItemOptions(MenuItem $item)
-{
-    $options = $item->options()
-        ->where('is_active', true)
-        ->get(['id', 'name', 'price_adjustment']);
+The response should be lightweight, predictable, and easy for the frontend to consume without extra transformation. The intention is to keep the item click interaction fast while still allowing the modal to build a complete and correct option list.
 
-    return response()->json($options);
-}
-```
-
-- [ ] Route exists and returns JSON
-- [ ] Only `is_active = true` options returned
-- [ ] Returns `id`, `name`, `price_adjustment`
+- [ ] The route is defined and reachable from the POS screen.
+- [ ] The response is JSON and contains only the data the UI needs.
+- [ ] Only active options are returned.
+- [ ] Each option includes a stable identifier, a readable name, and a price adjustment value.
+- [ ] The endpoint should not include unrelated item data or hidden fields.
 
 ---
 
 ### Step 5 — Remove Buffet from Regular Menu Grid
 
-```php
-// Ensure buffet items have is_buffet = true in DB
-// Migration if field doesn't exist:
+Buffet items need explicit handling in the data model so that they can be separated from the standard menu experience. The regular POS grid should treat buffet as a distinct type of menu content, not just another label or category. If the buffet flag does not already exist on the item model or database table, it should be introduced in a way that supports clear filtering and future maintenance.
 
-Schema::table('menu_items', function (Blueprint $table) {
-    $table->boolean('is_buffet')->default(false)->after('base_price');
-});
-```
+Once the buffet flag exists, any regular POS query must deliberately exclude buffet items. This is important because the UI alone is not a reliable safeguard if the underlying data set is already mixed. The buffet screen can then operate as its own dedicated flow without competing with the regular menu.
 
-- [ ] `is_buffet` column exists on `menu_items`
-- [ ] All buffet items have `is_buffet = true` in database
-- [ ] Regular POS query excludes `is_buffet = true`
-- [ ] Buffet has its own separate screen (see Task 08)
+- [ ] The data model includes a buffet indicator.
+- [ ] Buffet items are marked correctly in the database.
+- [ ] The main POS menu excludes all buffet items.
+- [ ] Buffet content is handled in its own screen or flow.
+- [ ] Regular item selection remains strictly separate from buffet selection.
 
 ---
 
 ### Step 6 — Time-Based Availability Enforcement
 
-```php
-// In MenuItem model
-public function scopeAvailableNow($query)
-{
-    $now = now()->format('H:i:s');
-    return $query->where(function ($q) use ($now) {
-        $q->whereNull('available_from')
-          ->orWhere(function ($inner) use ($now) {
-              $inner->where('available_from', '<=', $now)
-                    ->where('available_to', '>=', $now);
-          });
-    });
-}
-```
+Some menu items are only meant to appear during particular hours of the day. That logic should be enforced consistently so the POS only shows items that are actually available at the moment the cashier is taking the order. The availability rules should be part of the item query rather than a visual-only condition in the template.
 
-- [ ] `availableNow()` scope defined on MenuItem
-- [ ] Scope used in POS query
-- [ ] Items outside time window do NOT show on POS
+If an item has no time restriction, it should still appear normally. If it does have a defined start and end time, then it should only be included when the current time falls inside that valid range. This prevents stale or unavailable items from appearing as selectable options and keeps the screen aligned with operational reality.
+
+- [ ] A reusable availability scope or equivalent filter exists on the item model.
+- [ ] The POS query uses that availability logic instead of duplicating it in multiple places.
+- [ ] Items outside the valid time window do not appear in the menu.
+- [ ] Items without time rules continue to behave normally.
+- [ ] The screen should never show a product that the business rules say is currently unavailable.
 
 ---
 
@@ -267,21 +121,22 @@ public function scopeAvailableNow($query)
 
 | File | Change |
 |------|--------|
-| `app/Http/Controllers/PosController.php` | Fix index() query with filters |
-| `resources/views/pos/index.blade.php` | Rebuild category tabs + item grid |
-| `resources/views/pos/partials/option-modal.blade.php` | Add option popup |
-| `public/js/pos.js` | Add selectItem(), showOptionModal() JS |
-| `app/Models/MenuItem.php` | Add availableNow() scope |
-| `routes/web.php` | Add /pos/menu-items/{item}/options route |
-| `database/migrations/...` | Add is_buffet column if missing |
+| `app/Http/Controllers/PosController.php` | Tighten the menu query so only the correct items are loaded for the regular POS screen. |
+| `resources/views/pos/index.blade.php` | Rework the category presentation so the grid is clearly separated and easier to navigate. |
+| `resources/views/pos/partials/option-modal.blade.php` | Provide the popup used when an item needs the cashier to choose among variants or modifiers. |
+| `public/js/pos.js` | Handle item clicks, option loading, and selection flow in the frontend. |
+| `app/Models/MenuItem.php` | Add the time-availability behavior used to decide whether an item is currently visible. |
+| `routes/web.php` | Register the endpoint that returns item options for the popup. |
+| `database/migrations/...` | Add or confirm the buffet flag if the schema does not already support it. |
 
 ---
 
 ## Done When
-- [ ] Category tabs show, clicking switches item display
-- [ ] Only active, time-valid items show
-- [ ] Buffet items NOT visible in regular POS grid
-- [ ] Items with options show popup on click
-- [ ] Items without options added directly to order
-- [ ] No mixed/ghost elements visible
-- [ ] Cashier can find any item quickly by category
+- [ ] Category tabs are visible and switching between them updates the item list correctly.
+- [ ] Only active items that are valid for the current time appear on the regular POS screen.
+- [ ] Buffet items do not appear in the regular POS grid at all.
+- [ ] Items that require a choice open a popup instead of being added immediately.
+- [ ] Items without choices are added directly without unnecessary extra steps.
+- [ ] No mixed, duplicate, or ghost elements remain visible anywhere in the menu area.
+- [ ] The cashier can find items quickly because the screen is clearly grouped and easy to scan.
+- [ ] The final implementation feels like a deliberate POS workflow rather than a partially filtered list of menu records.

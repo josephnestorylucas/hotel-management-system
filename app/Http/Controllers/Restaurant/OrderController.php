@@ -16,6 +16,7 @@ use App\Services\Billing\ModuleBillingService;
 use App\Services\Bartender\BarOrderStockService;
 use App\Services\AccountingService;      // Added for POS accounting posting
 use App\Services\ReceiptService;          // Added for POS receipt creation
+use App\Services\OrderDispatchService;
 use App\Models\BuffetPackage;
 use App\Models\BuffetSale;
 use App\Models\FinancePayment;            // Added for POS walk-in payments
@@ -76,12 +77,30 @@ class OrderController extends Controller
     {
         $kitchen = StockLocation::kitchen();
 
-        $categories = MenuCategory::with(['menuItems' => fn($q) => $q->where('is_active', true)->where('is_available', true)])
+        $categories = MenuCategory::with(['menuItems' => function ($q) {
+            $q->where('is_active', true)
+              ->where('is_available', true)
+              ->where('is_buffet', false)
+              ->where(function ($sub) {
+                  $sub->whereNull('available_from')
+                      ->orWhere('available_from', '<=', now()->format('H:i:s'));
+              })
+              ->where(function ($sub) {
+                  $sub->whereNull('available_until')
+                      ->orWhere('available_until', '>=', now()->format('H:i:s'));
+              })
+              ->with(['optionGroups' => fn($g) => $g->where('is_active', true)->with([
+                  'values' => fn($v) => $v->where('is_active', true),
+              ])]);
+        }])
             ->where('is_active', true)
             ->when($kitchen, fn($q) => $q->where('location_id', $kitchen->id))
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
+
+        // Filter out categories with no visible items
+        $categories = $categories->filter(fn($cat) => $cat->menuItems->isNotEmpty())->values();
 
         // Build stock lookup keyed by product name (lowercase) → available quantity
         $stockLevels = \App\Models\StockLevel::with('product')
@@ -431,7 +450,12 @@ class OrderController extends Controller
     {
         abort_if($order->status !== 'open', 422, 'Only open orders can be sent.');
 
-        $order->update(['status' => 'sent']);
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'sent']);
+
+            // Dispatch kitchen/bar tickets
+            app(OrderDispatchService::class)->splitAndDispatch($order);
+        });
 
         return redirect()
             ->route('restaurant.orders.show', $order)

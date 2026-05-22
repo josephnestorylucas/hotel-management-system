@@ -812,7 +812,7 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:manager');
     });
 
-    Route::middleware(['role:manager'])->prefix('manager')->name('manager.')->group(function () {
+    Route::middleware(['role:manager,restaurant_manager'])->prefix('manager')->name('manager.')->group(function () {
         Route::get('procurement/approvals', [OversightController::class, 'lpoApprovals'])->name('procurement.approvals');
           Route::get('procurement/grn-approvals', [OversightController::class, 'grnApprovals'])->name('procurement.grn-approvals');
         Route::get('stock/overview', [OversightController::class, 'stockOverview'])->name('stock.overview');
@@ -821,6 +821,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('accounting/journal/{journalEntry}/post', [JournalEntryController::class, 'post'])->name('accounting.journal.post');
         Route::post('accounting/journal/{journalEntry}/reverse', [JournalEntryController::class, 'reverse'])->name('accounting.journal.reverse');
         Route::get('accounting/reports/supplier-payables', [AccountingReportController::class, 'supplierPayables'])->name('accounting.reports.supplier-payables');
+        
+        // Kitchen Stock Management
+        Route::prefix('kitchen-stock')->name('kitchen-stock.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'store'])->name('store');
+            Route::get('/{item}', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'show'])->name('show');
+            Route::get('/{item}/edit', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'edit'])->name('edit');
+            Route::put('/{item}', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'update'])->name('update');
+            Route::delete('/{item}', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'destroy'])->name('destroy');
+            Route::post('/{item}/movement', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'recordMovement'])->name('record-movement');
+        });
     });
 
     // ═══ NOTIFICATIONS ═══

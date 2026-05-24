@@ -153,29 +153,6 @@
                                 @enderror
                             </div>
 
-                            <!-- Phone -->
-                            <div>
-                                <label for="guest_phone" class="block text-sm font-semibold text-secondary mb-2">
-                                    {{ __('reservations.fields.phone_number') }} <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="guest_phone" 
-                                    id="guest_phone"
-                                    value="{{ old('guest_phone') }}" 
-                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_phone') border-red-500 @enderror"
-                                    placeholder="{{ __('reservations.placeholders.phone') }}"
-                                    x-bind:required="guestType === 'new'">
-                                @error('guest_phone')
-                                    <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                        </svg>
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-                            </div>
-
                             <!-- Email -->
                             <div>
                                 <label for="guest_email" class="block text-sm font-semibold text-secondary mb-2">
@@ -199,10 +176,36 @@
                                 @enderror
                             </div>
 
-                            <!-- ID Number -->
+                            <!-- ID Type -->
                             <div>
+                                <label for="guest_id_type" class="block text-sm font-semibold text-secondary mb-2">
+                                    {{ __('reservations.fields.id_type') }} <span class="text-red-500">*</span>
+                                </label>
+                                <select 
+                                    name="guest_id_type" 
+                                    id="guest_id_type"
+                                    x-model="idType"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id_type') border-red-500 @enderror"
+                                    x-bind:required="guestType === 'new'">
+                                    <option value="">{{ __('reservations.placeholders.select_id_type') }}</option>
+                                    <option value="passport" {{ old('guest_id_type') === 'passport' ? 'selected' : '' }}>{{ __('reservations.id_types.passport') }}</option>
+                                    <option value="driver_license" {{ old('guest_id_type') === 'driver_license' ? 'selected' : '' }}>{{ __('reservations.id_types.driver_license') }}</option>
+                                    <option value="nida" {{ old('guest_id_type') === 'nida' ? 'selected' : '' }}>{{ __('reservations.id_types.nida') }}</option>
+                                </select>
+                                @error('guest_id_type')
+                                    <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <!-- ID Number (shown after selecting ID type) -->
+                            <div x-show="idType" x-transition>
                                 <label for="guest_id_number" class="block text-sm font-semibold text-secondary mb-2">
-                                    {{ __('reservations.fields.id_number') }} <span class="text-red-500">*</span>
+                                    <span x-text="idTypeLabel"></span> <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -210,8 +213,8 @@
                                     id="guest_id_number"
                                     value="{{ old('guest_id_number') }}" 
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_id_number') border-red-500 @enderror"
-                                    placeholder="{{ __('reservations.placeholders.enter_id_number') }}"
-                                    x-bind:required="guestType === 'new'">
+                                    x-bind:placeholder="idTypePlaceholder"
+                                    x-bind:required="guestType === 'new' && idType">
                                 @error('guest_id_number')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -227,14 +230,113 @@
                                 <label for="guest_nationality" class="block text-sm font-semibold text-secondary mb-2">
                                     {{ __('reservations.fields.nationality') }} <span class="text-red-500">*</span>
                                 </label>
-                                <input 
-                                    type="text" 
+                                <select 
                                     name="guest_nationality" 
                                     id="guest_nationality"
-                                    value="{{ old('guest_nationality') }}" 
+                                    x-model="nationality"
+                                    @change="updateCountryCode()"
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_nationality') border-red-500 @enderror"
-                                    placeholder="{{ __('reservations.placeholders.nationality') }}"
                                     x-bind:required="guestType === 'new'">
+                                    <option value="">{{ __('reservations.placeholders.select_nationality') }}</option>
+                                    <optgroup label="{{ __('reservations.nationality_groups.east_africa') }}">
+                                        <option value="Tanzanian" {{ old('guest_nationality') === 'Tanzanian' ? 'selected' : '' }}>Tanzanian</option>
+                                        <option value="Kenyan" {{ old('guest_nationality') === 'Kenyan' ? 'selected' : '' }}>Kenyan</option>
+                                        <option value="Ugandan" {{ old('guest_nationality') === 'Ugandan' ? 'selected' : '' }}>Ugandan</option>
+                                        <option value="Rwandan" {{ old('guest_nationality') === 'Rwandan' ? 'selected' : '' }}>Rwandan</option>
+                                        <option value="Burundian" {{ old('guest_nationality') === 'Burundian' ? 'selected' : '' }}>Burundian</option>
+                                        <option value="South Sudanese" {{ old('guest_nationality') === 'South Sudanese' ? 'selected' : '' }}>South Sudanese</option>
+                                        <option value="Congolese (DRC)" {{ old('guest_nationality') === 'Congolese (DRC)' ? 'selected' : '' }}>Congolese (DRC)</option>
+                                        <option value="Ethiopian" {{ old('guest_nationality') === 'Ethiopian' ? 'selected' : '' }}>Ethiopian</option>
+                                        <option value="Somali" {{ old('guest_nationality') === 'Somali' ? 'selected' : '' }}>Somali</option>
+                                        <option value="Eritrean" {{ old('guest_nationality') === 'Eritrean' ? 'selected' : '' }}>Eritrean</option>
+                                        <option value="Djiboutian" {{ old('guest_nationality') === 'Djiboutian' ? 'selected' : '' }}>Djiboutian</option>
+                                        <option value="Malawian" {{ old('guest_nationality') === 'Malawian' ? 'selected' : '' }}>Malawian</option>
+                                        <option value="Zambian" {{ old('guest_nationality') === 'Zambian' ? 'selected' : '' }}>Zambian</option>
+                                        <option value="Zimbabwean" {{ old('guest_nationality') === 'Zimbabwean' ? 'selected' : '' }}>Zimbabwean</option>
+                                        <option value="Mozambican" {{ old('guest_nationality') === 'Mozambican' ? 'selected' : '' }}>Mozambican</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.southern_africa') }}">
+                                        <option value="South African" {{ old('guest_nationality') === 'South African' ? 'selected' : '' }}>South African</option>
+                                        <option value="Namibian" {{ old('guest_nationality') === 'Namibian' ? 'selected' : '' }}>Namibian</option>
+                                        <option value="Botswanan" {{ old('guest_nationality') === 'Botswanan' ? 'selected' : '' }}>Botswanan</option>
+                                        <option value="Angolan" {{ old('guest_nationality') === 'Angolan' ? 'selected' : '' }}>Angolan</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.west_africa') }}">
+                                        <option value="Nigerian" {{ old('guest_nationality') === 'Nigerian' ? 'selected' : '' }}>Nigerian</option>
+                                        <option value="Ghanaian" {{ old('guest_nationality') === 'Ghanaian' ? 'selected' : '' }}>Ghanaian</option>
+                                        <option value="Senegalese" {{ old('guest_nationality') === 'Senegalese' ? 'selected' : '' }}>Senegalese</option>
+                                        <option value="Ivorian" {{ old('guest_nationality') === 'Ivorian' ? 'selected' : '' }}>Ivorian</option>
+                                        <option value="Cameroonian" {{ old('guest_nationality') === 'Cameroonian' ? 'selected' : '' }}>Cameroonian</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.north_africa') }}">
+                                        <option value="Egyptian" {{ old('guest_nationality') === 'Egyptian' ? 'selected' : '' }}>Egyptian</option>
+                                        <option value="Moroccan" {{ old('guest_nationality') === 'Moroccan' ? 'selected' : '' }}>Moroccan</option>
+                                        <option value="Tunisian" {{ old('guest_nationality') === 'Tunisian' ? 'selected' : '' }}>Tunisian</option>
+                                        <option value="Algerian" {{ old('guest_nationality') === 'Algerian' ? 'selected' : '' }}>Algerian</option>
+                                        <option value="Libyan" {{ old('guest_nationality') === 'Libyan' ? 'selected' : '' }}>Libyan</option>
+                                        <option value="Sudanese" {{ old('guest_nationality') === 'Sudanese' ? 'selected' : '' }}>Sudanese</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.europe') }}">
+                                        <option value="British" {{ old('guest_nationality') === 'British' ? 'selected' : '' }}>British</option>
+                                        <option value="German" {{ old('guest_nationality') === 'German' ? 'selected' : '' }}>German</option>
+                                        <option value="French" {{ old('guest_nationality') === 'French' ? 'selected' : '' }}>French</option>
+                                        <option value="Italian" {{ old('guest_nationality') === 'Italian' ? 'selected' : '' }}>Italian</option>
+                                        <option value="Spanish" {{ old('guest_nationality') === 'Spanish' ? 'selected' : '' }}>Spanish</option>
+                                        <option value="Dutch" {{ old('guest_nationality') === 'Dutch' ? 'selected' : '' }}>Dutch</option>
+                                        <option value="Belgian" {{ old('guest_nationality') === 'Belgian' ? 'selected' : '' }}>Belgian</option>
+                                        <option value="Swiss" {{ old('guest_nationality') === 'Swiss' ? 'selected' : '' }}>Swiss</option>
+                                        <option value="Swedish" {{ old('guest_nationality') === 'Swedish' ? 'selected' : '' }}>Swedish</option>
+                                        <option value="Norwegian" {{ old('guest_nationality') === 'Norwegian' ? 'selected' : '' }}>Norwegian</option>
+                                        <option value="Danish" {{ old('guest_nationality') === 'Danish' ? 'selected' : '' }}>Danish</option>
+                                        <option value="Finnish" {{ old('guest_nationality') === 'Finnish' ? 'selected' : '' }}>Finnish</option>
+                                        <option value="Polish" {{ old('guest_nationality') === 'Polish' ? 'selected' : '' }}>Polish</option>
+                                        <option value="Portuguese" {{ old('guest_nationality') === 'Portuguese' ? 'selected' : '' }}>Portuguese</option>
+                                        <option value="Greek" {{ old('guest_nationality') === 'Greek' ? 'selected' : '' }}>Greek</option>
+                                        <option value="Austrian" {{ old('guest_nationality') === 'Austrian' ? 'selected' : '' }}>Austrian</option>
+                                        <option value="Irish" {{ old('guest_nationality') === 'Irish' ? 'selected' : '' }}>Irish</option>
+                                        <option value="Russian" {{ old('guest_nationality') === 'Russian' ? 'selected' : '' }}>Russian</option>
+                                        <option value="Ukrainian" {{ old('guest_nationality') === 'Ukrainian' ? 'selected' : '' }}>Ukrainian</option>
+                                        <option value="Turkish" {{ old('guest_nationality') === 'Turkish' ? 'selected' : '' }}>Turkish</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.americas') }}">
+                                        <option value="American" {{ old('guest_nationality') === 'American' ? 'selected' : '' }}>American</option>
+                                        <option value="Canadian" {{ old('guest_nationality') === 'Canadian' ? 'selected' : '' }}>Canadian</option>
+                                        <option value="Mexican" {{ old('guest_nationality') === 'Mexican' ? 'selected' : '' }}>Mexican</option>
+                                        <option value="Brazilian" {{ old('guest_nationality') === 'Brazilian' ? 'selected' : '' }}>Brazilian</option>
+                                        <option value="Argentine" {{ old('guest_nationality') === 'Argentine' ? 'selected' : '' }}>Argentine</option>
+                                        <option value="Colombian" {{ old('guest_nationality') === 'Colombian' ? 'selected' : '' }}>Colombian</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.asia_oceania') }}">
+                                        <option value="Chinese" {{ old('guest_nationality') === 'Chinese' ? 'selected' : '' }}>Chinese</option>
+                                        <option value="Japanese" {{ old('guest_nationality') === 'Japanese' ? 'selected' : '' }}>Japanese</option>
+                                        <option value="South Korean" {{ old('guest_nationality') === 'South Korean' ? 'selected' : '' }}>South Korean</option>
+                                        <option value="Indian" {{ old('guest_nationality') === 'Indian' ? 'selected' : '' }}>Indian</option>
+                                        <option value="Pakistani" {{ old('guest_nationality') === 'Pakistani' ? 'selected' : '' }}>Pakistani</option>
+                                        <option value="Bangladeshi" {{ old('guest_nationality') === 'Bangladeshi' ? 'selected' : '' }}>Bangladeshi</option>
+                                        <option value="Filipino" {{ old('guest_nationality') === 'Filipino' ? 'selected' : '' }}>Filipino</option>
+                                        <option value="Indonesian" {{ old('guest_nationality') === 'Indonesian' ? 'selected' : '' }}>Indonesian</option>
+                                        <option value="Malaysian" {{ old('guest_nationality') === 'Malaysian' ? 'selected' : '' }}>Malaysian</option>
+                                        <option value="Singaporean" {{ old('guest_nationality') === 'Singaporean' ? 'selected' : '' }}>Singaporean</option>
+                                        <option value="Thai" {{ old('guest_nationality') === 'Thai' ? 'selected' : '' }}>Thai</option>
+                                        <option value="Vietnamese" {{ old('guest_nationality') === 'Vietnamese' ? 'selected' : '' }}>Vietnamese</option>
+                                        <option value="Australian" {{ old('guest_nationality') === 'Australian' ? 'selected' : '' }}>Australian</option>
+                                        <option value="New Zealander" {{ old('guest_nationality') === 'New Zealander' ? 'selected' : '' }}>New Zealander</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.middle_east') }}">
+                                        <option value="Emirati" {{ old('guest_nationality') === 'Emirati' ? 'selected' : '' }}>Emirati</option>
+                                        <option value="Saudi" {{ old('guest_nationality') === 'Saudi' ? 'selected' : '' }}>Saudi</option>
+                                        <option value="Qatari" {{ old('guest_nationality') === 'Qatari' ? 'selected' : '' }}>Qatari</option>
+                                        <option value="Omani" {{ old('guest_nationality') === 'Omani' ? 'selected' : '' }}>Omani</option>
+                                        <option value="Kuwaiti" {{ old('guest_nationality') === 'Kuwaiti' ? 'selected' : '' }}>Kuwaiti</option>
+                                        <option value="Bahraini" {{ old('guest_nationality') === 'Bahraini' ? 'selected' : '' }}>Bahraini</option>
+                                        <option value="Israeli" {{ old('guest_nationality') === 'Israeli' ? 'selected' : '' }}>Israeli</option>
+                                        <option value="Lebanese" {{ old('guest_nationality') === 'Lebanese' ? 'selected' : '' }}>Lebanese</option>
+                                        <option value="Jordanian" {{ old('guest_nationality') === 'Jordanian' ? 'selected' : '' }}>Jordanian</option>
+                                    </optgroup>
+                                    <optgroup label="{{ __('reservations.nationality_groups.other') }}">
+                                        <option value="Other" {{ old('guest_nationality') === 'Other' ? 'selected' : '' }}>Other</option>
+                                    </optgroup>
+                                </select>
                                 @error('guest_nationality')
                                     <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -246,24 +348,62 @@
                             </div>
                         </div>
 
-                        <!-- Guest Photo Upload -->
+                        <!-- Phone with Country Code -->
                         <div class="mt-4">
-                            <label for="guest_photo" class="block text-sm font-semibold text-secondary mb-2">
-                                {{ __('reservations.fields.guest_photo') }} <span class="text-gray-400 text-xs font-normal">({{ __('reservations.labels.photo_optional') }})</span>
+                            <label for="guest_phone" class="block text-sm font-semibold text-secondary mb-2">
+                                {{ __('reservations.fields.phone_number') }} <span class="text-red-500">*</span>
                             </label>
-                            <input 
-                                type="file" 
-                                name="guest_photo" 
-                                id="guest_photo"
-                                accept=".jpg,.jpeg,.png"
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 @error('guest_photo') border-red-500 @enderror">
-                            @error('guest_photo')
+                            <div class="flex gap-2">
+                                <div class="w-28">
+                                    <input 
+                                        type="text" 
+                                        name="guest_phone_code" 
+                                        id="guest_phone_code"
+                                        x-model="phoneCode"
+                                        readonly
+                                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-center text-sm font-semibold text-gray-600">
+                                </div>
+                                <div class="flex-1">
+                                    <input 
+                                        type="text" 
+                                        name="guest_phone" 
+                                        id="guest_phone"
+                                        value="{{ old('guest_phone') }}" 
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_phone') border-red-500 @enderror"
+                                        placeholder="{{ __('reservations.placeholders.phone_number') }}"
+                                        x-bind:required="guestType === 'new'">
+                                </div>
+                            </div>
+                            @error('guest_phone')
                                 <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
                                     {{ $message }}
                                 </p>
+                            @enderror
+                        </div>
+
+                        <!-- ID Photo Upload Button -->
+                        <div class="mt-4" x-show="idType" x-transition>
+                            <label class="block text-sm font-semibold text-secondary mb-2">
+                                {{ __('reservations.fields.id_photo') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex items-center gap-3">
+                                <button 
+                                    type="button"
+                                    @click="showIdPhotoModal = true"
+                                    class="px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-semibold text-gray-600 hover:border-primary hover:text-primary transition-all flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span x-text="idPhotoFile ? '{{ __('reservations.labels.change_photo') }}' : '{{ __('reservations.labels.upload_id_photo') }}'"></span>
+                                </button>
+                                <span x-show="idPhotoFile" class="text-sm text-green-600 font-semibold" x-text="idPhotoFile"></span>
+                            </div>
+                            <input type="hidden" name="id_photo_uploaded" x-bind:value="idPhotoFile ? '1' : '0'">
+                            @error('guest_id_photo')
+                                <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -305,6 +445,7 @@
                                 id="check_in_date"
                                 value="{{ old('check_in_date') }}" 
                                 min="{{ date('Y-m-d') }}"
+                                @input="calculateNights()"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('check_in_date') border-red-500 @enderror"
                                 required>
                             @error('check_in_date')
@@ -328,6 +469,7 @@
                                 id="check_out_date"
                                 value="{{ old('check_out_date') }}" 
                                 min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                                @input="calculateNights()"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('check_out_date') border-red-500 @enderror"
                                 required>
                             @error('check_out_date')
@@ -392,15 +534,20 @@
                     <!-- Room Assignment -->
                     <div class="mt-6">
                         <label for="room_id" class="block text-sm font-semibold text-secondary mb-2">
-                            {{ __('reservations.fields.assigned_room') }} <span class="text-gray-400 text-xs font-normal">({{ __('reservations.labels.room_optional') }})</span>
+                            {{ __('reservations.fields.assigned_room') }} <span class="text-red-500">*</span>
                         </label>
                         <select 
                             name="room_id" 
                             id="room_id"
-                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_id') border-red-500 @enderror">
+                            x-model="selectedRoom"
+                            @change="updateEstimatedAmount()"
+                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_id') border-red-500 @enderror"
+                            required>
                             <option value="">{{ __('reservations.placeholders.select_room') }}</option>
                             @foreach($availableRooms as $room)
-                            <option value="{{ $room->id }}" {{ old('room_id') == $room->id ? 'selected' : '' }}>
+                            <option value="{{ $room->id }}" 
+                                data-rate="{{ $room->roomType->base_rate ?? 0 }}"
+                                {{ old('room_id') == $room->id ? 'selected' : '' }}>
                                 {{ $room->room_number }} - {{ $room->roomType->name }} ({{ $room->roomType->formatted_rate }}/night)
                             </option>
                             @endforeach
@@ -413,6 +560,23 @@
                                 {{ $message }}
                             </p>
                         @enderror
+                    </div>
+
+                    <!-- Estimated Amount Preview -->
+                    <div x-show="nights > 0 && selectedRoom" x-transition class="mt-4">
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-green-800">{{ __('reservations.labels.estimated_total') }}</p>
+                                    <p class="text-xs text-green-600 mt-1">
+                                        <span x-text="nights"></span> {{ __('reservations.labels.nights') }} × <span x-text="formatCurrency(pricePerNight)"></span>/{{ __('reservations.labels.night') }}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-extrabold text-green-700"><span x-text="formatCurrency(calculatedAmount)"></span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Status -->
@@ -477,6 +641,34 @@
 </div>
 
 <script>
+const currencySymbol = '{{ $currencySymbol }}';
+const currencyCode = '{{ $currencyCode }}';
+
+const countryCodes = {
+    'Tanzanian': '+255', 'Kenyan': '+254', 'Ugandan': '+256', 'Rwandan': '+250',
+    'Burundian': '+257', 'South Sudanese': '+211', 'Congolese (DRC)': '+243',
+    'Ethiopian': '+251', 'Somali': '+252', 'Eritrean': '+291', 'Djiboutian': '+253',
+    'Malawian': '+265', 'Zambian': '+260', 'Zimbabwean': '+263', 'Mozambican': '+258',
+    'South African': '+27', 'Namibian': '+264', 'Botswanan': '+267', 'Angolan': '+244',
+    'Nigerian': '+234', 'Ghanaian': '+233', 'Senegalese': '+221', 'Ivorian': '+225',
+    'Cameroonian': '+237', 'Egyptian': '+20', 'Moroccan': '+212', 'Tunisian': '+216',
+    'Algerian': '+213', 'Libyan': '+218', 'Sudanese': '+249',
+    'British': '+44', 'German': '+49', 'French': '+33', 'Italian': '+39',
+    'Spanish': '+34', 'Dutch': '+31', 'Belgian': '+32', 'Swiss': '+41',
+    'Swedish': '+46', 'Norwegian': '+47', 'Danish': '+45', 'Finnish': '+358',
+    'Polish': '+48', 'Portuguese': '+351', 'Greek': '+30', 'Austrian': '+43',
+    'Irish': '+353', 'Russian': '+7', 'Ukrainian': '+380', 'Turkish': '+90',
+    'American': '+1', 'Canadian': '+1', 'Mexico': '+52', 'Brazilian': '+55',
+    'Argentine': '+54', 'Colombian': '+57',
+    'Chinese': '+86', 'Japanese': '+81', 'South Korean': '+82', 'Indian': '+91',
+    'Pakistani': '+92', 'Bangladeshi': '+880', 'Filipino': '+63', 'Indonesian': '+62',
+    'Malaysian': '+60', 'Singaporean': '+65', 'Thai': '+66', 'Vietnamese': '+84',
+    'Australian': '+61', 'New Zealander': '+64',
+    'Emirati': '+971', 'Saudi': '+966', 'Qatari': '+974', 'Omani': '+968',
+    'Kuwaiti': '+965', 'Bahraini': '+973', 'Israeli': '+972', 'Lebanese': '+961',
+    'Jordanian': '+962', 'Other': ''
+};
+
 function reservationForm() {
     return {
         guestType: '{{ isset($selectedGuest) && $selectedGuest ? "existing" : (old("create_new_guest") == "1" ? "new" : "existing") }}',
@@ -484,7 +676,55 @@ function reservationForm() {
         selectedGuestName: '{{ isset($selectedGuest) ? $selectedGuest->full_name : "" }}',
         selectedGuestPhone: '{{ isset($selectedGuest) ? $selectedGuest->phone_number : "" }}',
         selectedGuestEmail: '{{ isset($selectedGuest) ? $selectedGuest->email : "" }}',
-        
+        idType: '{{ old("guest_id_type", "") }}',
+        nationality: '{{ old("guest_nationality", "") }}',
+        phoneCode: '',
+        selectedRoom: '{{ old("room_id", "") }}',
+        pricePerNight: 0,
+        calculatedAmount: 0,
+        nights: 0,
+        showIdPhotoModal: false,
+        idPhotoFile: null,
+        idPhotoPreview: null,
+
+        init() {
+            this.updateCountryCode();
+            if (this.selectedRoom) {
+                this.updateEstimatedAmount();
+            }
+        },
+
+        get idTypeLabel() {
+            const labels = {
+                'passport': '{{ __("reservations.id_types.passport") }}',
+                'driver_license': '{{ __("reservations.id_types.driver_license") }}',
+                'nida': '{{ __("reservations.id_types.nida") }}'
+            };
+            return labels[this.idType] || '{{ __("reservations.fields.id_number") }}';
+        },
+
+        get idTypePlaceholder() {
+            const placeholders = {
+                'passport': '{{ __("reservations.placeholders.passport_number") }}',
+                'driver_license': '{{ __("reservations.placeholders.license_number") }}',
+                'nida': '{{ __("reservations.placeholders.nida_number") }}'
+            };
+            return placeholders[this.idType] || '{{ __("reservations.placeholders.enter_id_number") }}';
+        },
+
+        formatCurrency(amount) {
+            const decimals = currencyCode === 'TZS' ? 0 : 2;
+            const formatted = parseFloat(amount).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            if (currencyCode === 'TZS') {
+                return formatted + ' ' + currencySymbol;
+            }
+            return currencySymbol + formatted;
+        },
+
+        updateCountryCode() {
+            this.phoneCode = countryCodes[this.nationality] || '';
+        },
+
         updateSelectedGuest() {
             const select = document.getElementById('guest_id');
             const option = select.options[select.selectedIndex];
@@ -503,8 +743,102 @@ function reservationForm() {
             if (!this.selectedGuestName) return '';
             const names = this.selectedGuestName.split(' ');
             return names.map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
+        },
+
+        updateEstimatedAmount() {
+            const roomSelect = document.getElementById('room_id');
+            const option = roomSelect.options[roomSelect.selectedIndex];
+            if (option && option.value) {
+                this.pricePerNight = parseFloat(option.getAttribute('data-rate')) || 0;
+            } else {
+                this.pricePerNight = 0;
+            }
+            this.calculateNights();
+        },
+
+        calculateNights() {
+            const checkIn = document.getElementById('check_in_date').value;
+            const checkOut = document.getElementById('check_out_date').value;
+            if (checkIn && checkOut) {
+                const diff = new Date(checkOut) - new Date(checkIn);
+                this.nights = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+            } else {
+                this.nights = 0;
+            }
+            this.calculatedAmount = this.nights * this.pricePerNight;
+            if (this.calculatedAmount > 0) {
+                document.getElementById('estimated_amount').value = this.calculatedAmount.toFixed(2);
+            }
+        },
+
+        handleIdPhotoSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.idPhotoFile = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.idPhotoPreview = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        },
+
+        confirmIdPhoto() {
+            this.showIdPhotoModal = false;
         }
     }
 }
 </script>
+
+<!-- ID Photo Upload Modal -->
+<div x-show="showIdPhotoModal" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" @click="showIdPhotoModal = false">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <div class="inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div>
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
+                    <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-5">
+                    <h3 class="text-lg leading-6 font-bold text-secondary">{{ __('reservations.modal.upload_id_photo') }}</h3>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('reservations.modal.upload_id_photo_desc') }}</p>
+                </div>
+            </div>
+            <div class="mt-5">
+                <div x-show="!idPhotoPreview">
+                    <label class="block w-full cursor-pointer">
+                        <span class="flex flex-col items-center justify-center px-6 py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary transition-all">
+                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <span class="mt-2 text-sm font-semibold text-gray-600">{{ __('reservations.modal.click_to_upload') }}</span>
+                            <span class="mt-1 text-xs text-gray-500">JPG, PNG (max 2MB)</span>
+                        </span>
+                        <input type="file" name="guest_id_photo" accept=".jpg,.jpeg,.png" class="hidden" @change="handleIdPhotoSelect($event)">
+                    </label>
+                </div>
+                <div x-show="idPhotoPreview" class="relative">
+                    <img :src="idPhotoPreview" class="w-full h-48 object-contain rounded-xl border border-gray-200">
+                    <button type="button" @click="idPhotoPreview = null; idPhotoFile = null;" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                <button type="button" @click="showIdPhotoModal = false" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-1 sm:text-sm">
+                    {{ __('reservations.modal.cancel') }}
+                </button>
+                <button type="button" @click="confirmIdPhoto()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-base font-medium text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm">
+                    {{ __('reservations.modal.confirm') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

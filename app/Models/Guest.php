@@ -21,6 +21,7 @@ class Guest extends Model implements HasMedia
         'email',
         'phone_number',
         'id_number',
+        'id_type',
         'address',
         'nationality',
         'date_of_birth',

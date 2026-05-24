@@ -48,10 +48,18 @@ return [
         'guest_last_name' => 'Jina la Mwisho',
         'phone_number' => 'Nambari ya Simu',
         'email' => 'Barua Pepe',
+        'id_type' => 'Aina ya Kitambulisho',
         'id_number' => 'Nambari ya Kitambulisho/Pasipoti',
         'nationality' => 'Uraia',
-        'guest_photo' => 'Picha ya Mgeni',
+        'id_photo' => 'Picha ya Kitambulisho',
         'assigned_room' => 'Chumba Kilichopangwa',
+    ],
+
+    // ID Types
+    'id_types' => [
+        'passport' => 'Pasipoti',
+        'driver_license' => 'Leseni ya Dereva',
+        'nida' => 'Nambari ya NIDA',
     ],
 
     // Sections
@@ -77,28 +85,49 @@ return [
     // Placeholders
     'placeholders' => [
         'select_guest' => '-- Chagua mgeni --',
-        'select_room' => 'Chagua chumba (hiari)',
+        'select_room' => 'Chagua chumba',
+        'select_id_type' => '-- Chagua aina ya kitambulisho --',
+        'select_nationality' => '-- Chagua uraia --',
         'not_assigned' => 'Hakuna Chumba',
         'enter_first_name' => 'Ingiza jina la kwanza',
         'enter_last_name' => 'Ingiza jina la mwisho',
         'phone' => '+255 712 345 678',
+        'phone_number' => '712 345 678',
         'email' => 'mgeni@mfano.com',
         'enter_id_number' => 'Ingiza nambari ya kitambulisho',
+        'passport_number' => 'Ingiza nambari ya pasipoti',
+        'license_number' => 'Ingiza nambari ya leseni',
+        'nida_number' => 'Ingiza nambari ya NIDA',
         'nationality' => 'mf., Mtanzania, Mkenya',
         'amount' => '0.00',
+    ],
+
+    // Nationality Groups
+    'nationality_groups' => [
+        'east_africa' => 'Afrika Mashariki',
+        'southern_africa' => 'Afrika Kusini',
+        'west_africa' => 'Afrika Magharibi',
+        'north_africa' => 'Afrika Kaskazini',
+        'europe' => 'Ulaya',
+        'americas' => 'Amerika',
+        'asia_oceania' => 'Asia & Oceania',
+        'middle_east' => 'Mashariki ya Kati',
+        'other' => 'Nyingine',
     ],
 
     // Labels
     'labels' => [
         'nights' => 'usiku',
+        'night' => 'usiku',
         'per_night' => '/usiku',
         'no_email' => 'Hakuna barua pepe',
         'view_profile' => 'Tazama Wasifu',
         'not_assigned' => 'Hakuna Chumba',
         'legacy_reservation' => 'Hifadhi ya Zamani',
         'guest' => 'Mgeni',
-        'photo_optional' => 'Hiari, max 2MB, JPG/PNG',
-        'room_optional' => 'Hiari - inaweza kupangwa baadaye',
+        'estimated_total' => 'Jumla Inayokadiriwa',
+        'upload_id_photo' => 'Pakia Picha ya Kitambulisho',
+        'change_photo' => 'Badilisha Picha',
     ],
 
     // Actions
@@ -122,12 +151,21 @@ return [
         'new_guest_created' => 'Rekodi mpya ya mgeni itaundwa kiotomatiki. Unaweza kuongeza maelezo zaidi (hati za kitambulisho, anwani) kwa kuhariri wasifu wa mgeni baadaye.',
     ],
 
+    // Modal
+    'modal' => [
+        'upload_id_photo' => 'Pakia Picha ya Kitambulisho',
+        'upload_id_photo_desc' => 'Pakia picha wazi ya hati ya kitambulisho cha mgeni',
+        'click_to_upload' => 'Bofya kupakia au buruta na udondoshe',
+        'cancel' => 'Ghairi',
+        'confirm' => 'Thibitisha',
+    ],
+
     // Info
     'info' => [
         'reservation_tips' => 'Vidokezo vya Hifadhi:',
         'tip_select_guest' => 'Chagua mgeni aliyepo au unda mpya kwa hifadhi hii',
-        'tip_room_assignment' => 'Chumba kinaweza kupangwa sasa au baadaye kulingana na upatikanaji',
-        'tip_amount' => 'Kiasi jumla kinaweza kuhesabiwa kulingana na bei ya chumba na muda wa kukaa',
+        'tip_room_assignment' => 'Ukumbi wa chumba unahitajika kwa mahifadhi yote',
+        'tip_amount' => 'Kiasi jumla kinahesabiwa kiotomatiki kulingana na bei ya chumba na muda wa kukaa',
         'tip_auto_number' => 'Nambari ya kipekee ya hifadhi itazalishwa kiotomatiki',
         'created_by' => 'Imeundwa Na',
         'created' => 'Imeundwa',

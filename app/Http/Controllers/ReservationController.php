@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CurrencyHelper;
 use App\Models\Booking;
 use App\Models\Guest;
 use App\Models\Reservation;
@@ -44,7 +45,11 @@ class ReservationController extends Controller
             $selectedGuest = Guest::find($request->guest_id);
         }
 
-        return view('reservations.create', compact('availableRooms', 'guests', 'selectedGuest'));
+        // Get currency settings
+        $currencySymbol = CurrencyHelper::getCurrencySymbol();
+        $currencyCode = CurrencyHelper::getDefaultCurrency();
+
+        return view('reservations.create', compact('availableRooms', 'guests', 'selectedGuest', 'currencySymbol', 'currencyCode'));
     }
 
     public function store(Request $request)
@@ -60,9 +65,10 @@ class ReservationController extends Controller
                 'guest_last_name' => 'required|string|max:255',
                 'guest_email' => 'required|email|max:255|unique:guests,email',
                 'guest_phone' => 'required|string|max:20',
+                'guest_id_type' => 'required|string|in:passport,driver_license,nida',
                 'guest_id_number' => 'required|string|max:50',
                 'guest_nationality' => 'required|string|max:100',
-                'guest_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'guest_id_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
             // Create new guest
@@ -72,13 +78,14 @@ class ReservationController extends Controller
                 'email' => $guestData['guest_email'],
                 'phone_number' => $guestData['guest_phone'],
                 'id_number' => $guestData['guest_id_number'],
+                'id_type' => $guestData['guest_id_type'],
                 'nationality' => $guestData['guest_nationality'],
             ]);
 
-            // Handle photo upload using Spatie Media Library
-            if ($request->hasFile('guest_photo')) {
-                $guest->addMediaFromRequest('guest_photo')
-                    ->toMediaCollection('guest_photo');
+            // Handle ID photo upload using Spatie Media Library
+            if ($request->hasFile('guest_id_photo')) {
+                $guest->addMediaFromRequest('guest_id_photo')
+                    ->toMediaCollection('id_documents');
             }
 
             $guestId = $guest->id;
@@ -90,7 +97,7 @@ class ReservationController extends Controller
             'check_out_date' => 'required|date|after:check_in_date',
             'number_of_guests' => 'required|integer|min:1',
             'estimated_amount' => 'required|numeric|min:0',
-            'room_id' => 'nullable|uuid|exists:rooms,id',
+            'room_id' => 'required|uuid|exists:rooms,id',
             'status' => 'required|in:pending,confirmed',
         ]);
 
@@ -103,7 +110,7 @@ class ReservationController extends Controller
             'guest_name' => $guest->full_name,
             'guest_phone' => $guest->phone_number,
             'guest_email' => $guest->email,
-            'room_id' => $validated['room_id'] ?? null,
+            'room_id' => $validated['room_id'],
             'check_in_date' => $validated['check_in_date'],
             'check_out_date' => $validated['check_out_date'],
             'number_of_guests' => $validated['number_of_guests'],
@@ -160,7 +167,11 @@ class ReservationController extends Controller
         // Load guest relationship
         $reservation->load('guest');
 
-        return view('reservations.edit', compact('reservation', 'availableRooms', 'guests'));
+        // Get currency settings
+        $currencySymbol = CurrencyHelper::getCurrencySymbol();
+        $currencyCode = CurrencyHelper::getDefaultCurrency();
+
+        return view('reservations.edit', compact('reservation', 'availableRooms', 'guests', 'currencySymbol', 'currencyCode'));
     }
 
     public function update(Request $request, Reservation $reservation)
@@ -180,9 +191,10 @@ class ReservationController extends Controller
                 'guest_last_name' => 'required|string|max:255',
                 'guest_email' => 'required|email|max:255|unique:guests,email',
                 'guest_phone' => 'required|string|max:20',
+                'guest_id_type' => 'required|string|in:passport,driver_license,nida',
                 'guest_id_number' => 'required|string|max:50',
                 'guest_nationality' => 'required|string|max:100',
-                'guest_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'guest_id_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
             // Create new guest
@@ -192,13 +204,14 @@ class ReservationController extends Controller
                 'email' => $guestData['guest_email'],
                 'phone_number' => $guestData['guest_phone'],
                 'id_number' => $guestData['guest_id_number'],
+                'id_type' => $guestData['guest_id_type'],
                 'nationality' => $guestData['guest_nationality'],
             ]);
 
-            // Handle photo upload using Spatie Media Library
-            if ($request->hasFile('guest_photo')) {
-                $guest->addMediaFromRequest('guest_photo')
-                    ->toMediaCollection('guest_photo');
+            // Handle ID photo upload using Spatie Media Library
+            if ($request->hasFile('guest_id_photo')) {
+                $guest->addMediaFromRequest('guest_id_photo')
+                    ->toMediaCollection('id_documents');
             }
 
             $guestId = $guest->id;
@@ -210,7 +223,7 @@ class ReservationController extends Controller
             'check_out_date' => 'required|date|after:check_in_date',
             'number_of_guests' => 'required|integer|min:1',
             'estimated_amount' => 'required|numeric|min:0',
-            'room_id' => 'nullable|uuid|exists:rooms,id',
+            'room_id' => 'required|uuid|exists:rooms,id',
             'status' => 'required|in:pending,confirmed,cancelled,no_show',
         ]);
 
@@ -220,7 +233,7 @@ class ReservationController extends Controller
         // Update reservation
         $updateData = [
             'guest_id' => $guestId,
-            'room_id' => $validated['room_id'] ?? null,
+            'room_id' => $validated['room_id'],
             'check_in_date' => $validated['check_in_date'],
             'check_out_date' => $validated['check_out_date'],
             'number_of_guests' => $validated['number_of_guests'],

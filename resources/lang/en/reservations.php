@@ -48,10 +48,18 @@ return [
         'guest_last_name' => 'Last Name',
         'phone_number' => 'Phone Number',
         'email' => 'Email Address',
+        'id_type' => 'ID Type',
         'id_number' => 'ID/Passport Number',
         'nationality' => 'Nationality',
-        'guest_photo' => 'Guest Photo',
+        'id_photo' => 'ID Photo',
         'assigned_room' => 'Assigned Room',
+    ],
+
+    // ID Types
+    'id_types' => [
+        'passport' => 'Passport',
+        'driver_license' => 'Driver License',
+        'nida' => 'NIDA Number',
     ],
 
     // Sections
@@ -77,28 +85,49 @@ return [
     // Placeholders
     'placeholders' => [
         'select_guest' => '-- Select a guest --',
-        'select_room' => 'Select a room (optional)',
+        'select_room' => 'Select a room',
+        'select_id_type' => '-- Select ID type --',
+        'select_nationality' => '-- Select nationality --',
         'not_assigned' => 'Not Assigned',
         'enter_first_name' => 'Enter first name',
         'enter_last_name' => 'Enter last name',
         'phone' => '+1 (555) 123-4567',
+        'phone_number' => '712 345 678',
         'email' => 'guest@example.com',
         'enter_id_number' => 'Enter ID number',
+        'passport_number' => 'Enter passport number',
+        'license_number' => 'Enter driver license number',
+        'nida_number' => 'Enter NIDA number',
         'nationality' => 'e.g., American, British',
         'amount' => '0.00',
+    ],
+
+    // Nationality Groups
+    'nationality_groups' => [
+        'east_africa' => 'East Africa',
+        'southern_africa' => 'Southern Africa',
+        'west_africa' => 'West Africa',
+        'north_africa' => 'North Africa',
+        'europe' => 'Europe',
+        'americas' => 'Americas',
+        'asia_oceania' => 'Asia & Oceania',
+        'middle_east' => 'Middle East',
+        'other' => 'Other',
     ],
 
     // Labels
     'labels' => [
         'nights' => 'nights',
+        'night' => 'night',
         'per_night' => '/night',
         'no_email' => 'No email',
         'view_profile' => 'View Profile',
         'not_assigned' => 'Not Assigned',
         'legacy_reservation' => 'Legacy Reservation',
         'guest' => 'Guest',
-        'photo_optional' => 'Optional, max 2MB, JPG/PNG',
-        'room_optional' => 'Optional - can be assigned later',
+        'estimated_total' => 'Estimated Total',
+        'upload_id_photo' => 'Upload ID Photo',
+        'change_photo' => 'Change Photo',
     ],
 
     // Actions
@@ -122,12 +151,21 @@ return [
         'new_guest_created' => 'A new guest record will be created automatically. You can add additional details (ID documents, address) by editing the guest profile later.',
     ],
 
+    // Modal
+    'modal' => [
+        'upload_id_photo' => 'Upload ID Photo',
+        'upload_id_photo_desc' => 'Upload a clear photo of the guest\'s identification document',
+        'click_to_upload' => 'Click to upload or drag and drop',
+        'cancel' => 'Cancel',
+        'confirm' => 'Confirm',
+    ],
+
     // Info
     'info' => [
         'reservation_tips' => 'Reservation Tips:',
         'tip_select_guest' => 'Select an existing guest or create a new one for this reservation',
-        'tip_room_assignment' => 'Room can be assigned now or later based on availability',
-        'tip_amount' => 'Total amount can be calculated based on room rate and stay duration',
+        'tip_room_assignment' => 'Room assignment is required for all reservations',
+        'tip_amount' => 'Total amount is automatically calculated based on room rate and stay duration',
         'tip_auto_number' => 'A unique reservation number will be generated automatically',
         'created_by' => 'Created By',
         'created' => 'Created',

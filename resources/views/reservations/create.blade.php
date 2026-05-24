@@ -636,6 +636,58 @@
                     {{ __('reservations.actions.create') }}
                 </button>
             </div>
+
+            <!-- ID Photo Upload Modal (inside x-data scope) -->
+            <div x-show="showIdPhotoModal" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity" @click="showIdPhotoModal = false">
+                        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                    </div>
+                    <div class="inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                        <div>
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
+                                <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-5">
+                                <h3 class="text-lg leading-6 font-bold text-secondary">{{ __('reservations.modal.upload_id_photo') }}</h3>
+                                <p class="mt-1 text-sm text-gray-500">{{ __('reservations.modal.upload_id_photo_desc') }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <div x-show="!idPhotoPreview">
+                                <label class="block w-full cursor-pointer">
+                                    <span class="flex flex-col items-center justify-center px-6 py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary transition-all">
+                                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                        </svg>
+                                        <span class="mt-2 text-sm font-semibold text-gray-600">{{ __('reservations.modal.click_to_upload') }}</span>
+                                        <span class="mt-1 text-xs text-gray-500">JPG, PNG (max 2MB)</span>
+                                    </span>
+                                    <input type="file" name="guest_id_photo" accept=".jpg,.jpeg,.png" class="hidden" @change="handleIdPhotoSelect($event)">
+                                </label>
+                            </div>
+                            <div x-show="idPhotoPreview" class="relative">
+                                <img :src="idPhotoPreview" class="w-full h-48 object-contain rounded-xl border border-gray-200">
+                                <button type="button" @click="idPhotoPreview = null; idPhotoFile = null;" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                            <button type="button" @click="showIdPhotoModal = false" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-1 sm:text-sm">
+                                {{ __('reservations.modal.cancel') }}
+                            </button>
+                            <button type="button" @click="confirmIdPhoto()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-base font-medium text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm">
+                                {{ __('reservations.modal.confirm') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -794,56 +846,4 @@ function reservationForm() {
     }
 }
 </script>
-
-<!-- ID Photo Upload Modal -->
-<div x-show="showIdPhotoModal" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity" @click="showIdPhotoModal = false">
-            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-        <div class="inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-            <div>
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
-                    <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div class="mt-3 text-center sm:mt-5">
-                    <h3 class="text-lg leading-6 font-bold text-secondary">{{ __('reservations.modal.upload_id_photo') }}</h3>
-                    <p class="mt-1 text-sm text-gray-500">{{ __('reservations.modal.upload_id_photo_desc') }}</p>
-                </div>
-            </div>
-            <div class="mt-5">
-                <div x-show="!idPhotoPreview">
-                    <label class="block w-full cursor-pointer">
-                        <span class="flex flex-col items-center justify-center px-6 py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary transition-all">
-                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            <span class="mt-2 text-sm font-semibold text-gray-600">{{ __('reservations.modal.click_to_upload') }}</span>
-                            <span class="mt-1 text-xs text-gray-500">JPG, PNG (max 2MB)</span>
-                        </span>
-                        <input type="file" name="guest_id_photo" accept=".jpg,.jpeg,.png" class="hidden" @change="handleIdPhotoSelect($event)">
-                    </label>
-                </div>
-                <div x-show="idPhotoPreview" class="relative">
-                    <img :src="idPhotoPreview" class="w-full h-48 object-contain rounded-xl border border-gray-200">
-                    <button type="button" @click="idPhotoPreview = null; idPhotoFile = null;" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                <button type="button" @click="showIdPhotoModal = false" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-1 sm:text-sm">
-                    {{ __('reservations.modal.cancel') }}
-                </button>
-                <button type="button" @click="confirmIdPhoto()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-base font-medium text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm">
-                    {{ __('reservations.modal.confirm') }}
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection

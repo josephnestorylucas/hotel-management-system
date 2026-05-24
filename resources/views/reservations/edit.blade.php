@@ -536,7 +536,7 @@
                             <option value="">{{ __('reservations.placeholders.select_room') }}</option>
                             @foreach($availableRooms as $room)
                             <option value="{{ $room->id }}" 
-                                data-rate="{{ $room->roomType->base_rate ?? 0 }}"
+                                data-rate="{{ $room->roomType->price_per_night ?? 0 }}"
                                 {{ old('room_id', $reservation->room_id) == $room->id ? 'selected' : '' }}>
                                 {{ $room->room_number }} - {{ $room->roomType->name }} ({{ $room->roomType->formatted_rate }}/night)
                             </option>
@@ -651,8 +651,10 @@
 </div>
 
 <script>
-const currencySymbol = '{{ $currencySymbol }}';
-const currencyCode = '{{ $currencyCode }}';
+@php use App\Helpers\CurrencyHelper; @endphp
+const currencySymbol = '{{ CurrencyHelper::getCurrencySymbol() }}';
+const currencyPosition = '{{ CurrencyHelper::CURRENCIES[CurrencyHelper::getDefaultCurrency()]["position"] ?? "before" }}';
+const currencyDecimals = {{ CurrencyHelper::getDecimals() }};
 
 const countryCodes = {
     'Tanzanian': '+255', 'Kenyan': '+254', 'Ugandan': '+256', 'Rwandan': '+250',
@@ -678,6 +680,14 @@ const countryCodes = {
     'Kuwaiti': '+965', 'Bahraini': '+973', 'Israeli': '+972', 'Lebanese': '+961',
     'Jordanian': '+962', 'Other': ''
 };
+
+function formatMoney(amount) {
+    const formatted = amount.toFixed(currencyDecimals);
+    if (currencyPosition === 'before') {
+        return currencySymbol + formatted;
+    }
+    return formatted + ' ' + currencySymbol;
+}
 
 function reservationForm() {
     return {
@@ -723,12 +733,7 @@ function reservationForm() {
         },
 
         formatCurrency(amount) {
-            const decimals = currencyCode === 'TZS' ? 0 : 2;
-            const formatted = parseFloat(amount).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            if (currencyCode === 'TZS') {
-                return formatted + ' ' + currencySymbol;
-            }
-            return currencySymbol + formatted;
+            return formatMoney(amount);
         },
 
         updateCountryCode() {
@@ -777,7 +782,7 @@ function reservationForm() {
             }
             this.calculatedAmount = this.nights * this.pricePerNight;
             if (this.calculatedAmount > 0) {
-                document.getElementById('estimated_amount').value = this.calculatedAmount.toFixed(2);
+                document.getElementById('estimated_amount').value = this.calculatedAmount.toFixed(currencyDecimals);
             }
         },
 

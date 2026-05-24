@@ -3,7 +3,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CurrencyHelper;
 use App\Models\Booking;
 use App\Models\Guest;
 use App\Models\Reservation;
@@ -45,11 +44,7 @@ class ReservationController extends Controller
             $selectedGuest = Guest::find($request->guest_id);
         }
 
-        // Get currency settings
-        $currencySymbol = CurrencyHelper::getCurrencySymbol();
-        $currencyCode = CurrencyHelper::getDefaultCurrency();
-
-        return view('reservations.create', compact('availableRooms', 'guests', 'selectedGuest', 'currencySymbol', 'currencyCode'));
+        return view('reservations.create', compact('availableRooms', 'guests', 'selectedGuest'));
     }
 
     public function store(Request $request)
@@ -167,11 +162,7 @@ class ReservationController extends Controller
         // Load guest relationship
         $reservation->load('guest');
 
-        // Get currency settings
-        $currencySymbol = CurrencyHelper::getCurrencySymbol();
-        $currencyCode = CurrencyHelper::getDefaultCurrency();
-
-        return view('reservations.edit', compact('reservation', 'availableRooms', 'guests', 'currencySymbol', 'currencyCode'));
+        return view('reservations.edit', compact('reservation', 'availableRooms', 'guests'));
     }
 
     public function update(Request $request, Reservation $reservation)

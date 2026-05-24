@@ -43,6 +43,12 @@ class BuildingController extends Controller {
     }
 
     public function destroy(Building $building) {
+        $hasRooms = $building->floors()->whereHas('rooms')->exists();
+        if ($hasRooms) {
+            return redirect()->route('buildings.index')
+                ->with('error', 'Cannot delete "' . $building->name . '" because it has floors with assigned rooms. Remove the rooms first.');
+        }
+
         $building->delete();
         return redirect()->route('buildings.index')->with('success', 'Building deleted successfully.');
     }

@@ -624,9 +624,9 @@ Route::middleware(['auth'])->group(function () {
         // ── Orders ────────────────────────────────────────────────────────
         Route::get('orders',                       [OrderController::class, 'index'])->name('orders.index');
         Route::get('orders/create',                [OrderController::class, 'create'])->name('orders.create')
-             ->middleware('role:waiter');
+             ->middleware('role:waiter,restaurant_manager,manager');
         Route::post('orders',                      [OrderController::class, 'store'])->name('orders.store')
-             ->middleware('role:waiter');
+             ->middleware('role:waiter,restaurant_manager,manager');
         Route::get('orders/{order}',               [OrderController::class, 'show'])->name('orders.show');
         Route::post('orders/{order}/send',         [OrderController::class, 'send'])->name('orders.send');
         Route::post('orders/{order}/ready',        [OrderController::class, 'ready'])->name('orders.ready');
@@ -639,9 +639,9 @@ Route::middleware(['auth'])->group(function () {
 
         // ── POS (Restaurant walk-in and guest folio sales) ─────────────────
         Route::get('pos',                          [OrderController::class, 'pos'])->name('pos')
-             ->middleware('role:waiter');
+             ->middleware('role:waiter,restaurant_manager,manager');
         Route::post('pos',                         [OrderController::class, 'storePos'])->name('pos.store')
-             ->middleware('role:waiter');
+             ->middleware('role:waiter,restaurant_manager,manager');
 
         // ── Kitchen Queue (kitchen_staff, restaurant_manager, manager, admin, supervisor) ──
         Route::get('kitchen/queue',                    [\App\Http\Controllers\Restaurant\KitchenController::class, 'queue'])->name('kitchen.queue')

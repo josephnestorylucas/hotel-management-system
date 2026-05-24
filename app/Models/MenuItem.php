@@ -25,8 +25,6 @@ class MenuItem extends Model implements HasMedia
         'is_active'     => 'boolean',
         'is_buffet'     => 'boolean',
         'varieties'     => 'array',
-        'available_from'  => 'datetime:H:i',
-        'available_until' => 'datetime:H:i',
     ];
 
     public function registerMediaCollections(): void

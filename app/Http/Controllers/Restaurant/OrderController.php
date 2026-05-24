@@ -374,9 +374,9 @@ class OrderController extends Controller
         $data = $request->validate([
             'location_id'          => 'required|uuid|exists:stock_locations,id',
             'table_id'             => 'nullable|uuid|exists:tables,id',
-            'order_type'           => 'required|in:guest,walkin',
-            'booking_id'           => 'required_if:order_type,guest|nullable|uuid',
-            'customer_name'        => 'required_if:order_type,walkin|nullable|string|max:150',
+            'order_type'           => 'required|in:guest,walkin,dine_in,room_service,bar_tab,takeaway',
+            'booking_id'           => 'required_if:order_type,guest,room_service|nullable|uuid',
+            'customer_name'        => 'required_if:order_type,walkin,takeaway|nullable|string|max:150',
             'notes'                => 'nullable|string|max:500',
             'items'                => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|uuid|exists:menu_items,id',

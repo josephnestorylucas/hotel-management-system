@@ -77,6 +77,49 @@
             @error('image') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
+        {{-- Destination & Buffet --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Destination *</label>
+                <select name="destination" required
+                        class="w-full border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="kitchen" {{ old('destination') === 'kitchen' ? 'selected' : '' }}>Kitchen</option>
+                    <option value="bar" {{ old('destination') === 'bar' ? 'selected' : '' }}>Bar</option>
+                </select>
+                @error('destination') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Is Buffet Item?</label>
+                <select name="is_buffet"
+                        class="w-full border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="0" {{ old('is_buffet') === '0' ? 'selected' : '' }}>No</option>
+                    <option value="1" {{ old('is_buffet') === '1' ? 'selected' : '' }}>Yes</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Service Location Tag</label>
+                <input type="text" name="service_location_tag" value="{{ old('service_location_tag') }}"
+                       class="w-full border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                       placeholder="e.g. pool, terrace">
+            </div>
+        </div>
+
+        {{-- Time Availability --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Available From (optional)</label>
+                <input type="time" name="available_from" value="{{ old('available_from') }}"
+                       class="w-full border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                <p class="text-xs text-gray-400 mt-1">Leave empty for all-day availability</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Available Until (optional)</label>
+                <input type="time" name="available_until" value="{{ old('available_until') }}"
+                       class="w-full border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                <p class="text-xs text-gray-400 mt-1">Leave empty for all-day availability</p>
+            </div>
+        </div>
+
         {{-- Option Groups --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('general.restaurant.options.attach_groups') }}</label>

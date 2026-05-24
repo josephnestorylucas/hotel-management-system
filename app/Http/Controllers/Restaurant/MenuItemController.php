@@ -61,6 +61,10 @@ class MenuItemController extends Controller
             'selling_price'            => 'required|numeric|min:0.01',
             'linked_product_id'        => 'nullable|uuid|exists:products,id',
             'service_location_tag'     => 'nullable|string|max:50',
+            'destination'              => 'required|in:kitchen,bar',
+            'is_buffet'                => 'nullable|boolean',
+            'available_from'           => 'nullable|date_format:H:i',
+            'available_until'          => 'nullable|date_format:H:i',
             'image'                    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'option_group_ids'         => 'nullable|array',
             'option_group_ids.*'       => 'uuid|exists:menu_option_groups,id',
@@ -78,6 +82,10 @@ class MenuItemController extends Controller
                 'selling_price' => $data['selling_price'],
                 'is_available'  => true,
                 'service_location_tag' => $data['service_location_tag'] ?? null,
+                'destination'   => $data['destination'] ?? 'kitchen',
+                'is_buffet'     => $data['is_buffet'] ?? false,
+                'available_from'  => $data['available_from'] ?? null,
+                'available_until' => $data['available_until'] ?? null,
                 'is_active'     => true,
                 'created_by'    => auth()->id(),
             ]);
@@ -149,6 +157,10 @@ class MenuItemController extends Controller
             'selling_price'            => 'sometimes|numeric|min:0.01',
             'is_available'             => 'sometimes|boolean',
             'service_location_tag'     => 'sometimes|nullable|string|max:50',
+            'destination'              => 'sometimes|in:kitchen,bar',
+            'is_buffet'                => 'nullable|boolean',
+            'available_from'           => 'nullable|date_format:H:i',
+            'available_until'          => 'nullable|date_format:H:i',
             'image'                    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'remove_image'             => 'nullable|boolean',
             'option_group_ids'         => 'nullable|array',
@@ -166,6 +178,10 @@ class MenuItemController extends Controller
                 'selling_price' => $data['selling_price'] ?? $menuItem->selling_price,
                 'is_available'  => $data['is_available']  ?? $menuItem->is_available,
                 'service_location_tag' => $data['service_location_tag'] ?? $menuItem->service_location_tag,
+                'destination'   => $data['destination']   ?? $menuItem->destination,
+                'is_buffet'     => $data['is_buffet'] ?? ($menuItem->is_buffet ? '1' : '0'),
+                'available_from'  => $data['available_from'] ?? $menuItem->available_from,
+                'available_until' => $data['available_until'] ?? $menuItem->available_until,
             ]);
 
             if ($request->hasFile('image')) {

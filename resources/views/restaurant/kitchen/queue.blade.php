@@ -34,7 +34,7 @@
             <div class="p-4 {{ $ticket->status === 'pending' ? 'bg-red-100' : ($ticket->status === 'preparing' ? 'bg-amber-100' : 'bg-green-100') }}">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-sm font-bold text-gray-800">KOT #{{ $ticket->id.substr(0, 6) }}</span>
+                        <span class="text-sm font-bold text-gray-800">KOT #{{ substr($ticket->id, 0, 6) }}</span>
                         @if($ticket->table)
                         <span class="ml-2 text-sm text-gray-600">Table {{ $ticket->table->name }}</span>
                         @endif

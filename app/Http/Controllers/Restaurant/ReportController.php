@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
+use App\Models\BuffetSale;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -45,7 +46,51 @@ class ReportController extends Controller
             'guest_charges'   => $orders->where('payment_method', 'charge_to_booking')->sum('total'),
         ];
 
-        return view('restaurant.reports.daily-sales', compact('orders', 'summary', 'date'));
+        // Sales by category
+        $salesByCategory = OrderItem::with('menuItem.category')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereIn('orders.status', ['settled', 'charged'])
+            ->where('order_items.status', '!=', 'cancelled')
+            ->where(function ($q) use ($date) {
+                $q->whereDate('orders.settled_at', $date)
+                  ->orWhere(function ($sq) use ($date) {
+                      $sq->where('orders.status', 'charged')
+                         ->whereDate('orders.billed_to_folio_at', $date);
+                  });
+            })
+            ->select([
+                'order_items.menu_item_id',
+                DB::raw('SUM(order_items.quantity) as total_qty'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue'),
+            ])
+            ->groupBy('order_items.menu_item_id')
+            ->get()
+            ->groupBy(fn($item) => $item->menuItem->category->name ?? 'Uncategorized')
+            ->map(fn($items) => [
+                'quantity' => $items->sum('total_qty'),
+                'revenue'  => $items->sum('total_revenue'),
+            ])
+            ->sortByDesc('revenue');
+
+        // Buffet sales for the day
+        $buffetSales = BuffetSale::with('package')
+            ->where(function ($q) use ($date) {
+                $q->whereDate('settled_at', $date)
+                  ->orWhere(function ($sq) use ($date) {
+                      $sq->where('status', 'charged')
+                         ->whereDate('created_at', $date);
+                  });
+            })
+            ->get();
+
+        $buffetSummary = [
+            'count'      => $buffetSales->count(),
+            'adults'     => $buffetSales->sum('adults_count'),
+            'children'   => $buffetSales->sum('children_count'),
+            'revenue'    => $buffetSales->sum('total_amount'),
+        ];
+
+        return view('restaurant.reports.daily-sales', compact('orders', 'summary', 'date', 'salesByCategory', 'buffetSummary'));
     }
 
     /**

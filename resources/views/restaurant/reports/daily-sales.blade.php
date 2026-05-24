@@ -94,6 +94,67 @@
         </div>
     </div>
 
+    {{-- Sales by Category & Buffet Summary --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {{-- Sales by Category --}}
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-800">Sales by Category</h3>
+            </div>
+            <div class="p-4">
+                @if($salesByCategory->isNotEmpty())
+                <div class="space-y-3">
+                    @foreach($salesByCategory as $category => $data)
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-medium text-gray-800">{{ $category }}</span>
+                            <span class="text-xs text-gray-500 ml-2">({{ $data['quantity'] }} items)</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-700">@currency($data['revenue'], 'TZS')</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: {{ $summary['total_revenue'] > 0 ? round(($data['revenue'] / $summary['total_revenue']) * 100) : 0 }}%"></div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <p class="text-sm text-gray-400 text-center py-4">No sales data for this date.</p>
+                @endif
+            </div>
+        </div>
+
+        {{-- Buffet Summary --}}
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-800">Buffet Sales</h3>
+            </div>
+            <div class="p-4">
+                @if($buffetSummary['count'] > 0)
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-3 bg-amber-50 rounded-xl">
+                        <p class="text-xs text-gray-500 mb-1">Sales</p>
+                        <p class="text-2xl font-bold text-amber-700">{{ $buffetSummary['count'] }}</p>
+                    </div>
+                    <div class="text-center p-3 bg-amber-50 rounded-xl">
+                        <p class="text-xs text-gray-500 mb-1">Revenue</p>
+                        <p class="text-2xl font-bold text-amber-700">@currency($buffetSummary['revenue'], 'TZS')</p>
+                    </div>
+                    <div class="text-center p-3 bg-blue-50 rounded-xl">
+                        <p class="text-xs text-gray-500 mb-1">Adults</p>
+                        <p class="text-2xl font-bold text-blue-700">{{ $buffetSummary['adults'] }}</p>
+                    </div>
+                    <div class="text-center p-3 bg-blue-50 rounded-xl">
+                        <p class="text-xs text-gray-500 mb-1">Children</p>
+                        <p class="text-2xl font-bold text-blue-700">{{ $buffetSummary['children'] }}</p>
+                    </div>
+                </div>
+                @else
+                <p class="text-sm text-gray-400 text-center py-4">No buffet sales for this date.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
     {{-- Orders table --}}
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-x-auto">
         <table class="w-full text-sm">

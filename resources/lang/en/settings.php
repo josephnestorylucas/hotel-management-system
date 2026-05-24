@@ -30,6 +30,7 @@ return [
         'sms' => 'SMS Provider',
         'email' => 'Email Configuration',
         'snipe' => 'Snipe Payments',
+        'azampesa' => 'AzamPesa Payments',
     ],
     
     // Subtitles (for admin settings page)
@@ -40,6 +41,7 @@ return [
         'sms' => 'Configure SMS provider credentials and status',
         'email' => 'Manage email delivery settings',
         'snipe' => 'Manage Snipe payment integration',
+        'azampesa' => 'Manage AzamPesa payment integration',
     ],
     
     // Form fields (for admin settings page)
@@ -70,6 +72,11 @@ return [
         'snipe_api_secret' => 'Snipe API Secret',
         'snipe_webhook_secret' => 'Snipe Webhook Secret',
         'snipe_is_enabled' => 'Enable Snipe Payments',
+        'azampesa_base_url' => 'AzamPesa Base URL',
+        'azampesa_app_name' => 'AzamPesa App Name',
+        'azampesa_client_id' => 'AzamPesa Client ID',
+        'azampesa_client_secret' => 'AzamPesa Client Secret',
+        'azampesa_is_enabled' => 'Enable AzamPesa Payments',
     ],
     
     // Hints (for admin settings page)

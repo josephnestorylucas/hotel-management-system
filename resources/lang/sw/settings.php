@@ -30,6 +30,7 @@ return [
         'sms' => 'Mtoa Huduma wa SMS',
         'email' => 'Mipangilio ya Barua Pepe',
         'snipe' => 'Malipo ya Snipe',
+        'azampesa' => 'Malipo ya AzamPesa',
     ],
     
     // Subtitles (for admin settings page)
@@ -40,6 +41,7 @@ return [
         'sms' => 'Sanidi taarifa za mtoa huduma wa SMS',
         'email' => 'Dhibiti mipangilio ya barua pepe',
         'snipe' => 'Dhibiti muunganisho wa malipo ya Snipe',
+        'azampesa' => 'Dhibiti muunganisho wa malipo ya AzamPesa',
     ],
     
     // Form fields (for admin settings page)
@@ -70,6 +72,11 @@ return [
         'snipe_api_secret' => 'Siri ya API ya Snipe',
         'snipe_webhook_secret' => 'Siri ya Webhook ya Snipe',
         'snipe_is_enabled' => 'Washa Malipo ya Snipe',
+        'azampesa_base_url' => 'Kiungo cha Msingi cha AzamPesa',
+        'azampesa_app_name' => 'Jina la Programu ya AzamPesa',
+        'azampesa_client_id' => 'Kitambulisho cha Mteja wa AzamPesa',
+        'azampesa_client_secret' => 'Siri ya Mteja wa AzamPesa',
+        'azampesa_is_enabled' => 'Washa Malipo ya AzamPesa',
     ],
     
     // Hints (for admin settings page)

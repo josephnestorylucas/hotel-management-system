@@ -46,6 +46,11 @@ class FloorController extends Controller {
     }
 
     public function destroy(Floor $floor) {
+        if ($floor->rooms()->exists()) {
+            return redirect()->route('floors.index')
+                ->with('error', 'Cannot delete "' . $floor->name . '" because it has assigned rooms. Remove the rooms first.');
+        }
+
         $floor->delete();
         return redirect()->route('floors.index')->with('success', 'Floor deleted successfully.');
     }

@@ -80,6 +80,7 @@ return [
         'checked_out' => 'Mgeni ametoka kikamilifu.',
         'no_available_rooms' => 'Hakuna vyumba vinavyopatikana kwa tarehe zilizochaguliwa.',
         'room_not_available' => 'Chumba hiki hakipatikani kwa tarehe zilizochaguliwa.',
+        'loading_rooms' => 'Inatafuta vyumba vinavyopatikana...',
     ],
     
     // Fields

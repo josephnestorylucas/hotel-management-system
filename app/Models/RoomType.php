@@ -20,6 +20,8 @@ class RoomType extends Model implements HasMedia
         'base_rate' => 'decimal:2',
     ];
 
+    protected $appends = ['price_per_night', 'formatted_rate'];
+
     /**
      * Register media collections for the room type.
      * - room_type_image: Single main image for the room type

@@ -149,6 +149,7 @@ return [
         'confirm_cancel' => 'Are you sure you want to cancel this reservation?',
         'confirm_delete' => 'Are you sure you want to delete this reservation?',
         'new_guest_created' => 'A new guest record will be created automatically. You can add additional details (ID documents, address) by editing the guest profile later.',
+        'loading_rooms' => 'Searching for available rooms...',
     ],
 
     // Modal

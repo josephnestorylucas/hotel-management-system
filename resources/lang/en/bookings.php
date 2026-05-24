@@ -80,6 +80,7 @@ return [
         'checked_out' => 'Guest checked out successfully.',
         'no_available_rooms' => 'No rooms available for selected dates.',
         'room_not_available' => 'This room is not available for the selected dates.',
+        'loading_rooms' => 'Searching for available rooms...',
     ],
     
     // Fields

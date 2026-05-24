@@ -149,6 +149,7 @@ return [
         'confirm_cancel' => 'Una uhakika unataka kufuta hifadhi hii?',
         'confirm_delete' => 'Una uhakika unataka kufuta hifadhi hii?',
         'new_guest_created' => 'Rekodi mpya ya mgeni itaundwa kiotomatiki. Unaweza kuongeza maelezo zaidi (hati za kitambulisho, anwani) kwa kuhariri wasifu wa mgeni baadaye.',
+        'loading_rooms' => 'Inatafuta vyumba vinavyopatikana...',
     ],
 
     // Modal

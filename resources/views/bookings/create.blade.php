@@ -128,6 +128,7 @@
                             <input type="date" name="check_in_date" x-model="checkIn"
                                    value="{{ old('check_in_date', request('check_in')) }}"
                                    min="{{ date('Y-m-d') }}"
+                                   @input="searchRooms()"
                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             @error('check_in_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -136,6 +137,7 @@
                             <input type="date" name="check_out_date" x-model="checkOut"
                                    value="{{ old('check_out_date', request('check_out')) }}"
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                                   @input="searchRooms()"
                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             @error('check_out_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -159,44 +161,47 @@
                     <div>
                         <label class="block text-sm font-semibold text-secondary mb-2">
                             {{ __('bookings.fields.room') }} <span class="text-red-500">*</span>
-                            <span class="text-xs text-gray-500 ml-2">{{ __('bookings.form.select_dates_hint') }}</span>
+                            <span class="text-xs text-gray-500 ml-2" x-show="!checkIn || !checkOut">{{ __('bookings.form.select_dates_hint') }}</span>
                         </label>
 
-                        @if($availableRooms->count() > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto p-1">
-                                @foreach($availableRooms as $room)
-                                    <label class="relative flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-primary/50 hover:bg-blue-50/30 transition-all"
-                                           :class="{ 'border-primary bg-blue-50/50 ring-2 ring-primary/20': selectedRoom === '{{ $room->id }}' }">
-                                        <input type="radio" name="room_id" value="{{ $room->id }}" 
-                                               x-model="selectedRoom"
-                                               @change="updateTotal({{ $room->roomType->base_rate ?? 0 }})"
-                                               class="text-primary focus:ring-primary" {{ old('room_id') === $room->id ? 'checked' : '' }}>
-                                        <div class="flex-1">
-                                            <div class="flex items-center justify-between">
-                                                <span class="font-semibold text-secondary">Room {{ $room->room_number }}</span>
-                                                <span class="text-sm font-bold text-primary">{{ $room->roomType->formatted_rate }}{{ __('bookings.per_night') }}</span>
-                                            </div>
-                                            <div class="text-xs text-gray-500 mt-1">
-                                                {{ $room->roomType->name ?? 'N/A' }} &bull; Floor {{ $room->floor->number ?? 'N/A' }}
-                                                @if($room->floor->building)
-                                                    &bull; {{ $room->floor->building->name }}
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                        @else
+                        <template x-if="!checkIn || !checkOut">
                             <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                <p class="text-sm text-yellow-800">
-                                        @if(request('check_in') && request('check_out'))
-                                            {{ __('bookings.messages.no_available_rooms') }} {{ __('bookings.search_rooms_hint') }}
-                                        @else
-                                            {{ __('bookings.search_rooms_hint') }}
-                                        @endif
-                                </p>
+                                <p class="text-sm text-yellow-800">{{ __('bookings.search_rooms_hint') }}</p>
                             </div>
-                        @endif
+                        </template>
+
+                        <template x-if="checkIn && checkOut">
+                            <div>
+                                <div x-show="roomsLoading" class="flex items-center justify-center py-8">
+                                    <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span class="ml-2 text-sm text-gray-600">Searching for available rooms...</span>
+                                </div>
+                                <div x-show="!roomsLoading && availableRooms.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto p-1">
+                                    <template x-for="room in availableRooms" :key="room.id">
+                                        <label class="relative flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-primary/50 hover:bg-blue-50/30 transition-all"
+                                               :class="{ 'border-primary bg-blue-50/50 ring-2 ring-primary/20': selectedRoom === String(room.id) }">
+                                            <input type="radio" name="room_id" :value="room.id"
+                                                   x-model="selectedRoom"
+                                                   @change="updateTotalFromRoom(room)"
+                                                   class="text-primary focus:ring-primary">
+                                            <div class="flex-1">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-semibold text-secondary" x-text="'Room ' + room.room_number"></span>
+                                                    <span class="text-sm font-bold text-primary" x-text="(room.room_type?.formatted_rate || '') + '{{ __("bookings.per_night") }}'"></span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-1" x-text="(room.room_type?.name || 'N/A') + ' &bull; Floor ' + (room.floor?.floor_number || 'N/A')"></div>
+                                            </div>
+                                        </label>
+                                    </template>
+                                </div>
+                                <div x-show="!roomsLoading && availableRooms.length === 0 && checkIn && checkOut" class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                                    <p class="text-sm text-red-700">{{ __('bookings.messages.no_available_rooms') }}</p>
+                                </div>
+                            </div>
+                        </template>
                         @error('room_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -268,6 +273,9 @@
             selectedRoom: '{{ old("room_id", "") }}',
             pricePerNight: 0,
             totalAmount: {{ old('total_amount', 0) }},
+            availableRooms: [],
+            roomsLoading: false,
+            searchDebounce: null,
 
             get nights() {
                 if (this.checkIn && this.checkOut) {
@@ -275,6 +283,61 @@
                     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
                 }
                 return 0;
+            },
+
+            init() {
+                if (this.checkIn && this.checkOut) {
+                    this.searchRooms();
+                }
+            },
+
+            searchRooms() {
+                if (this.searchDebounce) clearTimeout(this.searchDebounce);
+                this.searchDebounce = setTimeout(() => {
+                    if (!this.checkIn || !this.checkOut) {
+                        this.availableRooms = [];
+                        this.selectedRoom = '';
+                        this.pricePerNight = 0;
+                        return;
+                    }
+                    if (new Date(this.checkOut) <= new Date(this.checkIn)) {
+                        this.availableRooms = [];
+                        this.selectedRoom = '';
+                        this.pricePerNight = 0;
+                        return;
+                    }
+                    this.roomsLoading = true;
+                    this.selectedRoom = '';
+                    this.pricePerNight = 0;
+
+                    const url = '{{ route("bookings.available-rooms") }}' 
+                        + '?check_in=' + encodeURIComponent(this.checkIn) 
+                        + '&check_out=' + encodeURIComponent(this.checkOut);
+
+                    fetch(url, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        this.availableRooms = data.rooms || [];
+                        this.roomsLoading = false;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching rooms:', error);
+                        this.availableRooms = [];
+                        this.roomsLoading = false;
+                    });
+                }, 300);
+            },
+
+            updateTotalFromRoom(room) {
+                this.pricePerNight = parseFloat(room.room_type?.price_per_night || room.room_type?.base_rate || 0);
+                if (this.nights > 0) {
+                    this.totalAmount = (this.nights * this.pricePerNight).toFixed(2);
+                }
             },
 
             updateTotal(rate) {

@@ -507,7 +507,8 @@ class BookingController extends Controller
             ->availableForDates($request->check_in, $request->check_out)
             ->when($request->room_type_id, fn($q) => $q->where('room_type_id', $request->room_type_id))
             ->orderBy('room_number')
-            ->get();
+            ->get()
+            ->each(fn($room) => $room->roomType?->append(['price_per_night', 'formatted_rate']));
 
         return response()->json([
             'rooms' => $rooms,

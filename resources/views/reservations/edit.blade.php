@@ -437,7 +437,8 @@
                                 name="check_in_date" 
                                 id="check_in_date"
                                 value="{{ old('check_in_date', $reservation->check_in_date->format('Y-m-d')) }}" 
-                                @input="calculateNights()"
+                                x-model="checkInDate"
+                                @input="calculateNights(); searchRooms()"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('check_in_date') border-red-500 @enderror"
                                 required>
                             @error('check_in_date')
@@ -460,7 +461,8 @@
                                 name="check_out_date" 
                                 id="check_out_date"
                                 value="{{ old('check_out_date', $reservation->check_out_date->format('Y-m-d')) }}" 
-                                @input="calculateNights()"
+                                x-model="checkOutDate"
+                                @input="calculateNights(); searchRooms()"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('check_out_date') border-red-500 @enderror"
                                 required>
                             @error('check_out_date')
@@ -525,23 +527,43 @@
                     <div class="mt-6">
                         <label for="room_id" class="block text-sm font-semibold text-secondary mb-2">
                             {{ __('reservations.fields.assigned_room') }} <span class="text-red-500">*</span>
+                            <span class="text-xs text-gray-500 ml-2" x-show="!checkInDate || !checkOutDate">{{ __('bookings.form.select_dates_hint') }}</span>
                         </label>
-                        <select 
-                            name="room_id" 
-                            id="room_id"
-                            x-model="selectedRoom"
-                            @change="updateEstimatedAmount()"
-                            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_id') border-red-500 @enderror"
-                            required>
-                            <option value="">{{ __('reservations.placeholders.select_room') }}</option>
-                            @foreach($availableRooms as $room)
-                            <option value="{{ $room->id }}" 
-                                data-rate="{{ $room->roomType->price_per_night ?? 0 }}"
-                                {{ old('room_id', $reservation->room_id) == $room->id ? 'selected' : '' }}>
-                                {{ $room->room_number }} - {{ $room->roomType->name }} ({{ $room->roomType->formatted_rate }}/night)
-                            </option>
-                            @endforeach
-                        </select>
+
+                        <template x-if="!checkInDate || !checkOutDate">
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                                <p class="text-sm text-yellow-800">{{ __('bookings.search_rooms_hint') }}</p>
+                            </div>
+                        </template>
+
+                        <template x-if="checkInDate && checkOutDate">
+                            <div>
+                                <div x-show="roomsLoading" class="flex items-center justify-center py-4">
+                                    <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span class="ml-2 text-sm text-gray-600">{{ __('reservations.messages.loading_rooms') }}</span>
+                                </div>
+                                <div x-show="!roomsLoading && availableRooms.length > 0">
+                                    <select 
+                                        name="room_id" 
+                                        id="room_id"
+                                        x-model="selectedRoom"
+                                        @change="updateEstimatedAmount()"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('room_id') border-red-500 @enderror"
+                                        required>
+                                        <option value="">{{ __('reservations.placeholders.select_room') }}</option>
+                                        <template x-for="room in availableRooms" :key="room.id">
+                                            <option :value="room.id" :data-rate="room.room_type.price_per_night ?? 0" x-text="room.room_number + ' - ' + (room.room_type?.name || 'N/A') + ' (' + (room.room_type?.formatted_rate || '') + '/night)'"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div x-show="!roomsLoading && availableRooms.length === 0 && checkInDate && checkOutDate" class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                                    <p class="text-sm text-red-700">{{ __('bookings.messages.no_available_rooms') }}</p>
+                                </div>
+                            </div>
+                        </template>
                         @error('room_id')
                             <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -758,9 +780,17 @@ function reservationForm() {
         showIdPhotoModal: false,
         idPhotoFile: null,
         idPhotoPreview: null,
+        checkInDate: '{{ old("check_in_date", $reservation->check_in_date->format("Y-m-d")) }}',
+        checkOutDate: '{{ old("check_out_date", $reservation->check_out_date->format("Y-m-d")) }}',
+        availableRooms: [],
+        roomsLoading: false,
+        searchDebounce: null,
 
         init() {
             this.updateCountryCode();
+            if (this.checkInDate && this.checkOutDate) {
+                this.searchRooms();
+            }
             if (this.selectedRoom) {
                 this.updateEstimatedAmount();
             }
@@ -813,21 +843,65 @@ function reservationForm() {
         },
 
         updateEstimatedAmount() {
-            const roomSelect = document.getElementById('room_id');
-            const option = roomSelect.options[roomSelect.selectedIndex];
-            if (option && option.value) {
-                this.pricePerNight = parseFloat(option.getAttribute('data-rate')) || 0;
+            if (!this.selectedRoom) {
+                this.pricePerNight = 0;
+                this.calculateNights();
+                return;
+            }
+            const room = this.availableRooms.find(r => r.id == this.selectedRoom);
+            if (room && room.room_type) {
+                this.pricePerNight = parseFloat(room.room_type.price_per_night) || 0;
             } else {
                 this.pricePerNight = 0;
             }
             this.calculateNights();
         },
 
+        searchRooms() {
+            if (this.searchDebounce) clearTimeout(this.searchDebounce);
+            this.searchDebounce = setTimeout(() => {
+                if (!this.checkInDate || !this.checkOutDate) {
+                    this.availableRooms = [];
+                    this.selectedRoom = '';
+                    this.pricePerNight = 0;
+                    return;
+                }
+                if (new Date(this.checkOutDate) <= new Date(this.checkInDate)) {
+                    this.availableRooms = [];
+                    this.selectedRoom = '';
+                    this.pricePerNight = 0;
+                    return;
+                }
+                this.roomsLoading = true;
+                this.selectedRoom = '';
+                this.pricePerNight = 0;
+
+                const url = '{{ route("bookings.available-rooms") }}' 
+                    + '?check_in=' + encodeURIComponent(this.checkInDate) 
+                    + '&check_out=' + encodeURIComponent(this.checkOutDate);
+
+                fetch(url, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    this.availableRooms = data.rooms || [];
+                    this.roomsLoading = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching rooms:', error);
+                    this.availableRooms = [];
+                    this.roomsLoading = false;
+                });
+            }, 300);
+        },
+
         calculateNights() {
-            const checkIn = document.getElementById('check_in_date').value;
-            const checkOut = document.getElementById('check_out_date').value;
-            if (checkIn && checkOut) {
-                const diff = new Date(checkOut) - new Date(checkIn);
+            if (this.checkInDate && this.checkOutDate) {
+                const diff = new Date(this.checkOutDate) - new Date(this.checkInDate);
                 this.nights = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
             } else {
                 this.nights = 0;

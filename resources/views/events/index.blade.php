@@ -10,6 +10,10 @@
             <h2 class="text-2xl font-extrabold text-secondary">All Events</h2>
             <p class="text-sm text-gray-500 mt-1">Manage conferences, seminars, and workshops</p>
         </div>
+        <a href="{{ route('events.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Create Event
+        </a>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -75,11 +79,20 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <a href="{{ route('organizations.events.show', [$event->organization, $event]) }}" class="text-primary hover:text-blue-700 font-semibold">View</a>
+                        <a href="{{ route('events.show', $event) }}" class="text-primary hover:text-blue-700 font-semibold">View</a>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="px-6 py-16 text-center text-gray-500">No events found.</td></tr>
+                <tr><td colspan="6" class="px-6 py-16 text-center text-gray-500">
+                    <div class="space-y-3">
+                        <svg class="w-12 h-12 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <p class="text-gray-500">No events yet. Create your first event!</p>
+                        <a href="{{ route('events.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Create Event
+                        </a>
+                    </div>
+                </td></tr>
                 @endforelse
             </tbody>
         </table>

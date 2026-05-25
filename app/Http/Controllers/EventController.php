@@ -215,4 +215,79 @@ class EventController extends Controller
         return redirect()->route('organizations.events.show', [$organization, $newEvent])
             ->with('success', 'Event duplicated successfully.');
     }
+
+    public function createStandalone()
+    {
+        $organizations = Organization::orderBy('name')->get();
+        $conferenceTypes = ConferenceType::orderBy('name')->get();
+        return view('events.create-standalone', compact('organizations', 'conferenceTypes'));
+    }
+
+    public function storeStandalone(Request $request)
+    {
+        $validated = $request->validate([
+            'organization_id' => 'required|uuid|exists:organizations,id',
+            'title' => 'required|string|max:255',
+            'conference_type_id' => 'nullable|uuid|exists:conference_types,id',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'theme_color' => 'nullable|string|max:7',
+            'visibility' => 'required|in:public,private,organization-only',
+            'capacity' => 'nullable|integer|min:1',
+            'expected_attendance' => 'nullable|integer|min:1',
+            'event_rate' => 'nullable|numeric|min:0',
+        ]);
+
+        $organization = Organization::findOrFail($validated['organization_id']);
+        $eventRate = array_pull($validated, 'event_rate', 0);
+        $validated['slug'] = Str::slug($validated['title']);
+        $validated['status'] = 'draft';
+
+        if ($eventRate > 0) {
+            $validated['metadata'] = ['event_rate' => (float) $eventRate];
+            $validated['event_rate_total'] = (float) $eventRate;
+        }
+
+        $baseSlug = $validated['slug'];
+        $counter = 1;
+        while (Event::where('organization_id', $organization->id)->where('slug', $validated['slug'])->exists()) {
+            $validated['slug'] = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        $event = Event::create($validated);
+
+        return redirect()->route('organizations.events.show', [$organization, $event])
+            ->with('success', 'Event created successfully. Now add schedules, passes, and venues.');
+    }
+
+    public function showStandalone(Event $event)
+    {
+        $organization = $event->organization;
+        $event->load([
+            'conferenceType',
+            'schedules',
+            'passes',
+            'venues.conferenceHall',
+            'venues.booking',
+            'staff.user',
+            'attendances' => function ($query) {
+                $query->latest()->limit(10);
+            },
+        ]);
+        $event->loadCount(['attendances', 'schedules', 'passes']);
+
+        $billing = $event->calculateBilling();
+
+        $stats = [
+            'total_attendances' => $event->attendances_count,
+            'confirmed' => $event->attendances()->where('registration_status', 'confirmed')->count(),
+            'checked_in' => $event->attendances()->where('total_check_ins', '>', 0)->count(),
+            'no_shows' => $event->attendances()->where('registration_status', 'no_show')->count(),
+            'revenue' => $billing['grand_total'],
+        ];
+
+        return view('events.show', compact('organization', 'event', 'stats', 'billing'));
+    }
 }

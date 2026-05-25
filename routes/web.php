@@ -303,6 +303,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Conference Management Routes (Manager has hall booking/conference access but NOT hall management)
     Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
+        // Events (standalone - list all, create with org selection)
+        Route::get('events', [EventController::class, 'index'])->name('events.index');
+        Route::get('events/create', [EventController::class, 'createStandalone'])->name('events.create');
+        Route::post('events', [EventController::class, 'storeStandalone'])->name('events.store');
+        Route::get('events/{event}', [EventController::class, 'showStandalone'])->name('events.show');
+
         // Institutions (organisations that book conference halls)
         Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
         Route::get('institutions/create', [InstitutionController::class, 'create'])->name('institutions.create');

@@ -215,7 +215,6 @@ return [
         'add_user' => 'Add User',
         'new_laundry_order' => 'New Laundry Order',
         'create_laundry_order' => 'Create Laundry Order',
-        'new_conference' => 'New Conference',
         'all_orders' => 'All Orders',
         'my_profile' => 'My Profile',
         'pending_orders' => 'Pending Orders',
@@ -250,14 +249,6 @@ return [
         'delivered' => 'Delivered',
         'today' => 'Today',
         'today_tasks' => 'Today\'s Tasks',
-    ],
-    
-    // Conference
-    'conference' => [
-        'pending' => 'Pending',
-        'confirmed' => 'Confirmed',
-        'today' => 'Today',
-        'upcoming' => 'Upcoming',
     ],
     
     // Room status labels
@@ -431,7 +422,6 @@ return [
         'add_user' => 'Add User',
         'new_laundry_order' => 'New Laundry Order',
         'create_laundry_order' => 'Create Laundry Order',
-        'new_conference' => 'New Conference',
         'all_orders' => 'All Orders',
         'my_profile' => 'My Profile',
         'pending_orders' => 'Pending Orders',

@@ -210,7 +210,6 @@ return [
         'add_user' => 'Ongeza Mtumiaji',
         'new_laundry_order' => 'Agizo Jipya la Kufulia',
         'create_laundry_order' => 'Unda Agizo la Kufulia',
-        'new_conference' => 'Mkutano Mpya',
         'all_orders' => 'Maagizo Yote',
         'my_profile' => 'Wasifu Wangu',
         'pending_orders' => 'Maagizo Yanayosubiri',
@@ -245,14 +244,6 @@ return [
         'delivered' => 'Imetolewa',
         'today' => 'Leo',
         'today_tasks' => 'Kazi za Leo',
-    ],
-    
-    // Conference
-    'conference' => [
-        'pending' => 'Inasubiri',
-        'confirmed' => 'Imethibitishwa',
-        'today' => 'Leo',
-        'upcoming' => 'Inakuja',
     ],
     
     // Room status labels
@@ -421,7 +412,6 @@ return [
         'add_user' => 'Ongeza Mtumiaji',
         'new_laundry_order' => 'Agizo Jipya la Kufulia',
         'create_laundry_order' => 'Unda Agizo la Kufulia',
-        'new_conference' => 'Mkutano Mpya',
         'all_orders' => 'Maagizo Yote',
         'my_profile' => 'Wasifu Wangu',
         'pending_orders' => 'Maagizo Yanayosubiri',

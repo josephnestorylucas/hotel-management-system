@@ -138,50 +138,7 @@
         @endif
     </div>
 
-    <!-- Conference Details -->
-    @if($conferenceBooking->conference)
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-secondary">Conference Details</h3>
-            <a href="{{ route('conferences.show', $conferenceBooking->conference) }}" class="text-primary hover:text-blue-700 font-semibold text-sm">
-                View Conference →
-            </a>
-        </div>
-        
-        <div class="space-y-3">
-            <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                <span class="text-sm text-gray-500">Conference Title</span>
-                <span class="text-sm font-semibold text-secondary">{{ $conferenceBooking->conference->title }}</span>
-            </div>
-            <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                <span class="text-sm text-gray-500">Status</span>
-                <div>@include('components.conference-status-badge', ['status' => $conferenceBooking->conference->status])</div>
-            </div>
-            <div class="flex items-center justify-between py-2 border-b border-gray-100">
-                <span class="text-sm text-gray-500">Participants</span>
-                <span class="text-sm font-semibold text-secondary">{{ $conferenceBooking->conference->participants_count }} registered</span>
-            </div>
-        </div>
-    </div>
-    @else
-    <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
-        <div class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            <div>
-                <h4 class="text-sm font-semibold text-yellow-800 mb-1">No Conference Created</h4>
-                <p class="text-sm text-yellow-700">This booking doesn't have a conference yet. Create one to add event details and participants.</p>
-                <a href="{{ route('conferences.create') }}?booking_id={{ $conferenceBooking->id }}" class="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-yellow-600 text-white text-sm font-semibold rounded-lg hover:bg-yellow-700 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Create Conference
-                </a>
-            </div>
-        </div>
-    </div>
-    @endif
+
 
     <!-- Actions -->
     <div class="flex items-center justify-between">

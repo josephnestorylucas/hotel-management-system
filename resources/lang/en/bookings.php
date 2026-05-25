@@ -20,7 +20,6 @@ return [
     'todays_checkins' => "Today's Check-ins",
     'todays_checkouts' => "Today's Check-outs",
     'hall_bookings' => 'Hall Bookings',
-    'conferences' => 'Conferences',
     'current_guests' => 'Current Guests',
     'check_in' => 'Check In',
     'check_out' => 'Check Out',

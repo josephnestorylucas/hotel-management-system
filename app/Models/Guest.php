@@ -201,16 +201,6 @@ class Guest extends Model implements HasMedia
         return $this->hasMany(ConferenceBooking::class);
     }
 
-    public function conferences(): HasMany
-    {
-        return $this->hasMany(Conference::class);
-    }
-
-    public function conferenceParticipations(): HasMany
-    {
-        return $this->hasMany(ConferenceParticipant::class);
-    }
-
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

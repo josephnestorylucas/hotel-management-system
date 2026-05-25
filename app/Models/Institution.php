@@ -24,8 +24,4 @@ class Institution extends Model
         return $this->hasMany(ConferenceBooking::class);
     }
 
-    public function conferences(): HasMany
-    {
-        return $this->hasMany(Conference::class);
-    }
 }

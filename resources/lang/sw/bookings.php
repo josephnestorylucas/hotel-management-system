@@ -20,7 +20,6 @@ return [
     'todays_checkins' => 'Wanaoingia Leo',
     'todays_checkouts' => 'Wanaotoka Leo',
     'hall_bookings' => 'Uhifadhi wa Ukumbi',
-    'conferences' => 'Mikutano',
     'current_guests' => 'Wageni wa Sasa',
     'check_in' => 'Sajili',
     'check_out' => 'Ondoa',

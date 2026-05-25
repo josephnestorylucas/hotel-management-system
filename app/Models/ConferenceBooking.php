@@ -6,7 +6,6 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -63,11 +62,6 @@ class ConferenceBooking extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function conference(): HasOne
-    {
-        return $this->hasOne(Conference::class);
     }
 
     public function event(): BelongsTo

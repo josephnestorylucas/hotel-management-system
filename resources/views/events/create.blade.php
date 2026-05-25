@@ -37,7 +37,13 @@
                     <select name="conference_hall_id" id="conference_hall_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Select hall...</option>
                         @foreach($conferenceHalls as $hall)
-                        <option value="{{ $hall->id }}" data-capacity="{{ $hall->capacity }}" data-rate="{{ $hall->hourly_rate }}" {{ old('conference_hall_id') == $hall->id ? 'selected' : '' }}>{{ $hall->name }} {{ $hall->capacity ? '(' . $hall->capacity . ' pax)' : '' }}</option>
+                        @php
+                            $hallRate = (float) $hall->hourly_rate;
+                            $hallCurrency = $hall->currency ?? 'USD';
+                            $systemCurrency = \App\Helpers\CurrencyHelper::getDefaultCurrency();
+                            $convertedRate = $hallCurrency !== $systemCurrency ? \App\Helpers\CurrencyHelper::convert($hallRate, $hallCurrency, $systemCurrency) : $hallRate;
+                        @endphp
+                        <option value="{{ $hall->id }}" data-capacity="{{ $hall->capacity }}" data-rate="{{ $convertedRate }}" data-rate-display="{{ \App\Helpers\CurrencyHelper::formatCurrency($convertedRate, $systemCurrency) }}/hr" {{ old('conference_hall_id') == $hall->id ? 'selected' : '' }}>{{ $hall->name }} {{ $hall->capacity ? '(' . $hall->capacity . ' pax)' : '' }}</option>
                         @endforeach
                     </select>
                     @error('conference_hall_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -111,7 +117,7 @@ document.getElementById('conference_hall_id').addEventListener('change', functio
 
     if (rate) {
         eventRateInput.value = rate;
-        rateHint.textContent = '(hall rate: ' + rate + '/hr)';
+        rateHint.textContent = '(hall rate: ' + opt.dataset.rateDisplay + ')';
     } else {
         eventRateInput.value = '';
         rateHint.textContent = '';

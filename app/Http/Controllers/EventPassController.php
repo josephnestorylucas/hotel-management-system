@@ -16,28 +16,27 @@ class EventPassController extends Controller
             ->orderBy('tier_type')
             ->get();
 
+        $event->load('schedules');
+
         return view('event-passes.index', compact('organization', 'event', 'passes'));
     }
 
     public function create(Organization $organization, Event $event)
     {
-        return view('event-passes.create', compact('organization', 'event'));
+        $schedules = $event->schedules()->orderBy('start_datetime')->get();
+        return view('event-passes.create', compact('organization', 'event', 'schedules'));
     }
 
     public function store(Request $request, Organization $organization, Event $event)
     {
         $validated = $request->validate([
-            'tier_name' => 'required|string|max:255',
             'tier_type' => 'required|in:speaker,moderator,backdoor,attendee',
-            'description' => 'nullable|string',
-            'quantity_available' => 'nullable|integer|min:1',
-            'access_type' => 'required|in:single-session,all-sessions,day-pass,unlimited',
-            'benefits' => 'nullable|array',
+            'access_type' => 'required|string|max:255',
             'color' => 'nullable|string|max:7',
         ]);
 
         $validated['event_id'] = $event->id;
-        $validated['status'] = 'draft';
+        $validated['status'] = 'on_sale';
 
         $event->passes()->create($validated);
 
@@ -48,23 +47,21 @@ class EventPassController extends Controller
     public function show(Organization $organization, Event $event, EventPass $pass)
     {
         $pass->loadCount('attendances');
+        $event->load('schedules');
         return view('event-passes.show', compact('organization', 'event', 'pass'));
     }
 
     public function edit(Organization $organization, Event $event, EventPass $pass)
     {
-        return view('event-passes.edit', compact('organization', 'event', 'pass'));
+        $schedules = $event->schedules()->orderBy('start_datetime')->get();
+        return view('event-passes.edit', compact('organization', 'event', 'pass', 'schedules'));
     }
 
     public function update(Request $request, Organization $organization, Event $event, EventPass $pass)
     {
         $validated = $request->validate([
-            'tier_name' => 'required|string|max:255',
             'tier_type' => 'required|in:speaker,moderator,backdoor,attendee',
-            'description' => 'nullable|string',
-            'quantity_available' => 'nullable|integer|min:1',
-            'access_type' => 'required|in:single-session,all-sessions,day-pass,unlimited',
-            'benefits' => 'nullable|array',
+            'access_type' => 'required|string|max:255',
             'status' => 'nullable|in:draft,on_sale,sold_out,archived',
             'color' => 'nullable|string|max:7',
         ]);

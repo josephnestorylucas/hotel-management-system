@@ -25,10 +25,8 @@
             @if(in_array($event->status, ['scheduled', 'ongoing']))
             <button type="button" onclick="document.getElementById('complete-form').classList.toggle('hidden')" class="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700">Complete</button>
             @endif
-            @if($event->isActive())
             <a href="{{ route('organizations.events.check-in.dashboard', [$organization, $event]) }}" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700">Check-in</a>
             <a href="{{ route('organizations.events.check-in.scanner', [$organization, $event]) }}" class="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700">Scanner</a>
-            @endif
             @if($event->isDraft())
             <a href="{{ route('organizations.events.edit', [$organization, $event]) }}" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Edit</a>
             @endif
@@ -216,12 +214,12 @@
                 <div class="space-y-2">
                     <a href="{{ route('organizations.events.attendances.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-100 transition-colors text-center">Register Attendee</a>
                     <a href="{{ route('organizations.events.attendances.bulk-upload', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-purple-50 text-purple-700 text-sm font-semibold rounded-lg hover:bg-purple-100 transition-colors text-center">Bulk Upload</a>
+                    <a href="{{ route('organizations.events.schedules.index', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">Sessions</a>
                     <a href="{{ route('organizations.events.schedules.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-green-50 text-green-700 text-sm font-semibold rounded-lg hover:bg-green-100 transition-colors text-center">Add Session</a>
                     <a href="{{ route('organizations.events.passes.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-orange-50 text-orange-700 text-sm font-semibold rounded-lg hover:bg-orange-100 transition-colors text-center">Add Pass Type</a>
+                    <a href="{{ route('organizations.events.check-in.dashboard', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-teal-50 text-teal-700 text-sm font-semibold rounded-lg hover:bg-teal-100 transition-colors text-center">Check-in Dashboard</a>
+                    <a href="{{ route('organizations.events.check-in.scanner', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-cyan-50 text-cyan-700 text-sm font-semibold rounded-lg hover:bg-cyan-100 transition-colors text-center">Scan Passes</a>
                     <a href="{{ route('organizations.events.reports.pre-event', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors text-center">View Reports</a>
-                    @if($event->isActive())
-                    <a href="{{ route('organizations.events.check-in.scanner', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-teal-50 text-teal-700 text-sm font-semibold rounded-lg hover:bg-teal-100 transition-colors text-center">Scan Passes</a>
-                    @endif
                 </div>
             </div>
 

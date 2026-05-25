@@ -35,19 +35,11 @@
                     <input type="text" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                    <input type="text" name="company" value="{{ old('company') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-                    <input type="text" name="job_title" value="{{ old('job_title') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pass Type</label>
                     <select name="event_pass_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">No pass</option>
                         @foreach($passes as $pass)
-                        <option value="{{ $pass->id }}" {{ old('event_pass_id') == $pass->id ? 'selected' : '' }}>{{ $pass->tier_name }} - @currency($pass->price)</option>
+                        <option value="{{ $pass->id }}" {{ old('event_pass_id') == $pass->id ? 'selected' : '' }}>{{ $pass->tier_name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -71,14 +63,6 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Dietary Requirements</label>
                     <input type="text" name="dietary_requirements" value="{{ old('dietary_requirements') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Link to Guest</label>
-                    <input type="text" name="guest_id" value="{{ old('guest_id') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Guest UUID (optional)">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                    <textarea name="notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('notes') }}</textarea>
                 </div>
             </div>
         </div>

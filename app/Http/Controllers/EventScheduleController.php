@@ -22,7 +22,8 @@ class EventScheduleController extends Controller
     public function create(Organization $organization, Event $event)
     {
         $nextSessionNumber = $event->schedules()->max('session_number') + 1;
-        return view('event-schedules.create', compact('organization', 'event', 'nextSessionNumber'));
+        $hallName = $event->venues()->with('conferenceHall')->first()?->conferenceHall?->name;
+        return view('event-schedules.create', compact('organization', 'event', 'nextSessionNumber', 'hallName'));
     }
 
     public function store(Request $request, Organization $organization, Event $event)
@@ -34,10 +35,7 @@ class EventScheduleController extends Controller
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after:start_datetime',
             'location' => 'nullable|string|max:255',
-            'speaker_name' => 'nullable|string|max:255',
-            'speaker_email' => 'nullable|email|max:255',
             'session_type' => 'required|in:keynote,workshop,networking,break,panel,presentation,other',
-            'max_capacity' => 'nullable|integer|min:1',
         ]);
 
         $event->schedules()->create($validated);
@@ -66,10 +64,7 @@ class EventScheduleController extends Controller
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after:start_datetime',
             'location' => 'nullable|string|max:255',
-            'speaker_name' => 'nullable|string|max:255',
-            'speaker_email' => 'nullable|email|max:255',
             'session_type' => 'required|in:keynote,workshop,networking,break,panel,presentation,other',
-            'max_capacity' => 'nullable|integer|min:1',
         ]);
 
         $schedule->update($validated);

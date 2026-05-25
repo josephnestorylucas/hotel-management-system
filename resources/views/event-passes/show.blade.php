@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', $pass->tier_name)
+@section('title', ucfirst($pass->tier_type) . ' Pass')
 @section('page-title', 'Events')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">{{ $pass->tier_name }}</h2>
+            <h2 class="text-2xl font-extrabold text-secondary">{{ ucfirst($pass->tier_type) }} Pass</h2>
             <p class="text-sm text-gray-500 mt-1">{{ $event->title }}</p>
         </div>
         <a href="{{ route('organizations.events.passes.index', [$organization, $event]) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Passes</a>
@@ -37,7 +37,15 @@
             </div>
             <div>
                 <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Access</label>
-                <p class="text-sm font-semibold text-secondary mt-1">{{ ucfirst(str_replace('-', ' ', $pass->access_type)) }}</p>
+                @php
+                    $accessLabel = ucfirst(str_replace('-', ' ', $pass->access_type));
+                    if (str_starts_with($pass->access_type, 'session-')) {
+                        $sessionId = substr($pass->access_type, 8);
+                        $session = $event->schedules->firstWhere('id', $sessionId);
+                        $accessLabel = $session ? $session->name : 'Session';
+                    }
+                @endphp
+                <p class="text-sm font-semibold text-secondary mt-1">{{ $accessLabel }}</p>
             </div>
             <div>
                 <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</label>

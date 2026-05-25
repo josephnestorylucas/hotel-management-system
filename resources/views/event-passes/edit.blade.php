@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-extrabold text-secondary">Edit Pass Type</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ $pass->tier_name }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ ucfirst($pass->tier_type) }} Pass</p>
         </div>
         <a href="{{ route('organizations.events.passes.index', [$organization, $event]) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Passes</a>
     </div>
@@ -18,20 +18,12 @@
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pass Name *</label>
-                    <input type="text" name="tier_name" value="{{ old('tier_name', $pass->tier_name) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pass Type *</label>
                     <select name="tier_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         @foreach(['attendee','speaker','moderator','backdoor'] as $type)
                         <option value="{{ $type }}" {{ old('tier_type', $pass->tier_type) === $type ? 'selected' : '' }}>{{ ucfirst($type) }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity Available</label>
-                    <input type="number" name="quantity_available" value="{{ old('quantity_available', $pass->quantity_available) }}" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -45,18 +37,15 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Access Type *</label>
                     <select name="access_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        @foreach(['all-sessions','single-session','day-pass','unlimited'] as $type)
-                        <option value="{{ $type }}" {{ old('access_type', $pass->access_type) === $type ? 'selected' : '' }}>{{ ucfirst(str_replace('-', ' ', $type)) }}</option>
+                        <option value="all-sessions" {{ old('access_type', $pass->access_type) === 'all-sessions' ? 'selected' : '' }}>All Sessions</option>
+                        @foreach($schedules as $schedule)
+                        <option value="session-{{ $schedule->id }}" {{ old('access_type', $pass->access_type) === 'session-' . $schedule->id ? 'selected' : '' }}>{{ $schedule->name }} ({{ $schedule->start_datetime->format('M d, H:i') }})</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Badge Color</label>
                     <input type="color" name="color" value="{{ old('color', $pass->color ?? '#3B82F6') }}" class="w-full h-10 px-1 py-1 border border-gray-300 rounded-lg">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea name="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('description', $pass->description) }}</textarea>
                 </div>
             </div>
         </div>

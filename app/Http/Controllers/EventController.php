@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\ConferenceHall;
 use App\Models\ConferenceType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
@@ -44,8 +45,8 @@ class EventController extends Controller
             'event_rate' => 'nullable|numeric|min:0',
         ]);
 
-        $conferenceHallId = array_pull($validated, 'conference_hall_id');
-        $eventRate = array_pull($validated, 'event_rate', 0);
+        $conferenceHallId = Arr::pull($validated, 'conference_hall_id');
+        $eventRate = Arr::pull($validated, 'event_rate', 0);
 
         $hall = ConferenceHall::find($conferenceHallId);
 
@@ -137,7 +138,7 @@ class EventController extends Controller
             'event_rate' => 'nullable|numeric|min:0',
         ]);
 
-        $eventRate = array_pull($validated, 'event_rate', 0);
+        $eventRate = Arr::pull($validated, 'event_rate', 0);
         if ($eventRate > 0 || $event->event_rate_total > 0) {
             $metadata = $event->metadata ?? [];
             $metadata['event_rate'] = (float) $eventRate;
@@ -264,8 +265,8 @@ class EventController extends Controller
         ]);
 
         $organization = Organization::findOrFail($validated['organization_id']);
-        $conferenceHallId = array_pull($validated, 'conference_hall_id');
-        $eventRate = array_pull($validated, 'event_rate', 0);
+        $conferenceHallId = Arr::pull($validated, 'conference_hall_id');
+        $eventRate = Arr::pull($validated, 'event_rate', 0);
 
         $hall = ConferenceHall::find($conferenceHallId);
 

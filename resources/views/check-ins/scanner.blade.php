@@ -80,9 +80,11 @@
 <script>
 let html5QrCode = null;
 let cameraRunning = false;
+let cameraStarting = false;
 let processing = false;
 
 function toggleCamera() {
+    if (cameraStarting) return;
     if (cameraRunning) {
         stopCamera();
     } else {
@@ -91,53 +93,88 @@ function toggleCamera() {
 }
 
 function startCamera() {
+    if (cameraStarting || cameraRunning) return;
+    cameraStarting = true;
+
     const container = document.getElementById('camera-container');
-    const video = document.getElementById('camera-video');
     const offMsg = document.getElementById('camera-off');
     const btn = document.getElementById('toggle-camera');
 
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    try {
+        if (html5QrCode) {
+            html5QrCode.clear();
+            html5QrCode = null;
+        }
+    } catch(e) {}
+
+    const el = document.getElementById('camera-video');
+    if (!el) {
+        alert('Camera element not found.');
+        cameraStarting = false;
+        btn.textContent = 'Start Camera';
+        btn.disabled = false;
+        return;
+    }
+
     html5QrCode = new Html5Qrcode("camera-video");
 
-    Html5Qrcode.getCameras().then(cameras => {
-        if (!cameras || cameras.length === 0) {
-            alert('No camera found on this device.');
-            return;
-        }
-
-        const cameraId = cameras[cameras.length - 1].id;
-
-        html5QrCode.start(
-            cameraId,
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            onScanSuccess,
-            () => {}
-        ).then(() => {
-            cameraRunning = true;
-            container.classList.remove('hidden');
-            offMsg.classList.add('hidden');
-            btn.textContent = 'Stop Camera';
-            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            btn.classList.add('bg-red-600', 'hover:bg-red-700');
-        }).catch(err => {
-            alert('Could not start camera: ' + err);
-        });
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        () => {}
+    ).then(() => {
+        cameraRunning = true;
+        cameraStarting = false;
+        container.classList.remove('hidden');
+        offMsg.classList.add('hidden');
+        btn.textContent = 'Stop Camera';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btn.classList.add('bg-red-600', 'hover:bg-red-700');
+        btn.disabled = false;
     }).catch(err => {
-        alert('Could not access cameras: ' + err);
+        cameraStarting = false;
+        btn.textContent = 'Start Camera';
+        btn.disabled = false;
+        console.warn('Camera error:', err);
     });
 }
 
 function stopCamera() {
-    if (html5QrCode && cameraRunning) {
-        html5QrCode.stop().then(() => {
-            cameraRunning = false;
-            document.getElementById('camera-container').classList.add('hidden');
-            document.getElementById('camera-off').classList.remove('hidden');
-            const btn = document.getElementById('toggle-camera');
-            btn.textContent = 'Start Camera';
-            btn.classList.remove('bg-red-600', 'hover:bg-red-700');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-        });
+    if (!html5QrCode || !cameraRunning) {
+        document.getElementById('camera-container').classList.add('hidden');
+        document.getElementById('camera-off').classList.remove('hidden');
+        const btn = document.getElementById('toggle-camera');
+        btn.textContent = 'Start Camera';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        btn.disabled = false;
+        return;
     }
+
+    cameraRunning = false;
+
+    html5QrCode.stop().then(() => {
+        document.getElementById('camera-container').classList.add('hidden');
+        document.getElementById('camera-off').classList.remove('hidden');
+        const btn = document.getElementById('toggle-camera');
+        btn.textContent = 'Start Camera';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        btn.disabled = false;
+    }).catch(err => {
+        console.warn('Stop error:', err);
+        document.getElementById('camera-container').classList.add('hidden');
+        document.getElementById('camera-off').classList.remove('hidden');
+        const btn = document.getElementById('toggle-camera');
+        btn.textContent = 'Start Camera';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        btn.disabled = false;
+    });
 }
 
 function onScanSuccess(decodedText) {

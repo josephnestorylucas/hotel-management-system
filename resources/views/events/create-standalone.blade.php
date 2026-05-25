@@ -71,15 +71,17 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Capacity <span id="capacity-hint" class="text-xs text-gray-400 font-normal"></span></label>
-                    <input type="number" name="capacity" id="capacity" value="{{ old('capacity') }}" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="number" name="capacity" id="capacity" value="{{ old('capacity') }}" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Auto-filled from hall">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Expected Attendance</label>
                     <input type="number" name="expected_attendance" value="{{ old('expected_attendance') }}" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Rate</label>
-                    <input type="number" name="event_rate" value="{{ old('event_rate', '0') }}" min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Service/event management rate">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Rate <span id="rate-hint" class="text-xs text-gray-400 font-normal"></span></label>
+                    <div class="relative">
+                        <input type="number" name="event_rate" id="event_rate" value="{{ old('event_rate') }}" min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50" placeholder="Auto-filled from hall rate" readonly>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Theme Color</label>
@@ -103,15 +105,26 @@
 document.getElementById('conference_hall_id').addEventListener('change', function() {
     const opt = this.options[this.selectedIndex];
     const cap = opt.dataset.capacity;
+    const rate = opt.dataset.rate;
     const capacityInput = document.getElementById('capacity');
-    const hint = document.getElementById('capacity-hint');
-    if (cap && !capacityInput.value) {
+    const eventRateInput = document.getElementById('event_rate');
+    const capacityHint = document.getElementById('capacity-hint');
+    const rateHint = document.getElementById('rate-hint');
+
+    if (cap) {
         capacityInput.value = cap;
-        hint.textContent = '(auto-filled from hall)';
-    } else if (cap) {
-        hint.textContent = '(hall capacity: ' + cap + ')';
+        capacityHint.textContent = '(from hall)';
     } else {
-        hint.textContent = '';
+        capacityInput.value = '';
+        capacityHint.textContent = '';
+    }
+
+    if (rate) {
+        eventRateInput.value = rate;
+        rateHint.textContent = '(hall rate: ' + rate + '/hr)';
+    } else {
+        eventRateInput.value = '';
+        rateHint.textContent = '';
     }
 });
 </script>

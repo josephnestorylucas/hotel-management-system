@@ -47,11 +47,14 @@ class EventController extends Controller
         $conferenceHallId = array_pull($validated, 'conference_hall_id');
         $eventRate = array_pull($validated, 'event_rate', 0);
 
-        if (empty($validated['capacity'])) {
-            $hall = ConferenceHall::find($conferenceHallId);
-            if ($hall && $hall->capacity) {
-                $validated['capacity'] = $hall->capacity;
-            }
+        $hall = ConferenceHall::find($conferenceHallId);
+
+        if (empty($validated['capacity']) && $hall && $hall->capacity) {
+            $validated['capacity'] = $hall->capacity;
+        }
+
+        if (empty($eventRate) && $hall && $hall->hourly_rate) {
+            $eventRate = (float) $hall->hourly_rate;
         }
 
         $validated['organization_id'] = $organization->id;
@@ -264,11 +267,14 @@ class EventController extends Controller
         $conferenceHallId = array_pull($validated, 'conference_hall_id');
         $eventRate = array_pull($validated, 'event_rate', 0);
 
-        if (empty($validated['capacity'])) {
-            $hall = ConferenceHall::find($conferenceHallId);
-            if ($hall && $hall->capacity) {
-                $validated['capacity'] = $hall->capacity;
-            }
+        $hall = ConferenceHall::find($conferenceHallId);
+
+        if (empty($validated['capacity']) && $hall && $hall->capacity) {
+            $validated['capacity'] = $hall->capacity;
+        }
+
+        if (empty($eventRate) && $hall && $hall->hourly_rate) {
+            $eventRate = (float) $hall->hourly_rate;
         }
 
         $validated['slug'] = Str::slug($validated['title']);

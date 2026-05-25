@@ -35,22 +35,22 @@
                     <input type="text" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pass Type</label>
-                    <select name="event_pass_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">No pass</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pass Type *</label>
+                    <select name="event_pass_id" id="event_pass_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select a pass</option>
                         @foreach($passes as $pass)
-                        <option value="{{ $pass->id }}" {{ old('event_pass_id') == $pass->id ? 'selected' : '' }}>{{ $pass->tier_name }}</option>
+                        @php
+                            $accessLabel = 'All Sessions';
+                            if (str_starts_with($pass->access_type, 'session-')) {
+                                $sessionId = substr($pass->access_type, 8);
+                                $session = $event->schedules->firstWhere('id', $sessionId);
+                                $accessLabel = $session ? $session->name : 'Session';
+                            }
+                        @endphp
+                        <option value="{{ $pass->id }}" data-tier="{{ $pass->tier_type }}" {{ old('event_pass_id') == $pass->id ? 'selected' : '' }}>{{ ucfirst($pass->tier_type) }} - {{ $accessLabel }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pass Category</label>
-                    <select name="pass_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="attendee" {{ old('pass_type') === 'attendee' ? 'selected' : '' }}>Attendee</option>
-                        <option value="speaker" {{ old('pass_type') === 'speaker' ? 'selected' : '' }}>Speaker</option>
-                        <option value="moderator" {{ old('pass_type') === 'moderator' ? 'selected' : '' }}>Moderator</option>
-                        <option value="backdoor" {{ old('pass_type') === 'backdoor' ? 'selected' : '' }}>Backdoor</option>
-                    </select>
+                    <input type="hidden" name="pass_type" id="pass_type_input" value="{{ old('pass_type') }}">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Registration Type</label>
@@ -73,4 +73,12 @@
         </div>
     </form>
 </div>
+
+<script>
+document.getElementById('event_pass_id').addEventListener('change', function() {
+    var opt = this.options[this.selectedIndex];
+    var tier = opt.getAttribute('data-tier');
+    document.getElementById('pass_type_input').value = tier || 'attendee';
+});
+</script>
 @endsection

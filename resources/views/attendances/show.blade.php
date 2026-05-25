@@ -11,12 +11,12 @@
             <p class="text-sm text-gray-500 mt-1">{{ $event->title }} &middot; {{ $attendance->ticket_number }}</p>
         </div>
         <div class="flex items-center gap-3">
-            @if($attendance->registration_status === 'confirmed')
-            <form method="POST" action="{{ route('organizations.events.attendances.mark-no-show', [$organization, $event, $attendance]) }}" class="inline">@csrf
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Mark No-Show</button>
+            <a href="{{ route('organizations.events.attendances.ticket-pdf', [$organization, $event, $attendance]) }}" target="_blank" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700">View Ticket</a>
+            <form method="POST" action="{{ route('organizations.events.attendances.send-ticket', [$organization, $event, $attendance]) }}" class="inline">@csrf
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700">Send Ticket</button>
             </form>
-            @endif
-            <a href="{{ route('organizations.events.attendances.index', [$organization, $event]) }}" class="text-primary hover:text-blue-700 font-semibold">Back to Attendees</a>
+            <a href="{{ route('organizations.events.attendances.edit', [$organization, $event, $attendance]) }}" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Edit</a>
+            <a href="{{ route('organizations.events.attendances.index', [$organization, $event]) }}" class="text-primary hover:text-blue-700 font-semibold">Back</a>
         </div>
     </div>
 
@@ -38,16 +38,20 @@
                         <p class="text-sm text-secondary mt-1">{{ $attendance->phone ?? 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Company</label>
-                        <p class="text-sm text-secondary mt-1">{{ $attendance->company ?? 'N/A' }}</p>
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</label>
-                        <p class="text-sm text-secondary mt-1">{{ $attendance->job_title ?? 'N/A' }}</p>
-                    </div>
-                    <div>
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pass Type</label>
-                        <p class="text-sm text-secondary mt-1">{{ $attendance->eventPass?->tier_name ?? 'N/A' }}</p>
+                        <p class="mt-1">
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full
+                                @if($attendance->pass_type === 'speaker') bg-purple-100 text-purple-700
+                                @elseif($attendance->pass_type === 'moderator') bg-blue-100 text-blue-700
+                                @elseif($attendance->pass_type === 'backdoor') bg-orange-100 text-orange-700
+                                @else bg-gray-100 text-gray-700 @endif">
+                                {{ ucfirst($attendance->pass_type ?? 'attendee') }}
+                            </span>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Type</label>
+                        <p class="text-sm text-secondary mt-1">{{ ucfirst(str_replace('_', ' ', $attendance->registration_type ?? 'individual')) }}</p>
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</label>
@@ -61,6 +65,10 @@
                     <div>
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Check-ins</label>
                         <p class="text-2xl font-extrabold text-secondary mt-1">{{ $attendance->total_check_ins }}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Dietary Requirements</label>
+                        <p class="text-sm text-secondary mt-1">{{ $attendance->dietary_requirements ?? 'N/A' }}</p>
                     </div>
                 </div>
             </div>
@@ -90,20 +98,31 @@
 
         <!-- Sidebar -->
         <div class="space-y-6">
+            <!-- QR Code & Ticket -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-center">
+                <h3 class="text-lg font-bold text-secondary mb-4">Event Ticket</h3>
+                <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                    {!! SimpleSoftwareIO\QrCode\Facades\QrCode::size(180)->generate($attendance->qr_token) !!}
+                </div>
+                <div class="mb-2">
+                    <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Manual Code</label>
+                    <p class="text-2xl font-mono font-extrabold text-primary mt-1">{{ $attendance->manual_code }}</p>
+                </div>
+                <div class="text-xs text-gray-400 mb-4">Show this code at the registration desk</div>
+                <div class="space-y-2">
+                    <a href="{{ route('organizations.events.attendances.ticket-pdf', [$organization, $event, $attendance]) }}" target="_blank" class="block w-full px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">Print Ticket</a>
+                    <form method="POST" action="{{ route('organizations.events.attendances.send-ticket', [$organization, $event, $attendance]) }}">@csrf
+                        <button type="submit" class="w-full px-4 py-2 bg-green-50 text-green-700 text-sm font-semibold rounded-lg hover:bg-green-100 transition-colors">Send to {{ $attendance->email }}</button>
+                    </form>
+                </div>
+            </div>
+
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                 <h3 class="text-lg font-bold text-secondary mb-4">Pass Details</h3>
                 <div class="space-y-3">
                     <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pass Number</label>
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Number</label>
                         <p class="text-sm font-mono font-semibold text-secondary mt-1">{{ $attendance->ticket_number }}</p>
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Manual Code</label>
-                        <p class="text-lg font-mono font-bold text-primary mt-1">{{ $attendance->manual_code }}</p>
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">QR Token</label>
-                        <p class="text-xs font-mono text-gray-500 mt-1 break-all">{{ Str::limit($attendance->qr_token, 32) }}...</p>
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</label>
@@ -118,12 +137,10 @@
                 </div>
             </div>
 
-            @if($attendance->guest)
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h3 class="text-lg font-bold text-secondary mb-4">Linked Guest</h3>
-                <p class="text-sm font-semibold text-secondary">{{ $attendance->guest->full_name }}</p>
-                <p class="text-xs text-gray-500">{{ $attendance->guest->email }}</p>
-            </div>
+            @if($attendance->registration_status === 'confirmed')
+            <form method="POST" action="{{ route('organizations.events.attendances.mark-no-show', [$organization, $event, $attendance]) }}">@csrf
+                <button type="submit" class="w-full px-4 py-2 bg-red-50 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors">Mark No-Show</button>
+            </form>
             @endif
         </div>
     </div>

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AttendeeTicketMail;
 use App\Models\Attendance;
 use App\Models\Event;
 use App\Models\EventPass;
 use App\Models\Guest;
 use App\Models\Organization;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
@@ -25,8 +27,24 @@ class AttendanceController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('ticket_number', 'like', "%{$search}%");
+                    ->orWhere('ticket_number', 'like', "%{$search}%")
+                    ->orWhere('manual_code', 'like', "%{$search}%");
             });
+        }
+
+        if (request()->wantsJson()) {
+            $attendances = $query->limit(10)->get();
+            return response()->json([
+                'data' => $attendances->map(fn($a) => [
+                    'id' => $a->id,
+                    'first_name' => $a->first_name,
+                    'last_name' => $a->last_name,
+                    'email' => $a->email,
+                    'manual_code' => $a->manual_code,
+                    'pass_type' => $a->pass_type,
+                    'registration_status' => $a->registration_status,
+                ]),
+            ]);
         }
 
         $attendances = $query->orderBy('created_at', 'desc')->paginate(20);
@@ -45,6 +63,7 @@ class AttendanceController extends Controller
     public function create(Organization $organization, Event $event)
     {
         $passes = $event->passes()->get();
+        $event->load('schedules');
         return view('attendances.create', compact('organization', 'event', 'passes'));
     }
 
@@ -76,18 +95,15 @@ class AttendanceController extends Controller
         $validated['registration_status'] = 'confirmed';
         $validated['registration_type'] = $validated['registration_type'] ?? 'individual';
 
-        $attendance = Attendance::create($validated);
-
         if (!empty($validated['event_pass_id'])) {
             $pass = EventPass::find($validated['event_pass_id']);
-            if ($pass) {
-                $pass->recordRegistration();
-            }
+            $validated['pass_type'] = $pass->tier_type ?? 'attendee';
+            $pass?->recordRegistration();
+        } else {
+            $validated['pass_type'] = 'attendee';
         }
 
-        if (empty($validated['pass_type'])) {
-            $validated['pass_type'] = $pass->tier_type ?? 'attendee';
-        }
+        $attendance = Attendance::create($validated);
 
         // Try to link to existing guest by email
         if (empty($validated['guest_id'])) {
@@ -110,6 +126,7 @@ class AttendanceController extends Controller
     public function edit(Organization $organization, Event $event, Attendance $attendance)
     {
         $passes = $event->passes()->get();
+        $event->load('schedules');
         return view('attendances.edit', compact('organization', 'event', 'attendance', 'passes'));
     }
 
@@ -237,7 +254,19 @@ class AttendanceController extends Controller
 
     public function ticketPdf(Organization $organization, Event $event, Attendance $attendance)
     {
+        $attendance->load('event');
         return view('attendances.ticket', compact('organization', 'event', 'attendance'));
+    }
+
+    public function sendTicket(Organization $organization, Event $event, Attendance $attendance)
+    {
+        if (empty($attendance->email)) {
+            return back()->with('error', 'Attendee has no email address.');
+        }
+
+        Mail::to($attendance->email)->send(new AttendeeTicketMail($attendance));
+
+        return back()->with('success', 'Ticket sent to ' . $attendance->email);
     }
 
     public function printBadges(Request $request, Organization $organization, Event $event)

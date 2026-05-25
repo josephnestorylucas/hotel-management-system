@@ -408,6 +408,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
                 Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
                 Route::get('/{attendance}/ticket-pdf', [AttendanceController::class, 'ticketPdf'])->name('ticket-pdf');
+                Route::post('/{attendance}/send-ticket', [AttendanceController::class, 'sendTicket'])->name('send-ticket');
                 Route::post('/{attendance}/link-guest', [AttendanceController::class, 'linkGuest'])->name('link-guest');
                 Route::post('/{attendance}/mark-no-show', [AttendanceController::class, 'markNoShow'])->name('mark-no-show');
                 Route::post('/{attendance}/confirm', [AttendanceController::class, 'confirm'])->name('confirm');

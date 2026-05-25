@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Event;
-use App\Models\EventTicket;
+use App\Models\EventPass;
 use App\Models\Guest;
 use App\Models\Organization;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ class AttendanceController extends Controller
 {
     public function index(Organization $organization, Event $event)
     {
-        $query = $event->attendances()->with('eventTicket');
+        $query = $event->attendances()->with('eventPass');
 
         if ($status = request('status')) {
             $query->where('registration_status', $status);
@@ -44,8 +44,8 @@ class AttendanceController extends Controller
 
     public function create(Organization $organization, Event $event)
     {
-        $tickets = $event->tickets()->where('status', 'on_sale')->get();
-        return view('attendances.create', compact('organization', 'event', 'tickets'));
+        $passes = $event->passes()->get();
+        return view('attendances.create', compact('organization', 'event', 'passes'));
     }
 
     public function store(Request $request, Organization $organization, Event $event)
@@ -57,7 +57,8 @@ class AttendanceController extends Controller
             'phone' => 'nullable|string|max:20',
             'company' => 'nullable|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'event_ticket_id' => 'nullable|uuid|exists:event_tickets,id',
+            'event_pass_id' => 'nullable|uuid|exists:event_passes,id',
+            'pass_type' => 'nullable|in:speaker,moderator,backdoor,attendee',
             'guest_id' => 'nullable|uuid|exists:guests,id',
             'dietary_requirements' => 'nullable|string|max:255',
             'special_accommodations' => 'nullable|string|max:255',
@@ -77,12 +78,15 @@ class AttendanceController extends Controller
 
         $attendance = Attendance::create($validated);
 
-        // Record ticket sale
-        if (!empty($validated['event_ticket_id'])) {
-            $ticket = EventTicket::find($validated['event_ticket_id']);
-            if ($ticket) {
-                $ticket->recordSale();
+        if (!empty($validated['event_pass_id'])) {
+            $pass = EventPass::find($validated['event_pass_id']);
+            if ($pass) {
+                $pass->recordRegistration();
             }
+        }
+
+        if (empty($validated['pass_type'])) {
+            $validated['pass_type'] = $pass->tier_type ?? 'attendee';
         }
 
         // Try to link to existing guest by email
@@ -99,14 +103,14 @@ class AttendanceController extends Controller
 
     public function show(Organization $organization, Event $event, Attendance $attendance)
     {
-        $attendance->load(['eventTicket', 'guest', 'checkIns.eventSchedule']);
+        $attendance->load(['eventPass', 'guest', 'checkIns.eventSchedule']);
         return view('attendances.show', compact('organization', 'event', 'attendance'));
     }
 
     public function edit(Organization $organization, Event $event, Attendance $attendance)
     {
-        $tickets = $event->tickets()->get();
-        return view('attendances.edit', compact('organization', 'event', 'attendance', 'tickets'));
+        $passes = $event->passes()->get();
+        return view('attendances.edit', compact('organization', 'event', 'attendance', 'passes'));
     }
 
     public function update(Request $request, Organization $organization, Event $event, Attendance $attendance)
@@ -118,7 +122,8 @@ class AttendanceController extends Controller
             'phone' => 'nullable|string|max:20',
             'company' => 'nullable|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'event_ticket_id' => 'nullable|uuid|exists:event_tickets,id',
+            'event_pass_id' => 'nullable|uuid|exists:event_passes,id',
+            'pass_type' => 'nullable|in:speaker,moderator,backdoor,attendee',
             'dietary_requirements' => 'nullable|string|max:255',
             'special_accommodations' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
@@ -147,7 +152,8 @@ class AttendanceController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:csv,txt|max:5120',
-            'event_ticket_id' => 'nullable|uuid|exists:event_tickets,id',
+            'event_pass_id' => 'nullable|uuid|exists:event_passes,id',
+            'pass_type' => 'nullable|in:speaker,moderator,backdoor,attendee',
         ]);
 
         $file = $request->file('file');
@@ -157,7 +163,7 @@ class AttendanceController extends Controller
         $results = ['success' => 0, 'failed' => 0, 'errors' => []];
         $lineNumber = 1;
 
-        $ticketId = $request->input('event_ticket_id');
+        $ticketId = $request->input('event_pass_id');
 
         while (($row = fgetcsv($handle)) !== false) {
             $lineNumber++;
@@ -179,7 +185,8 @@ class AttendanceController extends Controller
             try {
                 $attendance = Attendance::create([
                     'event_id' => $event->id,
-                    'event_ticket_id' => $ticketId,
+                    'event_pass_id' => $ticketId,
+                    'pass_type' => 'attendee',
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
                     'email' => $data['email'],
@@ -207,11 +214,10 @@ class AttendanceController extends Controller
 
         fclose($handle);
 
-        // Record ticket sales
         if ($ticketId && $results['success'] > 0) {
-            $ticket = EventTicket::find($ticketId);
-            if ($ticket) {
-                $ticket->increment('quantity_sold', $results['success']);
+            $pass = EventPass::find($ticketId);
+            if ($pass) {
+                $pass->increment('quantity_sold', $results['success']);
             }
         }
 

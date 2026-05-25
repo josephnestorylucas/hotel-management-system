@@ -29,7 +29,7 @@ use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventScheduleController;
-use App\Http\Controllers\EventTicketController;
+use App\Http\Controllers\EventPassController;
 use App\Http\Controllers\EventVenueController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CheckInController;
@@ -368,17 +368,17 @@ Route::middleware(['auth'])->group(function () {
                 Route::delete('/{schedule}', [EventScheduleController::class, 'destroy'])->name('destroy');
             });
 
-            // Event Tickets
-            Route::prefix('{event}/tickets')->name('tickets.')->group(function () {
-                Route::get('/', [EventTicketController::class, 'index'])->name('index');
-                Route::get('/create', [EventTicketController::class, 'create'])->name('create');
-                Route::post('/', [EventTicketController::class, 'store'])->name('store');
-                Route::get('/{ticket}', [EventTicketController::class, 'show'])->name('show');
-                Route::get('/{ticket}/edit', [EventTicketController::class, 'edit'])->name('edit');
-                Route::put('/{ticket}', [EventTicketController::class, 'update'])->name('update');
-                Route::delete('/{ticket}', [EventTicketController::class, 'destroy'])->name('destroy');
-                Route::post('/{ticket}/put-on-sale', [EventTicketController::class, 'putOnSale'])->name('put-on-sale');
-                Route::post('/{ticket}/archive', [EventTicketController::class, 'archive'])->name('archive');
+            // Event Passes
+            Route::prefix('{event}/passes')->name('passes.')->group(function () {
+                Route::get('/', [EventPassController::class, 'index'])->name('index');
+                Route::get('/create', [EventPassController::class, 'create'])->name('create');
+                Route::post('/', [EventPassController::class, 'store'])->name('store');
+                Route::get('/{pass}', [EventPassController::class, 'show'])->name('show');
+                Route::get('/{pass}/edit', [EventPassController::class, 'edit'])->name('edit');
+                Route::put('/{pass}', [EventPassController::class, 'update'])->name('update');
+                Route::delete('/{pass}', [EventPassController::class, 'destroy'])->name('destroy');
+                Route::post('/{pass}/activate', [EventPassController::class, 'activate'])->name('activate');
+                Route::post('/{pass}/archive', [EventPassController::class, 'archive'])->name('archive');
             });
 
             // Event Venues

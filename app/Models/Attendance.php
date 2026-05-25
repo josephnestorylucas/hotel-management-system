@@ -14,7 +14,8 @@ class Attendance extends Model
 
     protected $fillable = [
         'event_id',
-        'event_ticket_id',
+        'event_pass_id',
+        'pass_type',
         'first_name',
         'last_name',
         'email',
@@ -74,9 +75,14 @@ class Attendance extends Model
         return $this->belongsTo(Event::class);
     }
 
+    public function eventPass(): BelongsTo
+    {
+        return $this->belongsTo(EventPass::class, 'event_pass_id');
+    }
+
     public function eventTicket(): BelongsTo
     {
-        return $this->belongsTo(EventTicket::class);
+        return $this->belongsTo(EventPass::class, 'event_pass_id');
     }
 
     public function guest(): BelongsTo
@@ -172,7 +178,8 @@ class Attendance extends Model
         $array = parent::toArray();
         $array['full_name'] = $this->full_name;
         $array['event_title'] = $this->event?->title;
-        $array['ticket_tier_name'] = $this->eventTicket?->tier_name;
+        $array['pass_tier_name'] = $this->eventPass?->tier_name;
+        $array['pass_type'] = $this->pass_type;
         return $array;
     }
 

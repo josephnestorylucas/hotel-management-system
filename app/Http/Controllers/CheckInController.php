@@ -149,7 +149,8 @@ class CheckInController extends Controller
             'data' => [
                 'name' => $attendance->full_name,
                 'company' => $attendance->company,
-                'ticket_tier' => $attendance->eventTicket?->tier_name,
+                'pass_tier' => $attendance->eventPass?->tier_name,
+                'pass_type' => $attendance->pass_type,
                 'check_in_count' => $attendance->total_check_ins,
                 'time' => now()->format('h:i A'),
             ],

@@ -25,9 +25,9 @@
                 @if($a->job_title)
                 <div class="text-xs text-gray-500 mb-2">{{ $a->job_title }}</div>
                 @endif
-                @if($a->eventTicket)
-                <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3" style="background-color: {{ $a->eventTicket->color ?? '#3B82F6' }}20; color: {{ $a->eventTicket->color ?? '#3B82F6' }}">
-                    {{ $a->eventTicket->tier_name }}
+                @if($a->eventPass)
+                <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3" style="background-color: {{ $a->eventPass->color ?? '#3B82F6' }}20; color: {{ $a->eventPass->color ?? '#3B82F6' }}">
+                    {{ $a->eventPass->tier_name }}
                 </div>
                 @endif
                 <div class="mt-3 pt-3 border-t border-gray-200">

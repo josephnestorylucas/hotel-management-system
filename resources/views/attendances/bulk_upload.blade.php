@@ -51,11 +51,11 @@
                 <input type="file" name="file" accept=".csv,.txt" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Assign Ticket Tier</label>
-                <select name="event_ticket_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">No ticket</option>
-                    @foreach($event->tickets as $ticket)
-                    <option value="{{ $ticket->id }}">{{ $ticket->tier_name }} - @currency($ticket->price)</option>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Assign Pass Type</label>
+                <select name="event_pass_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">No pass</option>
+                    @foreach($event->passes as $pass)
+                    <option value="{{ $pass->id }}">{{ $pass->tier_name }} - @currency($pass->price)</option>
                     @endforeach
                 </select>
             </div>

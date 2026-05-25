@@ -38,13 +38,20 @@ class EventController extends Controller
             'visibility' => 'required|in:public,private,organization-only',
             'capacity' => 'nullable|integer|min:1',
             'expected_attendance' => 'nullable|integer|min:1',
+            'event_rate' => 'nullable|numeric|min:0',
         ]);
 
+        $eventRate = array_pull($validated, 'event_rate', 0);
         $validated['organization_id'] = $organization->id;
         $validated['slug'] = Str::slug($validated['title']);
         $validated['status'] = 'draft';
 
-        // Ensure unique slug per organization
+        if ($eventRate > 0) {
+            $metadata = ['event_rate' => (float) $eventRate];
+            $validated['metadata'] = $metadata;
+            $validated['event_rate_total'] = (float) $eventRate;
+        }
+
         $baseSlug = $validated['slug'];
         $counter = 1;
         while (Event::where('organization_id', $organization->id)->where('slug', $validated['slug'])->exists()) {
@@ -55,7 +62,7 @@ class EventController extends Controller
         $event = Event::create($validated);
 
         return redirect()->route('organizations.events.show', [$organization, $event])
-            ->with('success', 'Event created successfully. Now add schedules, tickets, and venues.');
+            ->with('success', 'Event created successfully. Now add schedules, passes, and venues.');
     }
 
     public function show(Organization $organization, Event $event)
@@ -63,24 +70,28 @@ class EventController extends Controller
         $event->load([
             'conferenceType',
             'schedules',
-            'tickets',
+            'passes',
             'venues.conferenceHall',
+            'venues.booking',
             'staff.user',
             'attendances' => function ($query) {
                 $query->latest()->limit(10);
             },
         ]);
-        $event->loadCount(['attendances', 'schedules', 'tickets']);
+        $event->loadCount(['attendances', 'schedules', 'passes']);
+        $event->loadCount('tickets as passes_count');
+
+        $billing = $event->calculateBilling();
 
         $stats = [
             'total_attendances' => $event->attendances_count,
             'confirmed' => $event->attendances()->where('registration_status', 'confirmed')->count(),
             'checked_in' => $event->attendances()->where('total_check_ins', '>', 0)->count(),
             'no_shows' => $event->attendances()->where('registration_status', 'no_show')->count(),
-            'revenue' => $event->total_revenue,
+            'revenue' => $billing['grand_total'],
         ];
 
-        return view('events.show', compact('organization', 'event', 'stats'));
+        return view('events.show', compact('organization', 'event', 'stats', 'billing'));
     }
 
     public function edit(Organization $organization, Event $event)
@@ -101,7 +112,16 @@ class EventController extends Controller
             'visibility' => 'required|in:public,private,organization-only',
             'capacity' => 'nullable|integer|min:1',
             'expected_attendance' => 'nullable|integer|min:1',
+            'event_rate' => 'nullable|numeric|min:0',
         ]);
+
+        $eventRate = array_pull($validated, 'event_rate', 0);
+        if ($eventRate > 0 || $event->event_rate_total > 0) {
+            $metadata = $event->metadata ?? [];
+            $metadata['event_rate'] = (float) $eventRate;
+            $validated['metadata'] = $metadata;
+            $validated['event_rate_total'] = (float) $eventRate;
+        }
 
         if ($event->isDraft()) {
             $validated['slug'] = Str::slug($validated['title']);
@@ -128,7 +148,7 @@ class EventController extends Controller
     public function publish(Organization $organization, Event $event)
     {
         if ($event->publish()) {
-            return back()->with('success', 'Event published and tickets are now on sale.');
+            return back()->with('success', 'Event published and passes are now active.');
         }
         return back()->with('error', 'Event cannot be published from its current state.');
     }
@@ -141,12 +161,37 @@ class EventController extends Controller
         return back()->with('error', 'Event cannot be started from its current state.');
     }
 
-    public function complete(Organization $organization, Event $event)
+    public function complete(Request $request, Organization $organization, Event $event)
     {
-        if ($event->complete()) {
-            return back()->with('success', 'Event completed successfully.');
+        $request->validate([
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'discount_reason' => 'nullable|string|max:255',
+        ]);
+
+        if (!in_array($event->status, ['scheduled', 'ongoing'])) {
+            return back()->with('error', 'Event cannot be completed from its current state.');
         }
-        return back()->with('error', 'Event cannot be completed from its current state.');
+
+        $discountPercent = (float) ($request->input('discount_percent', 0));
+        $discountReason = $request->input('discount_reason');
+
+        $event->load('venues.conferenceHall', 'venues.booking');
+        $billing = $event->calculateBilling();
+
+        $event->update([
+            'status' => 'completed',
+            'hall_rate_total' => $billing['hall_rate_total'],
+            'event_rate_total' => $billing['event_rate_total'],
+            'subtotal' => $billing['subtotal'],
+        ]);
+
+        if ($discountPercent > 0) {
+            $event->applyDiscount($discountPercent, $discountReason);
+        } else {
+            $event->update(['grand_total' => $billing['subtotal']]);
+        }
+
+        return back()->with('success', 'Event completed successfully.');
     }
 
     public function cancel(Organization $organization, Event $event)

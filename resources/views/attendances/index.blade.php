@@ -47,7 +47,7 @@
     <!-- Filters -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
         <form method="GET" class="flex items-center gap-4">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, email, or ticket #" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, email, or pass #" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 <option value="">All Statuses</option>
                 <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -67,7 +67,7 @@
                     <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Name</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Email</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Company</th>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Ticket</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Pass</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Check-ins</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
@@ -82,7 +82,7 @@
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ $a->email }}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ $a->company ?? '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700">{{ $a->eventTicket?->tier_name ?? '-' }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ $a->eventPass?->tier_name ?? '-' }}</td>
                     <td class="px-4 py-3">
                         @if($a->registration_status === 'confirmed') <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700">Confirmed</span>
                         @elseif($a->registration_status === 'pending') <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">Pending</span>

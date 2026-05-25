@@ -30,6 +30,13 @@ class Event extends Model
         'expected_attendance',
         'actual_attendance',
         'total_revenue',
+        'discount_percent',
+        'discount_amount',
+        'discount_reason',
+        'hall_rate_total',
+        'event_rate_total',
+        'subtotal',
+        'grand_total',
         'metadata',
     ];
 
@@ -38,6 +45,12 @@ class Event extends Model
         'end_date' => 'date',
         'actual_attendance' => 'integer',
         'total_revenue' => 'decimal:2',
+        'discount_percent' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'hall_rate_total' => 'decimal:2',
+        'event_rate_total' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'grand_total' => 'decimal:2',
         'metadata' => 'array',
     ];
 
@@ -78,9 +91,14 @@ class Event extends Model
         return $this->hasMany(EventSchedule::class);
     }
 
+    public function passes(): HasMany
+    {
+        return $this->hasMany(EventPass::class);
+    }
+
     public function tickets(): HasMany
     {
-        return $this->hasMany(EventTicket::class);
+        return $this->hasMany(EventPass::class);
     }
 
     public function venues(): HasMany
@@ -153,11 +171,57 @@ class Event extends Model
 
     public function getTotalRevenueAmountAttribute(): float
     {
-        return (float) $this->attendances()
-            ->where('registration_status', 'confirmed')
-            ->whereNotNull('event_ticket_id')
-            ->join('event_tickets', 'attendances.event_ticket_id', '=', 'event_tickets.id')
-            ->sum('event_tickets.price');
+        return (float) $this->grand_total ?: (float) $this->total_revenue;
+    }
+
+    public function calculateBilling(): array
+    {
+        $hallTotal = 0;
+        foreach ($this->venues as $venue) {
+            if ($venue->booking && $venue->booking->total_cost) {
+                $hallTotal += (float) $venue->booking->total_cost;
+            } elseif ($venue->conferenceHall) {
+                $hours = $this->days_count * 8;
+                $hallTotal += $hours * (float) $venue->conferenceHall->hourly_rate;
+            }
+        }
+
+        $eventRate = (float) ($this->metadata['event_rate'] ?? 0);
+        $eventTotal = $eventRate;
+
+        $subtotal = $hallTotal + $eventTotal;
+
+        $discountPercent = (float) ($this->discount_percent ?? 0);
+        $discountAmount = $subtotal * ($discountPercent / 100);
+
+        $grandTotal = $subtotal - $discountAmount;
+
+        return [
+            'hall_rate_total' => $hallTotal,
+            'event_rate_total' => $eventTotal,
+            'subtotal' => $subtotal,
+            'discount_percent' => $discountPercent,
+            'discount_amount' => $discountAmount,
+            'grand_total' => $grandTotal,
+        ];
+    }
+
+    public function applyDiscount(float $percent, ?string $reason = null): bool
+    {
+        $billing = $this->calculateBilling();
+        $billing['discount_percent'] = $percent;
+        $billing['discount_amount'] = $billing['subtotal'] * ($percent / 100);
+        $billing['grand_total'] = $billing['subtotal'] - $billing['discount_amount'];
+
+        return $this->update([
+            'discount_percent' => $percent,
+            'discount_amount' => $billing['discount_amount'],
+            'discount_reason' => $reason,
+            'hall_rate_total' => $billing['hall_rate_total'],
+            'event_rate_total' => $billing['event_rate_total'],
+            'subtotal' => $billing['subtotal'],
+            'grand_total' => $billing['grand_total'],
+        ]);
     }
 
     public function getSessionCountAttribute(): int

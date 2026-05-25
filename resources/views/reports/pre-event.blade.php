@@ -37,17 +37,17 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- By Ticket Tier -->
+        <!-- By Pass Tier -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-secondary mb-4">By Ticket Tier</h3>
+            <h3 class="text-lg font-bold text-secondary mb-4">By Pass Tier</h3>
             <div class="space-y-3">
-                @forelse($byTicketTier as $tier => $count)
+                @forelse($byPassTier as $tier => $count)
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span class="text-sm font-medium text-secondary">{{ $tier }}</span>
                     <span class="text-sm font-bold text-secondary">{{ $count }}</span>
                 </div>
                 @empty
-                <p class="text-sm text-gray-500 text-center py-4">No ticket data.</p>
+                <p class="text-sm text-gray-500 text-center py-4">No pass data.</p>
                 @endforelse
             </div>
         </div>

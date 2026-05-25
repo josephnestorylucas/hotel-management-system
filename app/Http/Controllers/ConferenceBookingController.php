@@ -13,7 +13,7 @@ class ConferenceBookingController extends Controller
 {
     public function index()
     {
-        $bookings = ConferenceBooking::with(['conferenceHall', 'institution', 'conference'])
+        $bookings = ConferenceBooking::with(['conferenceHall', 'institution', 'guest', 'creator'])
             ->orderBy('booking_date', 'desc')
             ->orderBy('start_time', 'desc')
             ->paginate(20);
@@ -73,7 +73,7 @@ class ConferenceBookingController extends Controller
 
     public function show(ConferenceBooking $conferenceBooking)
     {
-        $conferenceBooking->load(['conferenceHall', 'institution', 'conference.participants', 'creator']);
+        $conferenceBooking->load(['conferenceHall', 'institution', 'guest', 'creator']);
         
         return view('conference-bookings.show', compact('conferenceBooking'));
     }

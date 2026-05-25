@@ -46,8 +46,8 @@
                         <p class="text-sm text-secondary mt-1">{{ $attendance->job_title ?? 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Tier</label>
-                        <p class="text-sm text-secondary mt-1">{{ $attendance->eventTicket?->tier_name ?? 'N/A' }}</p>
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pass Type</label>
+                        <p class="text-sm text-secondary mt-1">{{ $attendance->eventPass?->tier_name ?? 'N/A' }}</p>
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</label>
@@ -91,10 +91,10 @@
         <!-- Sidebar -->
         <div class="space-y-6">
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <h3 class="text-lg font-bold text-secondary mb-4">Ticket Details</h3>
+                <h3 class="text-lg font-bold text-secondary mb-4">Pass Details</h3>
                 <div class="space-y-3">
                     <div>
-                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Number</label>
+                        <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pass Number</label>
                         <p class="text-sm font-mono font-semibold text-secondary mt-1">{{ $attendance->ticket_number }}</p>
                     </div>
                     <div>

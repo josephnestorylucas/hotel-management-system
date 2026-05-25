@@ -42,12 +42,21 @@
                     <input type="text" name="job_title" value="{{ old('job_title', $attendance->job_title) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ticket Tier</label>
-                    <select name="event_ticket_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">No ticket</option>
-                        @foreach($tickets as $ticket)
-                        <option value="{{ $ticket->id }}" {{ old('event_ticket_id', $attendance->event_ticket_id) == $ticket->id ? 'selected' : '' }}>{{ $ticket->tier_name }}</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pass Type</label>
+                    <select name="event_pass_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">No pass</option>
+                        @foreach($passes as $pass)
+                        <option value="{{ $pass->id }}" {{ old('event_pass_id', $attendance->event_pass_id) == $pass->id ? 'selected' : '' }}>{{ $pass->tier_name }}</option>
                         @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pass Category</label>
+                    <select name="pass_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="attendee" {{ old('pass_type', $attendance->pass_type) === 'attendee' ? 'selected' : '' }}>Attendee</option>
+                        <option value="speaker" {{ old('pass_type', $attendance->pass_type) === 'speaker' ? 'selected' : '' }}>Speaker</option>
+                        <option value="moderator" {{ old('pass_type', $attendance->pass_type) === 'moderator' ? 'selected' : '' }}>Moderator</option>
+                        <option value="backdoor" {{ old('pass_type', $attendance->pass_type) === 'backdoor' ? 'selected' : '' }}>Backdoor</option>
                     </select>
                 </div>
                 <div>

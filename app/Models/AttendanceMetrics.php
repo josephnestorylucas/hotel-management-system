@@ -61,10 +61,8 @@ class AttendanceMetrics extends Model
             ? (int) $checkInMinutes->avg()
             : null;
 
-        $revenue = $attendances->where('registration_status', 'confirmed')
-            ->whereNotNull('event_ticket_id')
-            ->join('event_tickets', 'attendances.event_ticket_id', '=', 'event_tickets.id')
-            ->sum('event_tickets.price');
+        $billing = $event->calculateBilling();
+        $revenue = $billing['grand_total'];
 
         return self::updateOrCreate(
             ['event_id' => $event->id, 'metric_date' => $today],

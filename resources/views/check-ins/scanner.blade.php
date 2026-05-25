@@ -103,7 +103,7 @@ function showResult(data) {
         result.className = 'bg-white rounded-2xl shadow-lg border-2 border-green-300 p-8 text-center';
         name.textContent = data.data.name;
         msg.textContent = data.message;
-        detail.textContent = data.data.company ? data.data.company + ' | Check-ins: ' + data.data.check_in_count : 'Check-ins: ' + data.data.check_in_count;
+        detail.textContent = data.data.company ? data.data.company + ' | Pass: ' + (data.data.pass_type || '') + ' | Check-ins: ' + data.data.check_in_count : 'Pass: ' + (data.data.pass_type || '') + ' | Check-ins: ' + data.data.check_in_count;
     } else {
         icon.className = 'w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-red-100';
         icon.innerHTML = '<svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';

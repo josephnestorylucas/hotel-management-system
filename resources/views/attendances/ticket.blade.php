@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ticket')
+@section('title', 'Pass')
 @section('page-title', 'Events')
 
 @section('content')
@@ -17,10 +17,10 @@
         @if($attendance->company)
         <p class="text-sm text-gray-600">{{ $attendance->company }}</p>
         @endif
-        @if($attendance->eventTicket)
+        @if($attendance->eventPass)
         <div class="mt-3">
-            <span class="px-4 py-1.5 rounded-full text-sm font-semibold" style="background-color: {{ $attendance->eventTicket->color ?? '#3B82F6' }}20; color: {{ $attendance->eventTicket->color ?? '#3B82F6' }}">
-                {{ $attendance->eventTicket->tier_name }}
+            <span class="px-4 py-1.5 rounded-full text-sm font-semibold" style="background-color: {{ $attendance->eventPass->color ?? '#3B82F6' }}20; color: {{ $attendance->eventPass->color ?? '#3B82F6' }}">
+                {{ $attendance->eventPass->tier_name }}
             </span>
         </div>
         @endif

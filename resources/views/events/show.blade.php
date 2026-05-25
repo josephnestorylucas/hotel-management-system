@@ -23,9 +23,7 @@
             </form>
             @endif
             @if(in_array($event->status, ['scheduled', 'ongoing']))
-            <form method="POST" action="{{ route('organizations.events.complete', [$organization, $event]) }}" class="inline">@csrf
-                <button type="submit" class="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700">Complete</button>
-            </form>
+            <button type="button" onclick="document.getElementById('complete-form').classList.toggle('hidden')" class="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700">Complete</button>
             @endif
             @if($event->isActive())
             <a href="{{ route('organizations.events.check-in.dashboard', [$organization, $event]) }}" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700">Check-in</a>
@@ -36,6 +34,30 @@
             @endif
         </div>
     </div>
+
+    <!-- Complete Event Form (with discount) -->
+    @if(in_array($event->status, ['scheduled', 'ongoing']))
+    <div id="complete-form" class="hidden bg-white rounded-2xl shadow-lg border border-purple-200 p-6">
+        <h3 class="text-lg font-bold text-secondary mb-4">Complete Event & Apply Discount</h3>
+        <form method="POST" action="{{ route('organizations.events.complete', [$organization, $event]) }}" class="space-y-4">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount %</label>
+                    <input type="number" name="discount_percent" value="0" min="0" max="100" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount Reason</label>
+                    <input type="text" name="discount_reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="e.g. Early completion, loyalty discount">
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" class="px-6 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700">Complete Event</button>
+                <button type="button" onclick="document.getElementById('complete-form').classList.add('hidden')" class="px-6 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50">Cancel</button>
+            </div>
+        </form>
+    </div>
+    @endif
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -56,8 +78,8 @@
             <div class="text-xs text-gray-500 font-medium">No Shows</div>
         </div>
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
-            <div class="text-2xl font-extrabold text-purple-600">@currency($stats['revenue'])</div>
-            <div class="text-xs text-gray-500 font-medium">Revenue</div>
+            <div class="text-2xl font-extrabold text-purple-600">@currency($billing['grand_total'])</div>
+            <div class="text-xs text-gray-500 font-medium">Grand Total</div>
         </div>
     </div>
 
@@ -98,15 +120,47 @@
                 </div>
             </div>
 
+            <!-- Billing Summary -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <h3 class="text-lg font-bold text-secondary mb-4">Billing Summary</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span class="text-sm text-gray-600">Hall Rate Total</span>
+                        <span class="text-sm font-semibold text-secondary">@currency($billing['hall_rate_total'])</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span class="text-sm text-gray-600">Event Rate Total</span>
+                        <span class="text-sm font-semibold text-secondary">@currency($billing['event_rate_total'])</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span class="text-sm font-semibold text-gray-700">Subtotal</span>
+                        <span class="text-sm font-bold text-secondary">@currency($billing['subtotal'])</span>
+                    </div>
+                    @if($billing['discount_amount'] > 0)
+                    <div class="flex items-center justify-between py-2 border-b border-green-100 bg-green-50 -mx-6 px-6">
+                        <span class="text-sm text-green-700">Discount ({{ $billing['discount_percent'] }}%)</span>
+                        <span class="text-sm font-semibold text-green-700">-@currency($billing['discount_amount'])</span>
+                    </div>
+                    @if($event->discount_reason)
+                    <div class="text-xs text-gray-500 italic">Reason: {{ $event->discount_reason }}</div>
+                    @endif
+                    @endif
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-base font-bold text-secondary">Grand Total</span>
+                        <span class="text-base font-extrabold text-purple-600">@currency($billing['grand_total'])</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Actions -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <a href="{{ route('organizations.events.schedules.index', [$organization, $event]) }}" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 hover:shadow-xl transition-all text-center">
                     <div class="text-2xl font-extrabold text-blue-600">{{ $event->schedules_count }}</div>
                     <div class="text-xs text-gray-500 font-medium">Sessions</div>
                 </a>
-                <a href="{{ route('organizations.events.tickets.index', [$organization, $event]) }}" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 hover:shadow-xl transition-all text-center">
-                    <div class="text-2xl font-extrabold text-purple-600">{{ $event->tickets_count }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Ticket Tiers</div>
+                <a href="{{ route('organizations.events.passes.index', [$organization, $event]) }}" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 hover:shadow-xl transition-all text-center">
+                    <div class="text-2xl font-extrabold text-purple-600">{{ $event->passes_count }}</div>
+                    <div class="text-xs text-gray-500 font-medium">Pass Types</div>
                 </a>
                 <a href="{{ route('organizations.events.attendances.index', [$organization, $event]) }}" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 hover:shadow-xl transition-all text-center">
                     <div class="text-2xl font-extrabold text-green-600">{{ $event->attendances_count }}</div>
@@ -132,7 +186,14 @@
                             <div class="text-sm font-medium text-secondary">{{ $attendance->full_name }}</div>
                             <div class="text-xs text-gray-500">{{ $attendance->email }}</div>
                         </div>
-                        <div class="text-right">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full
+                                @if($attendance->pass_type === 'speaker') bg-purple-100 text-purple-700
+                                @elseif($attendance->pass_type === 'moderator') bg-blue-100 text-blue-700
+                                @elseif($attendance->pass_type === 'backdoor') bg-orange-100 text-orange-700
+                                @else bg-gray-100 text-gray-700 @endif">
+                                {{ ucfirst($attendance->pass_type ?? 'attendee') }}
+                            </span>
                             @if($attendance->registration_status === 'confirmed') <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700">Confirmed</span>
                             @elseif($attendance->registration_status === 'pending') <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">Pending</span>
                             @else <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">{{ ucfirst($attendance->registration_status) }}</span>
@@ -156,8 +217,11 @@
                     <a href="{{ route('organizations.events.attendances.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-100 transition-colors text-center">Register Attendee</a>
                     <a href="{{ route('organizations.events.attendances.bulk-upload', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-purple-50 text-purple-700 text-sm font-semibold rounded-lg hover:bg-purple-100 transition-colors text-center">Bulk Upload</a>
                     <a href="{{ route('organizations.events.schedules.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-green-50 text-green-700 text-sm font-semibold rounded-lg hover:bg-green-100 transition-colors text-center">Add Session</a>
-                    <a href="{{ route('organizations.events.tickets.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-orange-50 text-orange-700 text-sm font-semibold rounded-lg hover:bg-orange-100 transition-colors text-center">Add Ticket Tier</a>
+                    <a href="{{ route('organizations.events.passes.create', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-orange-50 text-orange-700 text-sm font-semibold rounded-lg hover:bg-orange-100 transition-colors text-center">Add Pass Type</a>
                     <a href="{{ route('organizations.events.reports.pre-event', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors text-center">View Reports</a>
+                    @if($event->isActive())
+                    <a href="{{ route('organizations.events.check-in.scanner', [$organization, $event]) }}" class="block w-full px-4 py-2 bg-teal-50 text-teal-700 text-sm font-semibold rounded-lg hover:bg-teal-100 transition-colors text-center">Scan Passes</a>
+                    @endif
                 </div>
             </div>
 

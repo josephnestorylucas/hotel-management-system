@@ -18,10 +18,10 @@ class EventReportController extends Controller
             ->groupBy('registration_status')
             ->pluck('count', 'registration_status');
 
-        $byTicketTier = $event->attendances()
-            ->join('event_tickets', 'attendances.event_ticket_id', '=', 'event_tickets.id')
-            ->selectRaw('event_tickets.tier_name, COUNT(*) as count')
-            ->groupBy('event_tickets.tier_name')
+        $byPassTier = $event->attendances()
+            ->join('event_passes', 'attendances.event_pass_id', '=', 'event_passes.id')
+            ->selectRaw('event_passes.tier_name, COUNT(*) as count')
+            ->groupBy('event_passes.tier_name')
             ->pluck('count', 'tier_name');
 
         $byCompany = $event->attendances()
@@ -38,15 +38,12 @@ class EventReportController extends Controller
             ->orderBy('date')
             ->get();
 
-        $revenue = $event->attendances()
-            ->where('registration_status', 'confirmed')
-            ->whereNotNull('event_ticket_id')
-            ->join('event_tickets', 'attendances.event_ticket_id', '=', 'event_tickets.id')
-            ->sum('event_tickets.price');
+        $billing = $event->calculateBilling();
+        $revenue = $billing['grand_total'];
 
         return view('reports.pre-event', compact(
             'organization', 'event', 'totalRegistrations', 'byStatus',
-            'byTicketTier', 'byCompany', 'registrationTrend', 'revenue'
+            'byPassTier', 'byCompany', 'registrationTrend', 'revenue'
         ));
     }
 
@@ -107,13 +104,14 @@ class EventReportController extends Controller
             ->limit(15)
             ->get();
 
-        $byTicketTier = $event->attendances()
-            ->join('event_tickets', 'attendances.event_ticket_id', '=', 'event_tickets.id')
-            ->selectRaw('event_tickets.tier_name, event_tickets.price, COUNT(*) as count')
-            ->groupBy('event_tickets.tier_name', 'event_tickets.price')
+        $byPassTier = $event->attendances()
+            ->join('event_passes', 'attendances.event_pass_id', '=', 'event_passes.id')
+            ->selectRaw('event_passes.tier_name, event_passes.tier_type, COUNT(*) as count')
+            ->groupBy('event_passes.tier_name', 'event_passes.tier_type')
             ->get();
 
-        $revenue = $byTicketTier->sum(fn($t) => $t->price * $t->count);
+        $billing = $event->calculateBilling();
+        $revenue = $billing['grand_total'];
 
         $sessionBreakdown = $event->schedules->map(function ($schedule) {
             $checkIns = CheckIn::where('event_schedule_id', $schedule->id)->count();
@@ -126,7 +124,7 @@ class EventReportController extends Controller
         return view('reports.post-event', compact(
             'organization', 'event', 'totalRegistered', 'confirmed',
             'checkedIn', 'noShows', 'cancelled', 'attendanceRate',
-            'noShowRate', 'byCompany', 'byTicketTier', 'revenue',
+            'noShowRate', 'byCompany', 'byPassTier', 'revenue',
             'sessionBreakdown'
         ));
     }
@@ -149,7 +147,7 @@ class EventReportController extends Controller
 
     private function exportAttendances(Event $event, string $format)
     {
-        $attendances = $event->attendances()->with('eventTicket')->get();
+        $attendances = $event->attendances()->with('eventPass')->get();
 
         if ($format === 'csv') {
             $filename = "event-{$event->slug}-attendances.csv";
@@ -160,7 +158,7 @@ class EventReportController extends Controller
 
             $callback = function () use ($attendances) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['Ticket Number', 'First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Job Title', 'Ticket Tier', 'Status', 'Checked In', 'Registration Date']);
+                fputcsv($file, ['Pass Number', 'First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Job Title', 'Pass Type', 'Pass Tier', 'Status', 'Checked In', 'Registration Date']);
 
                 foreach ($attendances as $a) {
                     fputcsv($file, [
@@ -171,7 +169,8 @@ class EventReportController extends Controller
                         $a->phone,
                         $a->company,
                         $a->job_title,
-                        $a->eventTicket?->tier_name,
+                        ucfirst($a->pass_type),
+                        $a->eventPass?->tier_name,
                         $a->registration_status,
                         $a->total_check_ins > 0 ? 'Yes' : 'No',
                         $a->registration_date->format('Y-m-d H:i'),

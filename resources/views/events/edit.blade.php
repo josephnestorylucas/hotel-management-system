@@ -32,6 +32,18 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Conference Hall</label>
+                    @php $venue = $event->venues->first(); $hall = $venue?->conferenceHall; @endphp
+                    @if($hall)
+                    <div class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-secondary font-medium">
+                        {{ $hall->name }} {{ $hall->capacity ? '(' . $hall->capacity . ' pax)' : '' }}
+                        <a href="{{ route('organizations.events.venues.edit', [$organization, $event, $venue]) }}" class="text-primary hover:text-blue-700 ml-2">Edit venue</a>
+                    </div>
+                    @else
+                    <span class="text-sm text-gray-400">No hall assigned — add via Venues</span>
+                    @endif
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Visibility *</label>
                     <select name="visibility" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="public" {{ old('visibility', $event->visibility) === 'public' ? 'selected' : '' }}>Public</option>

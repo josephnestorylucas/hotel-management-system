@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Organization;
+use App\Models\ConferenceHall;
 use App\Models\ConferenceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -23,7 +24,8 @@ class EventController extends Controller
     public function create(Organization $organization)
     {
         $conferenceTypes = ConferenceType::orderBy('name')->get();
-        return view('events.create', compact('organization', 'conferenceTypes'));
+        $conferenceHalls = ConferenceHall::where('status', 'available')->orderBy('name')->get();
+        return view('events.create', compact('organization', 'conferenceTypes', 'conferenceHalls'));
     }
 
     public function store(Request $request, Organization $organization)
@@ -31,6 +33,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'conference_type_id' => 'nullable|uuid|exists:conference_types,id',
+            'conference_hall_id' => 'required|uuid|exists:conference_halls,id',
             'description' => 'nullable|string',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -41,7 +44,16 @@ class EventController extends Controller
             'event_rate' => 'nullable|numeric|min:0',
         ]);
 
+        $conferenceHallId = array_pull($validated, 'conference_hall_id');
         $eventRate = array_pull($validated, 'event_rate', 0);
+
+        if (empty($validated['capacity'])) {
+            $hall = ConferenceHall::find($conferenceHallId);
+            if ($hall && $hall->capacity) {
+                $validated['capacity'] = $hall->capacity;
+            }
+        }
+
         $validated['organization_id'] = $organization->id;
         $validated['slug'] = Str::slug($validated['title']);
         $validated['status'] = 'draft';
@@ -60,6 +72,12 @@ class EventController extends Controller
         }
 
         $event = Event::create($validated);
+
+        $event->venues()->create([
+            'conference_hall_id' => $conferenceHallId,
+            'setup_type' => 'theater',
+            'status' => 'pending',
+        ]);
 
         return redirect()->route('organizations.events.show', [$organization, $event])
             ->with('success', 'Event created successfully. Now add schedules, passes, and venues.');
@@ -97,6 +115,7 @@ class EventController extends Controller
     public function edit(Organization $organization, Event $event)
     {
         $conferenceTypes = ConferenceType::orderBy('name')->get();
+        $event->load('venues.conferenceHall');
         return view('events.edit', compact('organization', 'event', 'conferenceTypes'));
     }
 
@@ -220,7 +239,8 @@ class EventController extends Controller
     {
         $organizations = Organization::orderBy('name')->get();
         $conferenceTypes = ConferenceType::orderBy('name')->get();
-        return view('events.create-standalone', compact('organizations', 'conferenceTypes'));
+        $conferenceHalls = ConferenceHall::where('status', 'available')->orderBy('name')->get();
+        return view('events.create-standalone', compact('organizations', 'conferenceTypes', 'conferenceHalls'));
     }
 
     public function storeStandalone(Request $request)
@@ -229,6 +249,7 @@ class EventController extends Controller
             'organization_id' => 'required|uuid|exists:organizations,id',
             'title' => 'required|string|max:255',
             'conference_type_id' => 'nullable|uuid|exists:conference_types,id',
+            'conference_hall_id' => 'required|uuid|exists:conference_halls,id',
             'description' => 'nullable|string',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -240,7 +261,16 @@ class EventController extends Controller
         ]);
 
         $organization = Organization::findOrFail($validated['organization_id']);
+        $conferenceHallId = array_pull($validated, 'conference_hall_id');
         $eventRate = array_pull($validated, 'event_rate', 0);
+
+        if (empty($validated['capacity'])) {
+            $hall = ConferenceHall::find($conferenceHallId);
+            if ($hall && $hall->capacity) {
+                $validated['capacity'] = $hall->capacity;
+            }
+        }
+
         $validated['slug'] = Str::slug($validated['title']);
         $validated['status'] = 'draft';
 
@@ -257,6 +287,12 @@ class EventController extends Controller
         }
 
         $event = Event::create($validated);
+
+        $event->venues()->create([
+            'conference_hall_id' => $conferenceHallId,
+            'setup_type' => 'theater',
+            'status' => 'pending',
+        ]);
 
         return redirect()->route('organizations.events.show', [$organization, $event])
             ->with('success', 'Event created successfully. Now add schedules, passes, and venues.');

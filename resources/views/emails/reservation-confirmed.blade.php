@@ -2,7 +2,7 @@
 
 @section('content')
 <p>Dear <strong>{{ $reservation['guest_name'] }}</strong>,</p>
-<p>Thank you for your reservation at <strong>Grand Hotel</strong>. Your booking has been confirmed. Here are your reservation details:</p>
+<p>Thank you for your reservation at <strong>Grand Hotel</strong>. Your reservation has been confirmed. Here are your reservation details:</p>
 
 <div class="highlight">
     <strong>Reservation Reference: {{ $reservation['reference'] }}</strong>

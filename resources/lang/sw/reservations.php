@@ -11,7 +11,7 @@ return [
     'update_reservation' => 'Sasisha Hifadhi',
 
     // Subtitles
-    'manage_subtitle' => 'Simamia mahifadhi ya wageni na kuingia',
+    'manage_subtitle' => 'Simamia mahifadhi ya wageni',
     'create_subtitle' => 'Ongeza hifadhi mpya ya mgeni',
 
     // Status labels
@@ -150,6 +150,7 @@ return [
         'confirm_delete' => 'Una uhakika unataka kufuta hifadhi hii?',
         'new_guest_created' => 'Rekodi mpya ya mgeni itaundwa kiotomatiki. Unaweza kuongeza maelezo zaidi (hati za kitambulisho, anwani) kwa kuhariri wasifu wa mgeni baadaye.',
         'loading_rooms' => 'Inatafuta vyumba vinavyopatikana...',
+        'no_available_rooms' => 'Hakuna vyumba vinavyopatikana kwa tarehe zilizochaguliwa.',
     ],
 
     // Modal
@@ -176,5 +177,11 @@ return [
         'create_new_guest' => 'Unda mgeni mpya',
         'or' => 'au',
         'add_full_profile' => 'Ongeza wasifu kamili wa mgeni',
+    ],
+
+    // Form labels
+    'form' => [
+        'select_dates_hint' => '(Chagua tarehe kwanza kuona vyumba vinavyopatikana)',
+        'search_rooms_hint' => 'Chagua tarehe ya kuingia na kutoka, kisha tafuta vyumba.',
     ],
 ];

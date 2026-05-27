@@ -15,6 +15,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\LaundryTaskController;
 use App\Http\Controllers\Laundry\LaundryServiceController;
@@ -131,6 +132,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+     // Bug reporter
+     Route::post('/bug-reports', [BugReportController::class, 'store'])->name('bug-reports.store');
+     Route::get('/bug-reports', [BugReportController::class, 'index'])->name('bug-reports.index');
+     Route::patch('/bug-reports/{bugReport}', [BugReportController::class, 'update'])->name('bug-reports.update');
+     Route::delete('/bug-reports/{bugReport}', [BugReportController::class, 'destroy'])->name('bug-reports.destroy');
 
     // Admin Routes
     Route::middleware(['role:admin'])->group(function () {

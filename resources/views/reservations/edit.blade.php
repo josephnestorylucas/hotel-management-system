@@ -544,12 +544,12 @@
                     <div class="mt-6">
                         <label for="room_id" class="block text-sm font-semibold text-secondary mb-2">
                             {{ __('reservations.fields.assigned_room') }} <span class="text-red-500">*</span>
-                            <span class="text-xs text-gray-500 ml-2" x-show="!checkInDate || !checkOutDate">{{ __('bookings.form.select_dates_hint') }}</span>
+                            <span class="text-xs text-gray-500 ml-2" x-show="!checkInDate || !checkOutDate">{{ __('reservations.form.select_dates_hint') }}</span>
                         </label>
 
                         <template x-if="!checkInDate || !checkOutDate">
                             <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                <p class="text-sm text-yellow-800">{{ __('bookings.search_rooms_hint') }}</p>
+                                <p class="text-sm text-yellow-800">{{ __('reservations.form.search_rooms_hint') }}</p>
                             </div>
                         </template>
 
@@ -577,7 +577,7 @@
                                     </select>
                                 </div>
                                 <div x-show="!roomsLoading && availableRooms.length === 0 && checkInDate && checkOutDate" class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                                    <p class="text-sm text-red-700">{{ __('bookings.messages.no_available_rooms') }}</p>
+                                    <p class="text-sm text-red-700">{{ __('reservations.messages.no_available_rooms') }}</p>
                                 </div>
                             </div>
                         </template>

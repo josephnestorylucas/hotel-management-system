@@ -43,6 +43,17 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        'bugs' => [
+            'driver' => 'sqlite',
+            'database' => env('BUGS_DB_DATABASE', database_path('bugs.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

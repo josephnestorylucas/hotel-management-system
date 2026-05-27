@@ -131,7 +131,7 @@
                                 </a>
                                 <a href="{{ route('reservations.create', ['guest_id' => $guest->id]) }}" 
                                    class="text-green-600 hover:text-green-700 font-semibold">
-                                    {{ __('guests.actions.new_booking') }}
+                                    {{ __('guests.actions.new_reservation') }}
                                 </a>
                             </div>
                         </td>

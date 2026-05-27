@@ -13,7 +13,7 @@ class LaundryTask extends Model
 
     protected $fillable = [
         'task_number',
-        'reservation_id',
+        'booking_id',
         'assigned_to',
         'created_by',
         'guest_name',
@@ -46,9 +46,9 @@ class LaundryTask extends Model
     }
 
     // Relationships
-    public function reservation(): BelongsTo
+    public function booking(): BelongsTo
     {
-        return $this->belongsTo(Reservation::class);
+        return $this->belongsTo(Booking::class);
     }
 
     public function assignedTo(): BelongsTo

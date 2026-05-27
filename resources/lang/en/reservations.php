@@ -11,7 +11,7 @@ return [
     'update_reservation' => 'Update Reservation',
 
     // Subtitles
-    'manage_subtitle' => 'Manage guest bookings and check-ins',
+    'manage_subtitle' => 'Manage guest reservations',
     'create_subtitle' => 'Add a new guest reservation',
 
     // Status labels
@@ -150,6 +150,7 @@ return [
         'confirm_delete' => 'Are you sure you want to delete this reservation?',
         'new_guest_created' => 'A new guest record will be created automatically. You can add additional details (ID documents, address) by editing the guest profile later.',
         'loading_rooms' => 'Searching for available rooms...',
+        'no_available_rooms' => 'No rooms available for selected dates.',
     ],
 
     // Modal
@@ -176,5 +177,11 @@ return [
         'create_new_guest' => 'Create a new guest',
         'or' => 'or',
         'add_full_profile' => 'Add full guest profile',
+    ],
+
+    // Form labels
+    'form' => [
+        'select_dates_hint' => '(Select dates first to see available rooms)',
+        'search_rooms_hint' => 'Select check-in and check-out dates, then search for rooms.',
     ],
 ];

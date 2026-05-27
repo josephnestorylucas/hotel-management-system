@@ -26,7 +26,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        {{ __('guests.actions.new_booking') }}
+                        {{ __('guests.actions.new_reservation') }}
                     </a>
                     @if(auth()->user()->isFrontDesk())
                     <a href="{{ route('guests.edit', $guest) }}" 
@@ -217,7 +217,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    {{ __('guests.actions.create_booking') }}
+                    {{ __('guests.actions.create_reservation') }}
                 </a>
             </div>
         </div>

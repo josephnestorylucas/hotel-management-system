@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -125,7 +126,7 @@ class Guest extends Model implements HasMedia
      */
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('guest_photo') ?: null;
+        return $this->buildMediaUrl($this->getFirstMedia('guest_photo'));
     }
 
     /**
@@ -134,7 +135,7 @@ class Guest extends Model implements HasMedia
      */
     public function getPhotoThumbUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('guest_photo', 'thumb') ?: null;
+        return $this->buildMediaUrl($this->getFirstMedia('guest_photo'), 'thumb');
     }
 
     /**
@@ -143,7 +144,7 @@ class Guest extends Model implements HasMedia
      */
     public function getPhotoMediumUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('guest_photo', 'medium') ?: null;
+        return $this->buildMediaUrl($this->getFirstMedia('guest_photo'), 'medium');
     }
 
     /**
@@ -160,7 +161,7 @@ class Guest extends Model implements HasMedia
      */
     public function getIdDocumentUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('id_documents') ?: null;
+        return $this->buildMediaUrl($this->getFirstMedia('id_documents'));
     }
 
     /**
@@ -168,7 +169,30 @@ class Guest extends Model implements HasMedia
      */
     public function getIdDocumentThumbUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('id_documents', 'thumb') ?: null;
+        return $this->buildMediaUrl($this->getFirstMedia('id_documents'), 'thumb');
+    }
+
+    /**
+     * Build a URL-safe media link (encodes filenames like {guid}.png).
+     */
+    public function getMediaSafeUrl(Media $media, string $conversion = ''): string
+    {
+        return $this->buildMediaUrl($media, $conversion) ?? '';
+    }
+
+    /**
+     * Create a disk URL with encoded path segments.
+     */
+    protected function buildMediaUrl(?Media $media, string $conversion = ''): ?string
+    {
+        if (!$media) {
+            return null;
+        }
+
+        $path = $media->getPathRelativeToRoot($conversion);
+        $encodedPath = implode('/', array_map('rawurlencode', explode('/', $path)));
+
+        return Storage::disk($media->disk)->url($encodedPath);
     }
 
     /**

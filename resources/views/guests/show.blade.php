@@ -127,23 +127,17 @@
                 <h3 class="text-lg font-bold text-secondary mb-4">ID Photo</h3>
                 @foreach($idDocs as $document)
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4">
-                    <a href="{{ $document->getFullUrl() }}" target="_blank" class="block">
-                        <img src="{{ $document->getFullUrl() }}" alt="ID Document" class="w-full max-h-96 object-contain rounded-lg">
-                    </a>
+                    <img src="{{ $guest->getMediaSafeUrl($document) }}" alt="ID Document" class="w-full max-h-96 object-contain rounded-lg">
                     <div class="flex items-center justify-between mt-3">
                         <span class="text-xs text-gray-500">{{ $document->name ?? $document->file_name }}</span>
-                        <a href="{{ $document->getFullUrl() }}" target="_blank" class="text-sm text-primary hover:underline font-semibold">View Full Size</a>
                     </div>
                 </div>
                 @endforeach
                 @if($idDocs->isEmpty() && $profilePhoto && str_contains($profilePhoto->mime_type, 'image'))
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                    <a href="{{ $profilePhoto->getFullUrl() }}" target="_blank" class="block">
-                        <img src="{{ $profilePhoto->getFullUrl() }}" alt="ID Photo" class="w-full max-h-96 object-contain rounded-lg">
-                    </a>
+                    <img src="{{ $guest->getMediaSafeUrl($profilePhoto) }}" alt="ID Photo" class="w-full max-h-96 object-contain rounded-lg">
                     <div class="flex items-center justify-between mt-3">
                         <span class="text-xs text-gray-500">{{ $profilePhoto->name ?? $profilePhoto->file_name }}</span>
-                        <a href="{{ $profilePhoto->getFullUrl() }}" target="_blank" class="text-sm text-primary hover:underline font-semibold">View Full Size</a>
                     </div>
                 </div>
                 @endif

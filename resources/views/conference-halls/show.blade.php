@@ -132,59 +132,5 @@
             @endif
         </div>
     </div>
-
-    <!-- Bookings -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-bold text-secondary">Booking History</h3>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-100">
-                <thead class="bg-gradient-to-r from-blue-50 to-white">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase">Booking #</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase">Guest</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase">Date</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase">Time</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-primary uppercase">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
-                    @forelse($conferenceHall->conferenceBookings as $booking)
-                    <tr class="hover:bg-blue-50/50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-semibold text-secondary">{{ $booking->booking_number }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm text-secondary">{{ $booking->guest?->name ?? 'N/A' }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm text-secondary">{{ \Carbon\Carbon::parse($booking->booking_date)->format('M d, Y') }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm text-secondary">
-                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <x-conference-booking-status-badge :status="$booking->status" />
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <p class="text-sm text-gray-500">No bookings for this hall yet.</p>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>
 @endsection

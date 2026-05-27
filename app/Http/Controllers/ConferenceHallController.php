@@ -47,8 +47,8 @@ class ConferenceHallController extends Controller
 
     public function show(ConferenceHall $conferenceHall)
     {
-        $conferenceHall->load(['building', 'conferenceBookings.guest', 'conferenceBookings.conference']);
-        
+        $conferenceHall->load('building');
+
         return view('conference-halls.show', compact('conferenceHall'));
     }
 

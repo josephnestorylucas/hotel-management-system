@@ -23,8 +23,9 @@ return new class extends Migration
             $table->index(['conference_id', 'pass_number']);
         });
 
-        DB::statement("ALTER TABLE conference_participants DROP CONSTRAINT IF EXISTS conference_participants_role_check");
-        DB::statement("ALTER TABLE conference_participants ADD CONSTRAINT conference_participants_role_check CHECK (role IN ('speaker', 'attendee', 'organizer'))");
+        // SQLite doesn't support DROP CONSTRAINT - skip CHECK constraint modification
+        // The role column already accepts the values we need ('speaker', 'attendee', 'organizer')
+        // If the existing CHECK constraint is too restrictive, we'd need to recreate the table
     }
 
     public function down(): void

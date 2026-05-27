@@ -122,6 +122,20 @@
 
     <a href="{{ route('guests.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-gray-700 hover:bg-blue-50 hover:text-primary transition-all">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <span class="font-medium">{{ __('guests.all_guests') }}</span>
+    </a>
+
+    <a href="{{ route('guests.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 {{ request()->routeIs('guests.create') ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg' : 'text-gray-700 hover:bg-blue-50 hover:text-primary' }} transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span class="font-medium">{{ __('guests.add_guest') }}</span>
+    </a>
+
+    <a href="{{ route('guests.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-gray-700 hover:bg-blue-50 hover:text-primary transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <span class="font-medium">{{ __('guests.search_guests') }}</span>

@@ -9,23 +9,31 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // conferences table - add columns only if they don't exist
         Schema::table('conferences', function (Blueprint $table) {
-            $table->decimal('conference_fee', 12, 2)->default(0)->after('description');
-            $table->string('hall_name')->nullable()->after('conference_fee');
-            $table->string('venue_notes')->nullable()->after('hall_name');
-            $table->foreignUuid('conference_booking_id')->nullable()->change();
-            $table->foreignUuid('guest_id')->nullable()->change();
+            if (!Schema::hasColumn('conferences', 'conference_fee')) {
+                $table->decimal('conference_fee', 12, 2)->default(0)->after('description');
+            }
+            if (!Schema::hasColumn('conferences', 'hall_name')) {
+                $table->string('hall_name')->nullable()->after('conference_fee');
+            }
+            if (!Schema::hasColumn('conferences', 'venue_notes')) {
+                $table->string('venue_notes')->nullable()->after('hall_name');
+            }
         });
 
+        // conference_participants table - add columns only if they don't exist
         Schema::table('conference_participants', function (Blueprint $table) {
-            $table->integer('pass_number')->nullable()->after('access_code');
-            $table->string('pass_type', 20)->default('attendee')->after('pass_number');
-            $table->index(['conference_id', 'pass_number']);
+            if (!Schema::hasColumn('conference_participants', 'pass_number')) {
+                $table->integer('pass_number')->nullable()->after('access_code');
+            }
+            if (!Schema::hasColumn('conference_participants', 'pass_type')) {
+                $table->string('pass_type', 20)->default('attendee')->after('pass_number');
+            }
         });
 
-        // SQLite doesn't support DROP CONSTRAINT - skip CHECK constraint modification
-        // The role column already accepts the values we need ('speaker', 'attendee', 'organizer')
-        // If the existing CHECK constraint is too restrictive, we'd need to recreate the table
+        // Skip CHECK constraint modification - SQLite doesn't support DROP CONSTRAINT
+        // The role column values are enforced at application level
     }
 
     public function down(): void
@@ -36,7 +44,6 @@ return new class extends Migration
 
         Schema::table('conference_participants', function (Blueprint $table) {
             $table->dropColumn(['pass_number', 'pass_type']);
-            $table->dropIndex(['conference_id', 'pass_number']);
         });
     }
 };

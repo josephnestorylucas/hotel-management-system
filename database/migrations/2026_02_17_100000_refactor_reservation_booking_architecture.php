@@ -9,6 +9,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $driver = DB::getDriverName();
+
         // ─── Step 1: Convert existing checked_in/checked_out reservations to 'converted' ───
         DB::table('reservations')
             ->whereIn('status', ['checked_in', 'checked_out'])
@@ -20,32 +22,37 @@ return new class extends Migration
             ->update(['status' => 'converted']);
 
         // ─── Step 2: Rename total_amount → estimated_amount on reservations ───
-        Schema::table('reservations', function (Blueprint $table) {
-            $table->renameColumn('total_amount', 'estimated_amount');
-        });
+        if (Schema::hasColumn('reservations', 'total_amount')) {
+            Schema::table('reservations', function (Blueprint $table) {
+                $table->renameColumn('total_amount', 'estimated_amount');
+            });
+        }
 
-        // ─── Step 3: Make created_by nullable on reservations (for public/online reservations) ───
-        Schema::table('reservations', function (Blueprint $table) {
-            $table->uuid('created_by')->nullable()->change();
-        });
-
-        // Note: SQLite stores status as text, so no ENUM alteration needed.
-        // The model layer enforces valid statuses: pending, confirmed, cancelled, no_show, converted.
+        // ─── Step 3: Make created_by nullable on reservations ───
+        if ($driver !== 'sqlite') {
+            Schema::table('reservations', function (Blueprint $table) {
+                $table->uuid('created_by')->nullable()->change();
+            });
+        }
+        // SQLite: columns are nullable by default unless NOT NULL is specified at creation
     }
 
     public function down(): void
     {
-        // Revert created_by to required
-        Schema::table('reservations', function (Blueprint $table) {
-            $table->uuid('created_by')->nullable(false)->change();
-        });
+        $driver = DB::getDriverName();
 
-        // Rename estimated_amount back to total_amount
-        Schema::table('reservations', function (Blueprint $table) {
-            $table->renameColumn('estimated_amount', 'total_amount');
-        });
+        if ($driver !== 'sqlite') {
+            Schema::table('reservations', function (Blueprint $table) {
+                $table->uuid('created_by')->nullable(false)->change();
+            });
+        }
 
-        // Revert converted statuses back
+        if (Schema::hasColumn('reservations', 'estimated_amount')) {
+            Schema::table('reservations', function (Blueprint $table) {
+                $table->renameColumn('estimated_amount', 'total_amount');
+            });
+        }
+
         DB::table('reservations')
             ->where('status', 'converted')
             ->update(['status' => 'pending']);

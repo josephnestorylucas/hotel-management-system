@@ -9,14 +9,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Rename display_name → description and change type to text
-        Schema::table('roles', function (Blueprint $table) {
-            $table->renameColumn('display_name', 'description');
-        });
+        $driver = DB::getDriverName();
 
-        Schema::table('roles', function (Blueprint $table) {
-            $table->text('description')->nullable()->change();
-        });
+        // 1. Rename display_name → description
+        if (Schema::hasColumn('roles', 'display_name')) {
+            Schema::table('roles', function (Blueprint $table) {
+                $table->renameColumn('display_name', 'description');
+            });
+        }
+
+        if ($driver !== 'sqlite') {
+            Schema::table('roles', function (Blueprint $table) {
+                $table->text('description')->nullable()->change();
+            });
+        }
 
         // 2. Rename 'manager' role → 'store_manager'
         DB::table('roles')->where('name', 'manager')->update([
@@ -44,16 +50,22 @@ return new class extends Migration
 
     public function down(): void
     {
+        $driver = DB::getDriverName();
+
         DB::table('roles')->where('name', 'store_manager')->update([
             'name' => 'manager',
         ]);
 
-        Schema::table('roles', function (Blueprint $table) {
-            $table->string('description')->change();
-        });
+        if ($driver !== 'sqlite') {
+            Schema::table('roles', function (Blueprint $table) {
+                $table->string('description')->change();
+            });
+        }
 
-        Schema::table('roles', function (Blueprint $table) {
-            $table->renameColumn('description', 'display_name');
-        });
+        if (Schema::hasColumn('roles', 'description')) {
+            Schema::table('roles', function (Blueprint $table) {
+                $table->renameColumn('description', 'display_name');
+            });
+        }
     }
 };

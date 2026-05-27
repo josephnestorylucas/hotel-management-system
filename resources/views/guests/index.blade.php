@@ -12,6 +12,7 @@
             <h2 class="text-2xl font-extrabold text-secondary">{{ __('guests.title') }}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ __('guests.subtitle') }}</p>
         </div>
+        @if(auth()->user()->isFrontDesk())
         <a href="{{ route('guests.create') }}" 
            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,6 +20,7 @@
             </svg>
             {{ __('guests.new_guest') }}
         </a>
+        @endif
     </div>
 
     <!-- Search Bar -->

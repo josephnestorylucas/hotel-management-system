@@ -52,11 +52,12 @@ class GuestController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:guests,email',
             'phone_number' => 'required|string|max:20',
-            'id_number' => 'required|string|max:50',
-            'address' => 'nullable|string|max:500',
+            'id_type' => 'required|in:passport,driver_license,nida',
+            'id_number' => 'required_with:id_type|nullable|string|max:50',
+            'address' => 'required|string|max:500',
             'nationality' => 'required|string|max:100',
             'date_of_birth' => 'nullable|date|before:today',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'photo' => 'required_with:id_type|image|mimes:jpeg,png,jpg|max:2048',
             'id_documents' => 'nullable|array',
             'id_documents.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
         ]);
@@ -71,6 +72,8 @@ class GuestController extends Controller
         if ($request->hasFile('photo')) {
             $guest->addMediaFromRequest('photo')
                 ->toMediaCollection('guest_photo');
+            $guest->addMediaFromRequest('photo')
+                ->toMediaCollection('id_documents');
         }
 
         // Handle multiple ID document uploads using Spatie Media Library
@@ -125,7 +128,7 @@ class GuestController extends Controller
             ],
             'phone_number' => 'required|string|max:20',
             'id_number' => 'required|string|max:50',
-            'address' => 'nullable|string|max:500',
+            'address' => 'required|string|max:500',
             'nationality' => 'required|string|max:100',
             'date_of_birth' => 'nullable|date|before:today',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

@@ -12,13 +12,8 @@
         <div class="px-6 py-5 bg-gradient-to-r from-blue-50 to-white border-b border-gray-100">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg overflow-hidden
-                        {{ $guest->hasPhoto() ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
-                        @if($guest->hasPhoto())
-                            <img src="{{ $guest->photo_medium_url ?? $guest->photo_url }}" alt="{{ $guest->full_name }}" class="w-full h-full object-cover">
-                        @else
-                            {{ strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)) }}
-                        @endif
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                        {{ strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)) }}
                     </div>
                     <div>
                         <h2 class="text-xl font-extrabold text-secondary">{{ $guest->full_name }}</h2>
@@ -33,6 +28,7 @@
                         </svg>
                         {{ __('guests.actions.new_booking') }}
                     </a>
+                    @if(auth()->user()->isFrontDesk())
                     <a href="{{ route('guests.edit', $guest) }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,6 +36,7 @@
                         </svg>
                         {{ __('guests.actions.edit') }}
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -111,34 +108,47 @@
                             <span class="text-sm text-secondary font-medium">{{ $guest->id_number }}</span>
                         </div>
                         @endif
-                        @if($guest->hasIdDocuments())
-                        <div class="mt-4">
-                            <span class="text-sm text-gray-500 block mb-2">{{ __('guests.sections.id_documents') }} ({{ $guest->id_documents_count }})</span>
-                            <div class="space-y-2">
-                                @foreach($guest->id_documents as $document)
-                                <div class="flex items-center justify-between bg-gray-50 rounded-lg p-2">
-                                    <div class="flex items-center gap-2">
-                                        @if(str_contains($document->mime_type, 'image'))
-                                            <img src="{{ $document->getUrl('thumb') }}" alt="Document" class="w-10 h-10 object-cover rounded">
-                                        @else
-                                            <div class="w-10 h-10 bg-red-100 rounded flex items-center justify-center">
-                                                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                                                </svg>
-                                            </div>
-                                        @endif
-                                        <span class="text-xs text-gray-600">{{ $document->file_name }}</span>
-                                    </div>
-                                    <a href="{{ $document->getUrl() }}" target="_blank" class="text-xs text-primary hover:underline font-medium">
-                                        {{ __('guests.actions.view') }}
-                                    </a>
-                                </div>
-                                @endforeach
-                            </div>
+                        @if($guest->id_type)
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">ID Type</span>
+                            <span class="text-sm text-secondary font-medium">{{ ucfirst(str_replace('_', ' ', $guest->id_type)) }}</span>
                         </div>
                         @endif
                     </div>
                 </div>
+            </div>
+
+            @php
+                $idDocs = $guest->getMedia('id_documents')->filter(fn($m) => str_contains($m->mime_type, 'image'));
+                $profilePhoto = $guest->getFirstMedia('guest_photo');
+            @endphp
+            @if($idDocs->isNotEmpty() || ($profilePhoto && str_contains($profilePhoto->mime_type, 'image')))
+            <div class="mt-6 pt-6 border-t border-gray-100">
+                <h3 class="text-lg font-bold text-secondary mb-4">ID Photo</h3>
+                @foreach($idDocs as $document)
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4">
+                    <a href="{{ $document->getFullUrl() }}" target="_blank" class="block">
+                        <img src="{{ $document->getFullUrl() }}" alt="ID Document" class="w-full max-h-96 object-contain rounded-lg">
+                    </a>
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-xs text-gray-500">{{ $document->name ?? $document->file_name }}</span>
+                        <a href="{{ $document->getFullUrl() }}" target="_blank" class="text-sm text-primary hover:underline font-semibold">View Full Size</a>
+                    </div>
+                </div>
+                @endforeach
+                @if($idDocs->isEmpty() && $profilePhoto && str_contains($profilePhoto->mime_type, 'image'))
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <a href="{{ $profilePhoto->getFullUrl() }}" target="_blank" class="block">
+                        <img src="{{ $profilePhoto->getFullUrl() }}" alt="ID Photo" class="w-full max-h-96 object-contain rounded-lg">
+                    </a>
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-xs text-gray-500">{{ $profilePhoto->name ?? $profilePhoto->file_name }}</span>
+                        <a href="{{ $profilePhoto->getFullUrl() }}" target="_blank" class="text-sm text-primary hover:underline font-semibold">View Full Size</a>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
             </div>
         </div>
     </div>

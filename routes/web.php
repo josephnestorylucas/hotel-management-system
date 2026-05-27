@@ -186,15 +186,15 @@ Route::middleware(['auth'])->group(function () {
     // Guest Management — supervisor/manager: view only, front_desk: full CRUD
     Route::middleware(['role:supervisor,front_desk,manager'])->group(function () {
         Route::get('guests', [GuestController::class, 'index'])->name('guests.index');
-        Route::get('guests/{guest}', [GuestController::class, 'show'])->name('guests.show');
         Route::get('guests-search', [GuestController::class, 'search'])->name('guests.search');
+        Route::get('guests/{guest}', [GuestController::class, 'show'])->name('guests.show')->where('guest', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
     });
     Route::middleware(['role:front_desk'])->group(function () {
         Route::get('guests/create', [GuestController::class, 'create'])->name('guests.create');
         Route::post('guests', [GuestController::class, 'store'])->name('guests.store');
-        Route::get('guests/{guest}/edit', [GuestController::class, 'edit'])->name('guests.edit');
-        Route::put('guests/{guest}', [GuestController::class, 'update'])->name('guests.update');
-        Route::delete('guests/{guest}', [GuestController::class, 'destroy'])->name('guests.destroy');
+        Route::get('guests/{guest}/edit', [GuestController::class, 'edit'])->name('guests.edit')->where('guest', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+        Route::put('guests/{guest}', [GuestController::class, 'update'])->name('guests.update')->where('guest', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+        Route::delete('guests/{guest}', [GuestController::class, 'destroy'])->name('guests.destroy')->where('guest', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
         Route::delete('guests/{guest}/media/{media}', [GuestController::class, 'removeMedia'])->name('guests.media.destroy');
     });
 

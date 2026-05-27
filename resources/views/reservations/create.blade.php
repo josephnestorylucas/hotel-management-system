@@ -384,15 +384,29 @@
                             @enderror
                         </div>
 
-                        <!-- ID Photo Upload Button -->
+                        <div class="mt-4">
+                            <label for="guest_address" class="block text-sm font-semibold text-secondary mb-2">
+                                Address <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="guest_address" id="guest_address" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('guest_address') border-red-500 @enderror"
+                                placeholder="Enter address" x-bind:required="guestType === 'new'">{{ old('guest_address') }}</textarea>
+                            @error('guest_address')
+                                <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- ID Photo Upload -->
                         <div class="mt-4" x-show="idType" x-transition>
                             <label class="block text-sm font-semibold text-secondary mb-2">
                                 {{ __('reservations.fields.id_photo') }} <span class="text-red-500">*</span>
                             </label>
+                            <input type="file" name="guest_id_photo" accept="image/*" capture="environment"
+                                x-ref="idPhotoInput" class="hidden"
+                                @change="handleIdPhotoUpload">
                             <div class="flex items-center gap-3">
-                                <button 
-                                    type="button"
-                                    @click="showIdPhotoModal = true"
+                                <button type="button"
+                                    @click="$refs.idPhotoInput.click()"
                                     class="px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-semibold text-gray-600 hover:border-primary hover:text-primary transition-all flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -400,8 +414,11 @@
                                     <span x-text="idPhotoFile ? '{{ __('reservations.labels.change_photo') }}' : '{{ __('reservations.labels.upload_id_photo') }}'"></span>
                                 </button>
                                 <span x-show="idPhotoFile" class="text-sm text-green-600 font-semibold" x-text="idPhotoFile"></span>
+                                <button type="button" x-show="idPhotoFile" @click="$refs.idPhotoInput.value = ''; idPhotoFile = null; idPhotoPreview = null" class="text-xs text-red-500 hover:text-red-700 font-semibold">Remove</button>
                             </div>
-                            <input type="hidden" name="id_photo_uploaded" x-bind:value="idPhotoFile ? '1' : '0'">
+                            <div x-show="idPhotoPreview" class="mt-3">
+                                <img :src="idPhotoPreview" class="w-48 h-32 object-contain rounded-xl border border-gray-200">
+                            </div>
                             @error('guest_id_photo')
                                 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -659,85 +676,26 @@
                 </button>
             </div>
 
-            <!-- ID Photo Upload Modal (inside x-data scope) -->
-            <div x-show="showIdPhotoModal" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                    <div class="fixed inset-0 transition-opacity" @click="showIdPhotoModal = false">
-                        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-                    </div>
-                    <div class="inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                        <div>
-                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
-                                <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <div class="mt-3 text-center sm:mt-5">
-                                <h3 class="text-lg leading-6 font-bold text-secondary">{{ __('reservations.modal.upload_id_photo') }}</h3>
-                                <p class="mt-1 text-sm text-gray-500">{{ __('reservations.modal.upload_id_photo_desc') }}</p>
-                            </div>
-                        </div>
-                        <div class="mt-5">
-                            <div x-show="!idPhotoPreview">
-                                <label class="block w-full cursor-pointer">
-                                    <span class="flex flex-col items-center justify-center px-6 py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary transition-all">
-                                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                        </svg>
-                                        <span class="mt-2 text-sm font-semibold text-gray-600">{{ __('reservations.modal.click_to_upload') }}</span>
-                                        <span class="mt-1 text-xs text-gray-500">JPG, PNG (max 2MB)</span>
-                                    </span>
-                                    <input type="file" name="guest_id_photo" accept=".jpg,.jpeg,.png" class="hidden" @change="handleIdPhotoSelect($event)">
-                                </label>
-                            </div>
-                            <div x-show="idPhotoPreview" class="relative">
-                                <img :src="idPhotoPreview" class="w-full h-48 object-contain rounded-xl border border-gray-200">
-                                <button type="button" @click="idPhotoPreview = null; idPhotoFile = null;" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                            <button type="button" @click="showIdPhotoModal = false" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-1 sm:text-sm">
-                                {{ __('reservations.modal.cancel') }}
-                            </button>
-                            <button type="button" @click="confirmIdPhoto()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-base font-medium text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm">
-                                {{ __('reservations.modal.confirm') }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </form>
     </div>
 </div>
+</div>
 
 <script>
-@php use App\Helpers\CurrencyHelper; @endphp
-const currencySymbol = '{{ CurrencyHelper::getCurrencySymbol() }}';
-const currencyPosition = '{{ CurrencyHelper::CURRENCIES[CurrencyHelper::getDefaultCurrency()]["position"] ?? "before" }}';
-const currencyDecimals = {{ CurrencyHelper::getDecimals() }};
-
 const countryCodes = {
-    'Tanzanian': '+255', 'Kenyan': '+254', 'Ugandan': '+256', 'Rwandan': '+250',
-    'Burundian': '+257', 'South Sudanese': '+211', 'Congolese (DRC)': '+243',
-    'Ethiopian': '+251', 'Somali': '+252', 'Eritrean': '+291', 'Djiboutian': '+253',
-    'Malawian': '+265', 'Zambian': '+260', 'Zimbabwean': '+263', 'Mozambican': '+258',
-    'South African': '+27', 'Namibian': '+264', 'Botswanan': '+267', 'Angolan': '+244',
-    'Nigerian': '+234', 'Ghanaian': '+233', 'Senegalese': '+221', 'Ivorian': '+225',
-    'Cameroonian': '+237', 'Egyptian': '+20', 'Moroccan': '+212', 'Tunisian': '+216',
-    'Algerian': '+213', 'Libyan': '+218', 'Sudanese': '+249',
-    'British': '+44', 'German': '+49', 'French': '+33', 'Italian': '+39',
-    'Spanish': '+34', 'Dutch': '+31', 'Belgian': '+32', 'Swiss': '+41',
-    'Swedish': '+46', 'Norwegian': '+47', 'Danish': '+45', 'Finnish': '+358',
-    'Polish': '+48', 'Portuguese': '+351', 'Greek': '+30', 'Austrian': '+43',
-    'Irish': '+353', 'Russian': '+7', 'Ukrainian': '+380', 'Turkish': '+90',
-    'American': '+1', 'Canadian': '+1', 'Mexico': '+52', 'Brazilian': '+55',
-    'Argentine': '+54', 'Colombian': '+57',
-    'Chinese': '+86', 'Japanese': '+81', 'South Korean': '+82', 'Indian': '+91',
-    'Pakistani': '+92', 'Bangladeshi': '+880', 'Filipino': '+63', 'Indonesian': '+62',
+    'Tanzanian': '+255', 'Kenyan': '+254', 'Ugandan': '+256', 'Rwandan': '+250', 'Burundian': '+257',
+    'South Sudanese': '+211', 'Congolese (DRC)': '+243', 'Ethiopian': '+251', 'Somali': '+252',
+    'Eritrean': '+291', 'Djiboutian': '+253', 'Malawian': '+265', 'Zambian': '+260', 'Zimbabwean': '+263',
+    'Mozambican': '+258', 'South African': '+27', 'Namibian': '+264', 'Botswanan': '+267', 'Angolan': '+244',
+    'Nigerian': '+234', 'Ghanaian': '+233', 'Senegalese': '+221', 'Ivorian': '+225', 'Cameroonian': '+237',
+    'Egyptian': '+20', 'Moroccan': '+212', 'Tunisian': '+216', 'Algerian': '+213', 'Libyan': '+218',
+    'Sudanese': '+249', 'British': '+44', 'German': '+49', 'French': '+33', 'Italian': '+39',
+    'Spanish': '+34', 'Dutch': '+31', 'Belgian': '+32', 'Swiss': '+41', 'Swedish': '+46',
+    'Norwegian': '+47', 'Danish': '+45', 'Finnish': '+358', 'Polish': '+48', 'Portuguese': '+351',
+    'Greek': '+30', 'Austrian': '+43', 'Irish': '+353', 'Russian': '+7', 'Ukrainian': '+380',
+    'Turkish': '+90', 'American': '+1', 'Canadian': '+1', 'Mexican': '+52', 'Brazilian': '+55',
+    'Argentine': '+54', 'Colombian': '+57', 'Chinese': '+86', 'Japanese': '+81', 'South Korean': '+82',
+    'Indian': '+91', 'Pakistani': '+92', 'Bangladeshi': '+880', 'Filipino': '+63', 'Indonesian': '+62',
     'Malaysian': '+60', 'Singaporean': '+65', 'Thai': '+66', 'Vietnamese': '+84',
     'Australian': '+61', 'New Zealander': '+64',
     'Emirati': '+971', 'Saudi': '+966', 'Qatari': '+974', 'Omani': '+968',
@@ -745,11 +703,13 @@ const countryCodes = {
     'Jordanian': '+962', 'Other': ''
 };
 
+const currencySymbol = '{{ config("app.currency_symbol", "$") }}' || '$';
+const currencyPosition = '{{ config("app.currency_position", "before") }}' || 'before';
+const currencyDecimals = {{ config("app.currency_decimals", 2) }};
+
 function formatMoney(amount) {
-    const formatted = amount.toFixed(currencyDecimals);
-    if (currencyPosition === 'before') {
-        return currencySymbol + formatted;
-    }
+    const formatted = Math.abs(amount).toFixed(currencyDecimals);
+    if (currencyPosition === 'before') return currencySymbol + formatted;
     return formatted + ' ' + currencySymbol;
 }
 
@@ -763,13 +723,13 @@ function reservationForm() {
         idType: '{{ old("guest_id_type", "") }}',
         nationality: '{{ old("guest_nationality", "") }}',
         phoneCode: '',
+        showIdPhotoModal: false,
+        idPhotoFile: null,
+        idPhotoPreview: null,
         selectedRoom: '{{ old("room_id", "") }}',
         pricePerNight: 0,
         calculatedAmount: 0,
         nights: 0,
-        showIdPhotoModal: false,
-        idPhotoFile: null,
-        idPhotoPreview: null,
         checkInDate: '{{ old("check_in_date", "") }}',
         checkOutDate: '{{ old("check_out_date", "") }}',
         availableRooms: [],
@@ -778,146 +738,78 @@ function reservationForm() {
 
         init() {
             this.updateCountryCode();
-            if (this.selectedRoom) {
-                this.updateEstimatedAmount();
-            }
-            if (this.checkInDate && this.checkOutDate) {
-                this.searchRooms();
-            }
+            if (this.selectedRoom) this.updateEstimatedAmount();
+            if (this.checkInDate && this.checkOutDate) this.searchRooms();
         },
 
         get idTypeLabel() {
-            const labels = {
-                'passport': '{{ __("reservations.id_types.passport") }}',
-                'driver_license': '{{ __("reservations.id_types.driver_license") }}',
-                'nida': '{{ __("reservations.id_types.nida") }}'
-            };
-            return labels[this.idType] || '{{ __("reservations.fields.id_number") }}';
+            return { passport: 'Passport', driver_license: 'Driver License', nida: 'NIDA' }[this.idType] || 'ID Number';
         },
 
         get idTypePlaceholder() {
-            const placeholders = {
-                'passport': '{{ __("reservations.placeholders.passport_number") }}',
-                'driver_license': '{{ __("reservations.placeholders.license_number") }}',
-                'nida': '{{ __("reservations.placeholders.nida_number") }}'
-            };
-            return placeholders[this.idType] || '{{ __("reservations.placeholders.enter_id_number") }}';
+            return {
+                passport: 'Enter passport number',
+                driver_license: 'Enter license number',
+                nida: 'Enter NIDA number'
+            }[this.idType] || 'Enter ID number';
         },
 
-        formatCurrency(amount) {
-            return formatMoney(amount);
-        },
+        formatCurrency(amount) { return formatMoney(amount); },
 
-        updateCountryCode() {
-            this.phoneCode = countryCodes[this.nationality] || '';
+        updateCountryCode() { this.phoneCode = countryCodes[this.nationality] || ''; },
+
+        handleIdPhotoUpload() {
+            const file = this.$refs.idPhotoInput.files[0];
+            if (file) {
+                this.idPhotoFile = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => { this.idPhotoPreview = e.target.result; };
+                reader.readAsDataURL(file);
+            }
         },
 
         updateSelectedGuest() {
             const select = document.getElementById('guest_id');
             const option = select.options[select.selectedIndex];
-            if (option && option.value) {
-                this.selectedGuestName = option.getAttribute('data-name') || '';
-                this.selectedGuestPhone = option.getAttribute('data-phone') || '';
-                this.selectedGuestEmail = option.getAttribute('data-email') || '';
-            } else {
-                this.selectedGuestName = '';
-                this.selectedGuestPhone = '';
-                this.selectedGuestEmail = '';
-            }
+            this.selectedGuestName = option?.getAttribute('data-name') || '';
+            this.selectedGuestPhone = option?.getAttribute('data-phone') || '';
+            this.selectedGuestEmail = option?.getAttribute('data-email') || '';
         },
-        
+
         getGuestInitials() {
             if (!this.selectedGuestName) return '';
-            const names = this.selectedGuestName.split(' ');
-            return names.map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
+            return this.selectedGuestName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
         },
 
         updateEstimatedAmount() {
-            if (!this.selectedRoom) {
-                this.pricePerNight = 0;
-                this.calculateNights();
-                return;
-            }
+            if (!this.selectedRoom) { this.pricePerNight = 0; return this.calculateNights(); }
             const room = this.availableRooms.find(r => r.id == this.selectedRoom);
-            if (room && room.room_type) {
-                this.pricePerNight = parseFloat(room.room_type.price_per_night) || 0;
-            } else {
-                this.pricePerNight = 0;
-            }
+            this.pricePerNight = room?.room_type?.price_per_night ? parseFloat(room.room_type.price_per_night) : 0;
             this.calculateNights();
         },
 
         searchRooms() {
             if (this.searchDebounce) clearTimeout(this.searchDebounce);
             this.searchDebounce = setTimeout(() => {
-                if (!this.checkInDate || !this.checkOutDate) {
-                    this.availableRooms = [];
-                    this.selectedRoom = '';
-                    this.pricePerNight = 0;
-                    return;
+                if (!this.checkInDate || !this.checkOutDate || new Date(this.checkOutDate) <= new Date(this.checkInDate)) {
+                    this.availableRooms = []; this.selectedRoom = ''; return;
                 }
-                if (new Date(this.checkOutDate) <= new Date(this.checkInDate)) {
-                    this.availableRooms = [];
-                    this.selectedRoom = '';
-                    this.pricePerNight = 0;
-                    return;
-                }
-                this.roomsLoading = true;
-                this.selectedRoom = '';
-                this.pricePerNight = 0;
-
-                const url = '{{ route("bookings.available-rooms") }}' 
-                    + '?check_in=' + encodeURIComponent(this.checkInDate) 
-                    + '&check_out=' + encodeURIComponent(this.checkOutDate);
-
-                fetch(url, {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    this.availableRooms = data.rooms || [];
-                    this.roomsLoading = false;
-                })
-                .catch(error => {
-                    console.error('Error fetching rooms:', error);
-                    this.availableRooms = [];
-                    this.roomsLoading = false;
-                });
-            }, 300);
+                this.roomsLoading = true; this.selectedRoom = ''; this.pricePerNight = 0;
+                fetch('{{ route("bookings.available-rooms") }}?check_in=' + this.checkInDate + '&check_out=' + this.checkOutDate)
+                    .then(r => r.json())
+                    .then(data => { this.availableRooms = data.rooms || []; this.roomsLoading = false; })
+                    .catch(() => { this.availableRooms = []; this.roomsLoading = false; });
+            }, 500);
         },
 
         calculateNights() {
-            if (this.checkInDate && this.checkOutDate) {
-                const diff = new Date(this.checkOutDate) - new Date(this.checkInDate);
-                this.nights = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-            } else {
-                this.nights = 0;
-            }
+            if (this.checkInDate && this.checkOutDate && new Date(this.checkOutDate) > new Date(this.checkInDate)) {
+                this.nights = Math.round((new Date(this.checkOutDate) - new Date(this.checkInDate)) / (1000 * 60 * 60 * 24));
+            } else { this.nights = 0; }
             this.calculatedAmount = this.nights * this.pricePerNight;
-            if (this.calculatedAmount > 0) {
-                document.getElementById('estimated_amount').value = this.calculatedAmount.toFixed(currencyDecimals);
-            }
-        },
-
-        handleIdPhotoSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                this.idPhotoFile = file.name;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.idPhotoPreview = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        },
-
-        confirmIdPhoto() {
-            this.showIdPhotoModal = false;
+            document.getElementById('estimated_amount').value = this.calculatedAmount;
         }
-    }
+    };
 }
 </script>
 @endsection

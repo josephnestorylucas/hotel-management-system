@@ -619,9 +619,9 @@ Route::middleware(['auth'])->group(function () {
 
         // ── POS (Restaurant walk-in and guest folio sales) ─────────────────
         Route::get('pos',                          [OrderController::class, 'pos'])->name('pos')
-             ->middleware('role:waiter,restaurant_manager,manager');
+             ->middleware('role:waiter,restaurant_manager');
         Route::post('pos',                         [OrderController::class, 'storePos'])->name('pos.store')
-             ->middleware('role:waiter,restaurant_manager,manager');
+             ->middleware('role:waiter,restaurant_manager');
 
         // ── Kitchen Queue (kitchen_staff, restaurant_manager, manager, admin, supervisor) ──
         Route::get('kitchen/queue',                    [\App\Http\Controllers\Restaurant\KitchenController::class, 'queue'])->name('kitchen.queue')
@@ -652,7 +652,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ═══ BUFFET POS MODULE ═══
-    Route::middleware(['role:waiter,restaurant_manager,manager,admin,supervisor'])
+    Route::middleware(['role:waiter,restaurant_manager,admin,supervisor'])
         ->prefix('buffet')
         ->name('buffet.pos.')
         ->group(function () {

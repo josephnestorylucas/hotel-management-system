@@ -88,13 +88,8 @@
                     <tr class="hover:bg-blue-50/50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg overflow-hidden
-                                    {{ $guest->hasPhoto() ? '' : 'bg-gradient-to-br from-primary to-blue-600' }}">
-                                    @if($guest->hasPhoto())
-                                        <img src="{{ $guest->photo_thumb_url }}" alt="{{ $guest->full_name }}" class="w-full h-full object-cover">
-                                    @else
-                                        {{ strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)) }}
-                                    @endif
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg overflow-hidden bg-gradient-to-br from-primary to-blue-600">
+                                    {{ strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)) }}
                                 </div>
                                 <div class="ml-3">
                                     <div class="text-sm font-semibold text-secondary">{{ $guest->full_name }}</div>
@@ -122,8 +117,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('guests.show', $guest) }}" 
-                                   class="text-gray-600 hover:text-gray-800 font-semibold">
-                                    {{ __('guests.actions.view') }}
+                                   class="text-gray-600 hover:text-gray-800" 
+                                   aria-label="{{ __('guests.actions.view') }}" 
+                                   title="{{ __('guests.actions.view') }}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z"/>
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
                                 </a>
                                 <a href="{{ route('guests.edit', $guest) }}" 
                                    class="text-primary hover:text-blue-700 font-semibold">

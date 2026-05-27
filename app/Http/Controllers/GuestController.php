@@ -68,10 +68,8 @@ class GuestController extends Controller
         // Create the guest
         $guest = Guest::create($validated);
 
-        // Handle photo upload using Spatie Media Library
+        // Handle ID photo upload using Spatie Media Library
         if ($request->hasFile('photo')) {
-            $guest->addMediaFromRequest('photo')
-                ->toMediaCollection('guest_photo');
             $guest->addMediaFromRequest('photo')
                 ->toMediaCollection('id_documents');
         }

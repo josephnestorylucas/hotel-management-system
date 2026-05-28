@@ -96,6 +96,21 @@ class BugReportController extends Controller
         return back()->with('success', 'Bug report deleted.');
     }
 
+    public function fetchRemote(Request $request)
+    {
+        $bugs = BugReport::on('bugs')
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->severity, fn($q) => $q->where('severity', $request->severity))
+            ->when($request->module, fn($q) => $q->where('module', $request->module))
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'total' => $bugs->count(),
+            'bugs' => $bugs,
+        ])->header('Access-Control-Allow-Origin', '*');
+    }
+
     protected function exportCsv($query)
     {
         $filename = 'bug-reports-' . now()->format('Ymd-His') . '.csv';

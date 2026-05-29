@@ -127,7 +127,6 @@
                             <label class="block text-sm font-semibold text-secondary mb-2">{{ __('bookings.fields.check_in_date') }} <span class="text-red-500">*</span></label>
                             <input type="date" name="check_in_date" x-model="checkIn"
                                    value="{{ old('check_in_date', request('check_in')) }}"
-                                   min="{{ date('Y-m-d') }}"
                                    @input="searchRooms()"
                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             @error('check_in_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror

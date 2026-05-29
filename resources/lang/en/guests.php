@@ -64,6 +64,7 @@ return [
         'guest_info' => 'Guest Information',
         'reservation_history' => 'Reservation History',
         'personal_details' => 'Personal Details',
+        'booking_history' => 'Booking History',
     ],
 
     // Table headers
@@ -80,6 +81,8 @@ return [
         'check_out' => 'Check-Out',
         'amount' => 'Amount',
         'status' => 'Status',
+        'booking' => 'Booking',
+        'nights' => 'nights',
     ],
 
     // Actions
@@ -115,6 +118,8 @@ return [
         'no_guests_subtitle' => 'Create a new guest to get started',
         'no_reservations' => 'No reservations yet',
         'no_reservations_subtitle' => 'Create a new reservation for this guest',
+        'no_bookings' => 'No bookings yet',
+        'no_bookings_subtitle' => 'Bookings will appear here after check-in',
         'no_email' => 'No email',
         'no_email_provided' => 'No email provided',
         'not_assigned' => 'Not Assigned',
@@ -174,6 +179,7 @@ return [
         'guest_since' => 'Guest since',
         'nights' => 'nights',
         'reservation_count' => 'total reservations',
+        'booking_count' => 'total bookings',
     ],
 
     // Documents

@@ -224,6 +224,76 @@
         @endif
     </div>
 
+    <!-- Booking History -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+            <h3 class="text-lg font-extrabold text-secondary">{{ __('guests.sections.booking_history') }}</h3>
+            <p class="text-sm text-gray-500 mt-1">{{ $guest->bookings->count() }} {{ __('guests.info.booking_count') }}</p>
+        </div>
+
+        @if($guest->bookings->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-100">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.booking') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.room') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.check_in') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.check_out') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.amount') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider">{{ __('guests.table.status') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @foreach($guest->bookings->sortByDesc('created_at') as $booking)
+                    <tr class="hover:bg-blue-50/50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="{{ route('bookings.show', $booking) }}" class="text-sm font-semibold text-primary hover:underline">
+                                {{ $booking->booking_number }}
+                            </a>
+                            <div class="text-xs text-gray-500">{{ $booking->created_at->format('M d, Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($booking->room)
+                                <div class="text-sm font-medium text-secondary">{{ $booking->room->room_number }}</div>
+                                <div class="text-xs text-primary">{{ $booking->room->roomType->name ?? '' }}</div>
+                            @else
+                                <span class="text-xs text-red-600 font-semibold">{{ __('guests.messages.not_assigned') }}</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-secondary">{{ $booking->check_in_date->format('M d, Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-secondary">{{ $booking->check_out_date->format('M d, Y') }}</div>
+                            <div class="text-xs text-primary">{{ $booking->nights }} {{ __('guests.table.nights') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-bold text-secondary">@currency($booking->total_amount)</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @include('components.booking-status-badge', ['status' => $booking->status])
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+        <div class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <p class="text-gray-500 font-medium">{{ __('guests.messages.no_bookings') }}</p>
+                <p class="text-gray-400 text-sm mt-1">{{ __('guests.messages.no_bookings_subtitle') }}</p>
+            </div>
+        </div>
+        @endif
+    </div>
+
     <!-- Back Button -->
     <div class="flex justify-start">
         <a href="{{ route('guests.index') }}" 

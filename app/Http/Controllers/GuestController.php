@@ -97,7 +97,7 @@ class GuestController extends Controller
      */
     public function show(Guest $guest)
     {
-        $guest->load(['reservations.room.roomType', 'media']);
+        $guest->load(['reservations.room.roomType', 'bookings.room.roomType', 'media']);
         return view('guests.show', compact('guest'));
     }
 

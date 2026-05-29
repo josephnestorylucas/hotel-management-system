@@ -180,7 +180,7 @@ class BookingController extends Controller
         // Validate booking data
         $validated = $request->validate([
             'room_id' => 'required|uuid|exists:rooms,id',
-            'check_in_date' => 'required|date',
+            'check_in_date' => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
             'number_of_guests' => 'required|integer|min:1',
             'total_amount' => 'required|numeric|min:0',

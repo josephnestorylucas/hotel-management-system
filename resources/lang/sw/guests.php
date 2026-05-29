@@ -63,6 +63,7 @@ return [
         'guest_info' => 'Maelezo ya Mgeni',
         'reservation_history' => 'Historia ya Mahifadhi',
         'personal_details' => 'Maelezo ya Kibinafsi',
+        'booking_history' => 'Historia ya Ukaaji',
     ],
 
     // Table headers
@@ -79,6 +80,8 @@ return [
         'check_out' => 'Ondoka',
         'amount' => 'Kiasi',
         'status' => 'Hali',
+        'booking' => 'Ukaaji',
+        'nights' => 'usiku',
     ],
 
     // Actions
@@ -114,6 +117,8 @@ return [
         'no_guests_subtitle' => 'Unda mgeni mpya ili kuanza',
         'no_reservations' => 'Hakuna mahifadhi bado',
         'no_reservations_subtitle' => 'Unda mahifadhi mapya kwa mgeni huyu',
+        'no_bookings' => 'Hakuna ukaaji bado',
+        'no_bookings_subtitle' => 'Ukaaji utaonekana hapa baada ya kuingia',
         'no_email' => 'Hakuna barua pepe',
         'no_email_provided' => 'Hakuna barua pepe iliyotolewa',
         'not_assigned' => 'Hajapewa',
@@ -173,6 +178,7 @@ return [
         'guest_since' => 'Mgeni tangu',
         'nights' => 'usiku',
         'reservation_count' => 'jumla ya mahifadhi',
+        'booking_count' => 'jumla ya ukaaji',
     ],
 
     // Documents

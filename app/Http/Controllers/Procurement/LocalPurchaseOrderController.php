@@ -137,7 +137,9 @@ class LocalPurchaseOrderController extends Controller
             'items.*.notes' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($localPurchaseOrder, $validated) {
+        $resubmit = $request->boolean('resubmit');
+
+        DB::transaction(function () use ($localPurchaseOrder, $validated, $resubmit) {
             $localPurchaseOrder->update([
                 'supplier_id' => $validated['supplier_id'] ?? null,
                 'supplier_name_manual' => $validated['supplier_name_manual'] ?? null,
@@ -145,6 +147,9 @@ class LocalPurchaseOrderController extends Controller
                 'expected_delivery_date' => $validated['expected_delivery_date'] ?? null,
                 'notes' => $validated['notes'] ?? null,
                 'terms' => $validated['terms'] ?? null,
+                'rejection_reason' => $resubmit ? null : $localPurchaseOrder->rejection_reason,
+                'rejected_by' => $resubmit ? null : $localPurchaseOrder->rejected_by,
+                'status' => $resubmit ? 'pending_approval' : $localPurchaseOrder->status,
             ]);
 
             // Delete old items and create new ones
@@ -167,9 +172,13 @@ class LocalPurchaseOrderController extends Controller
             $localPurchaseOrder->recalculate();
         });
 
+        $message = $resubmit
+            ? "LPO {$localPurchaseOrder->lpo_number} updated and resubmitted for approval."
+            : "LPO {$localPurchaseOrder->lpo_number} updated successfully.";
+
         return redirect()
             ->route('procurement.lpo.show', $localPurchaseOrder)
-            ->with('success', "LPO {$localPurchaseOrder->lpo_number} updated successfully.");
+            ->with('success', $message);
     }
 
     public function submitForApproval(LocalPurchaseOrder $localPurchaseOrder): RedirectResponse

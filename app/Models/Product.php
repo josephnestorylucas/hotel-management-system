@@ -13,7 +13,7 @@ class Product extends Model implements HasMedia
     use HasUuid, InteractsWithMedia;
 
     protected $fillable = [
-        'name', 'sku', 'description', 'category', 'product_type', 'unit',
+        'name', 'barcode', 'sku', 'description', 'category', 'product_type', 'unit',
         'cost_price', 'selling_price', 'reorder_level', 'varieties', 'image_url', 'is_active', 'created_by',
     ];
 
@@ -148,5 +148,10 @@ class Product extends Model implements HasMedia
     {
         return $this->hasOne(MenuItem::class, 'name', 'name')
             ->where('is_active', true);
+    }
+
+    public static function findByBarcode(string $barcode): ?self
+    {
+        return static::where('barcode', $barcode)->first();
     }
 }

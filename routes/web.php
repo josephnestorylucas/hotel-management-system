@@ -481,6 +481,10 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:store_manager');
         Route::delete('products/{product}',     [ProductController::class, 'destroy'])->name('products.destroy')
              ->middleware('role:store_manager');
+        Route::get('products/lookup',           [ProductController::class, 'lookupByBarcode'])->name('products.lookup')
+             ->middleware('role:store_manager,store_keeper,restaurant_manager,supervisor,manager');
+        Route::post('products/store-scanned',   [ProductController::class, 'storeScanned'])->name('products.store_scanned')
+             ->middleware('role:store_manager');
 
         // ── Stock ─────────────────────────────────────────────────────────
         Route::get('stock/levels',              [StockController::class, 'levels'])->name('stock.levels')

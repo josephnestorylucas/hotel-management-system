@@ -12,6 +12,8 @@ use App\Models\StockMovement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -250,5 +252,94 @@ class ProductController extends Controller
         }
 
         return array_values(array_filter($decoded, fn ($v) => !empty($v['label'])));
+    }
+
+    public function lookupByBarcode(Request $request)
+    {
+        try {
+            $request->validate(['barcode' => 'required|string|max:50']);
+
+            $product = Product::findByBarcode($request->barcode);
+
+            if ($product) {
+                $product->load('stockLevels.location');
+
+                return response()->json([
+                    'found'  => true,
+                    'source' => 'local',
+                    'product' => [
+                        'id'            => $product->id,
+                        'name'          => $product->name,
+                        'barcode'       => $product->barcode,
+                        'sku'           => $product->sku,
+                        'unit'          => $product->unit,
+                        'cost_price'    => $product->cost_price,
+                        'selling_price' => $product->selling_price,
+                        'stock'         => $product->stockLevels->sum('quantity'),
+                    ],
+                ]);
+            }
+
+            $response = Http::timeout(5)
+                ->get("https://world.openfoodfacts.org/api/v0/product/{$request->barcode}.json");
+
+            if ($response->successful() && $response->json('status') === 1) {
+                $data = $response->json('product');
+
+                return response()->json([
+                    'found'  => true,
+                    'source' => 'openfoodfacts',
+                    'product' => [
+                        'name'   => data_get($data, 'product_name', ''),
+                        'brand'  => data_get($data, 'brands', ''),
+                        'barcode' => $request->barcode,
+                        'image'  => data_get($data, 'image_small_url', ''),
+                    ],
+                ]);
+            }
+
+            return response()->json([
+                'found'   => false,
+                'source'  => null,
+                'barcode' => $request->barcode,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'found' => false,
+                'error' => true,
+            ], 500);
+        }
+    }
+
+    public function storeScanned(Request $request)
+    {
+        $data = $request->validate([
+            'name'          => 'required|string|max:150',
+            'barcode'       => 'required|string|max:50|unique:products,barcode',
+            'cost_price'    => 'required|numeric|min:0.01',
+            'selling_price' => 'required|numeric|min:0.01',
+            'quantity'      => 'nullable|numeric|min:0',
+        ]);
+
+        $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $data['name']), 0, 3));
+        $sku = $prefix . '-' . strtoupper(Str::random(6));
+
+        $product = Product::create([
+            'name'          => $data['name'],
+            'barcode'       => $data['barcode'],
+            'sku'           => $sku,
+            'unit'          => 'piece',
+            'cost_price'    => $data['cost_price'],
+            'selling_price' => $data['selling_price'],
+            'reorder_level' => 0,
+            'is_active'     => true,
+            'created_by'    => auth()->id(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'product' => $product,
+        ]);
     }
 }

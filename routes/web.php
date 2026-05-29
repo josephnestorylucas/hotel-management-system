@@ -541,6 +541,10 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:store_manager,store_keeper,restaurant_manager');
         Route::get('reports/movements',        [ReportController::class, 'movements'])->name('reports.movements')
              ->middleware('role:store_manager,store_keeper');
+        Route::get('reports/movements/print',  [ReportController::class, 'movementsPrint'])->name('reports.movements.print')
+             ->middleware('role:store_manager,store_keeper');
+        Route::get('reports/movements/export/excel', [ReportController::class, 'exportExcel'])->name('reports.movements.export.excel')
+             ->middleware('role:store_manager,store_keeper');
         Route::get('reports/damage',           [ReportController::class, 'damage'])->name('reports.damage')
              ->middleware('role:store_manager,store_keeper,supervisor');
     });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Store;
 
+use App\Exports\StockMovementsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\StockLevel;
@@ -9,6 +10,7 @@ use App\Models\StockLocation;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -89,6 +91,46 @@ class ReportController extends Controller
             ->paginate(50);
 
         return view('store.reports.movements', compact('movements', 'locations'));
+    }
+
+    // GET /store/reports/movements/print
+    public function movementsPrint(Request $request): View
+    {
+        $locations = StockLocation::where('is_active', true)->orderBy('name')->get();
+
+        $movements = StockMovement::with(['product', 'location', 'actor'])
+            ->when($request->product_id,  fn ($q) => $q->where('product_id', $request->product_id))
+            ->when($request->location_id, fn ($q) => $q->where('location_id', $request->location_id))
+            ->when($request->type,        fn ($q) => $q->where('type', $request->type))
+            ->when($request->from,        fn ($q) => $q->whereDate('created_at', '>=', $request->from))
+            ->when($request->to,          fn ($q) => $q->whereDate('created_at', '<=', $request->to))
+            ->latest('created_at')
+            ->get();
+
+        $filterSummary = [];
+        if ($request->from) $filterSummary['from'] = $request->from;
+        if ($request->to) $filterSummary['to'] = $request->to;
+        if ($request->type) $filterSummary['type'] = ucwords(str_replace('_', ' ', $request->type));
+        if ($request->location_id) {
+            $filterSummary['location'] = $locations->firstWhere('id', $request->location_id)?->name ?? '';
+        }
+
+        return view('store.reports.movements-print', compact('movements', 'filterSummary'));
+    }
+
+    // GET /store/reports/movements/export/excel
+    public function exportExcel(Request $request)
+    {
+        $filters = [
+            'start_date'  => $request->input('from'),
+            'end_date'    => $request->input('to'),
+            'type'        => $request->input('type'),
+            'location_id' => $request->input('location_id'),
+        ];
+
+        $filename = 'stock-movements-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new StockMovementsExport($filters), $filename);
     }
 
     // GET /store/reports/damage

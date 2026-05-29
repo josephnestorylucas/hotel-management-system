@@ -32,6 +32,12 @@ class SecurityHeaders
         // Restrict browser features
         $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(), payment=()');
 
+        // Prevent browser from caching authenticated pages
+        // Fixes: back button after logout still showing protected pages
+        $response->headers->set('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+
         // Content Security Policy — restrict resource loading
 
         // these block the tarwind css 

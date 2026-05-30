@@ -23,10 +23,29 @@
             </div>
         </div>
 
+        {{-- Camera Scanner Button --}}
+        <button type="button" id="start-camera-btn" onclick="startCameraScanner()"
+                class="w-full bg-green-600 text-white px-5 py-3 rounded-xl text-lg font-semibold hover:bg-green-700 mb-3 flex items-center justify-center gap-2">
+            📷 Tap to Scan Barcode
+        </button>
+
+        {{-- Camera Container (hidden by default) --}}
+        <div id="camera-container" class="hidden mb-3 text-center">
+            <video id="camera-preview" style="width:100%; max-width:400px; border-radius:8px;" autoplay playsinline muted></video>
+            <div class="mt-2">
+                <button type="button" id="stop-camera-btn" onclick="stopCameraScanner()"
+                        class="bg-red-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-red-700 font-medium">
+                    Stop Camera
+                </button>
+            </div>
+        </div>
+
+        {{-- Manual Input Fallback --}}
+        <label class="block text-xs text-gray-500 mb-1">Or enter barcode manually</label>
         <div class="relative">
             <input type="text" id="barcode-scanner-input"
-                   placeholder="Scan barcode or type and press Enter..."
-                   autocomplete="off" autofocus
+                   placeholder="Type barcode and press Enter..."
+                   autocomplete="off"
                    class="w-full border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 text-lg font-mono text-center focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
             <div id="scan-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
                 <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -292,6 +311,7 @@
 </div>
 
 @push('scripts')
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <script>
 function productVarieties() {
     return {
@@ -319,10 +339,59 @@ function productVarieties() {
     }
 }
 
-// Barcode Scanner
-let scanBuffer = '';
-let scanTimeout;
+// Camera Barcode Scanner
+let codeReader = null;
+let scanning = false;
 
+function startCameraScanner() {
+    // HTTPS check — allow localhost, LAN IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x), and HTTPS
+    const host = location.hostname;
+    const isLocal = host === 'localhost' || host === '127.0.0.1' ||
+                    /^192\.168\./.test(host) || /^10\./.test(host) ||
+                    /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+    if (location.protocol !== 'https:' && !isLocal) {
+        alert('Camera scanning requires HTTPS. Please use manual barcode entry or ask your admin to enable SSL.');
+        return;
+    }
+
+    // Camera support check
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Camera not available — your browser blocks camera on plain HTTP.\n\nFix: Run this on your dev machine to get an HTTPS link:\n\n  npx expose --https\n\nOr install ngrok:\n  scoop install ngrok\n  ngrok http 8000\n\nThen open the HTTPS URL on your phone.');
+        return;
+    }
+
+    document.getElementById('camera-container').classList.remove('hidden');
+    document.getElementById('start-camera-btn').classList.add('hidden');
+    document.getElementById('stop-camera-btn').classList.remove('hidden');
+    scanning = true;
+
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    codeReader.decodeFromVideoDevice(null, 'camera-preview', (result, err) => {
+        if (result) {
+            stopCameraScanner();
+            processBarcode(result.getText());
+        }
+        if (err && !(err instanceof ZXing.NotFoundException)) {
+            console.error(err);
+        }
+    });
+}
+
+function stopCameraScanner() {
+    if (codeReader) {
+        codeReader.reset();
+        codeReader = null;
+    }
+    scanning = false;
+    document.getElementById('camera-container').classList.add('hidden');
+    document.getElementById('start-camera-btn').classList.remove('hidden');
+    document.getElementById('stop-camera-btn').classList.add('hidden');
+}
+
+// Release camera when navigating away
+window.addEventListener('beforeunload', stopCameraScanner);
+
+// Manual input fallback
 document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         if (e.target.id === 'barcode-scanner-input' && e.key === 'Enter') {
@@ -330,16 +399,6 @@ document.addEventListener('keydown', function(e) {
             processBarcode(e.target.value.trim());
         }
         return;
-    }
-    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        scanBuffer += e.key;
-        clearTimeout(scanTimeout);
-        scanTimeout = setTimeout(() => {
-            if (scanBuffer.length >= 4) {
-                processBarcode(scanBuffer);
-            }
-            scanBuffer = '';
-        }, 100);
     }
 });
 

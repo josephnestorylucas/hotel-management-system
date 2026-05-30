@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Models\JournalLine;
+use App\Traits\HasSoftDelete;
 
 class Account extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $fillable = [
         'code', 'name', 'type', 'normal_balance',
@@ -19,6 +20,7 @@ class Account extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_system' => 'boolean',
+        'deleted_at' => 'datetime',
     ];
 
     // Get running balance for this account

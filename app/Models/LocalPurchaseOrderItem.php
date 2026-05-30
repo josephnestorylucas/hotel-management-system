@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LocalPurchaseOrderItem extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'lpo_id',
@@ -29,6 +30,7 @@ class LocalPurchaseOrderItem extends Model
         'received_quantity' => 'decimal:3',
         'unit_price' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     public function lpo(): BelongsTo

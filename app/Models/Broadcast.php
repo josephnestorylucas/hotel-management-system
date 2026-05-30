@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 
 class Broadcast extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'title', 'body', 'sms_message', 'type', 'target',
@@ -18,6 +19,7 @@ class Broadcast extends Model
     protected $casts = [
         'scheduled_at' => 'datetime',
         'sent_at'      => 'datetime',
+        'deleted_at'   => 'datetime',
     ];
 
     public function creator()

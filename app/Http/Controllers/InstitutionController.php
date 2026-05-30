@@ -78,9 +78,21 @@ class InstitutionController extends Controller
                 ->with('error', "Cannot delete institution: it has {$activeBookingsCount} active booking(s). Cancel or complete all bookings first.");
         }
 
-        $institution->delete();
+        $this->softDelete($institution);
 
         return redirect()->route('institutions.index')
-            ->with('success', 'Institution deleted successfully.');
+            ->with('success', 'Institution archived successfully.');
+    }
+
+    public function archived()
+    {
+        $records = Institution::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('institutions.archived', compact('records'));
+    }
+
+    public function restore(Institution $institution)
+    {
+        $this->restoreModel($institution);
+        return redirect()->route('institutions.index')->with('success', 'Institution restored successfully.');
     }
 }

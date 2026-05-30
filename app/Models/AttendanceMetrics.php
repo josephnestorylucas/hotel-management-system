@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceMetrics extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'event_id',
@@ -26,6 +27,7 @@ class AttendanceMetrics extends Model
     protected $casts = [
         'metric_date' => 'date',
         'total_revenue_collected' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

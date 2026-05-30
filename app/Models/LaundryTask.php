@@ -3,13 +3,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LaundryTask extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'task_number',
@@ -34,6 +35,7 @@ class LaundryTask extends Model
         'collected_at' => 'datetime',
         'completed_at' => 'datetime',
         'returned_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function boot()

@@ -62,8 +62,22 @@ class RoomController extends Controller {
     }
 
     public function destroy(Room $room) {
-        $room->delete();
-        return redirect()->route('rooms.index')->with('success', 'Room deleted successfully.');
+        $this->softDelete($room);
+        return redirect()->route('rooms.index')->with('success', 'Room archived successfully.');
+    }
+
+    public function archived()
+    {
+        $rooms = Room::onlyDeleted()->with(['floor.building', 'roomType'])->latest('deleted_at')->paginate(20);
+
+        return view('rooms.archived', compact('rooms'));
+    }
+
+    public function restore(Room $room)
+    {
+        $this->restoreModel($room);
+
+        return redirect()->route('rooms.index')->with('success', 'Room restored successfully.');
     }
 
     public function toggleStatus(Request $request, Room $room) {

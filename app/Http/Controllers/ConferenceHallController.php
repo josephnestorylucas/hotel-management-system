@@ -84,9 +84,21 @@ class ConferenceHallController extends Controller
             return back()->with('error', 'Cannot delete hall with active bookings.');
         }
 
-        $conferenceHall->delete();
+        $this->softDelete($conferenceHall);
 
         return redirect()->route('conference-halls.index')
-            ->with('success', 'Conference hall deleted successfully.');
+            ->with('success', 'Conference hall archived successfully.');
+    }
+
+    public function archived()
+    {
+        $records = ConferenceHall::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('conference-halls.archived', compact('records'));
+    }
+
+    public function restore(ConferenceHall $conferenceHall)
+    {
+        $this->restoreModel($conferenceHall);
+        return redirect()->route('conference-halls.index')->with('success', 'Conference hall restored successfully.');
     }
 }

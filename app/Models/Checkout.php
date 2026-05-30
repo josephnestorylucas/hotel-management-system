@@ -8,10 +8,11 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\DB;
+use App\Traits\HasSoftDelete;
 
 class Checkout extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'booking_id', 'receipt_number', 'status',
@@ -33,6 +34,7 @@ class Checkout extends Model implements ReceiptPrintable
         'total_paid_usd'     => 'decimal:2',
         'change_due_usd'     => 'decimal:2',
         'completed_at'       => 'datetime',
+        'deleted_at'         => 'datetime',
     ];
 
     // Auto-generate receipt number

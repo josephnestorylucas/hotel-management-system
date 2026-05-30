@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class StoreNotification extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     public $timestamps = false;
 
@@ -21,6 +22,7 @@ class StoreNotification extends Model
     protected $casts = [
         'is_read'    => 'boolean',
         'created_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function user()

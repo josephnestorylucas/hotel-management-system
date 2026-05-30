@@ -86,8 +86,8 @@ class EventVenueController extends Controller
 
     public function destroy(Organization $organization, Event $event, EventVenue $venue)
     {
-        $venue->delete();
+        $this->softDelete($venue);
 
-        return back()->with('success', 'Venue removed from event.');
+        return back()->with('success', 'Venue archived from event.');
     }
 }

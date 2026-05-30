@@ -49,7 +49,17 @@ class BuildingController extends Controller {
                 ->with('error', 'Cannot delete "' . $building->name . '" because it has floors with assigned rooms. Remove the rooms first.');
         }
 
-        $building->delete();
-        return redirect()->route('buildings.index')->with('success', 'Building deleted successfully.');
+        $this->softDelete($building);
+        return redirect()->route('buildings.index')->with('success', 'Building archived successfully.');
+    }
+
+    public function archived() {
+        $records = Building::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('buildings.archived', compact('records'));
+    }
+
+    public function restore(Building $building) {
+        $this->restoreModel($building);
+        return redirect()->route('buildings.index')->with('success', 'Building restored successfully.');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class Payment extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     // ─── Status constants ──────────────────────────────────────────
     const STATUS_PENDING            = 'pending';
@@ -56,6 +57,7 @@ class Payment extends Model
         'refund_metadata' => 'array',
         'payment_date'    => 'datetime',
         'refunded_at'     => 'datetime',
+        'deleted_at'      => 'datetime',
     ];
 
     // ─── Boot ──────────────────────────────────────────────────────

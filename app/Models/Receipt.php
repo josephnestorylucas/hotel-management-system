@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -15,6 +16,7 @@ use Illuminate\Support\Str;
  */
 class Receipt extends Model
 {
+    use HasSoftDelete;
 
     protected $fillable = [
         'receipt_number',
@@ -56,6 +58,7 @@ class Receipt extends Model
         'issued_at'      => 'datetime',
         'printed_at'     => 'datetime',
         'print_count'    => 'integer',
+        'deleted_at'     => 'datetime',
     ];
 
     /**

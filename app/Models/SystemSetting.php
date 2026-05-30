@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -9,6 +10,8 @@ use Illuminate\Support\Str;
 
 class SystemSetting extends Model
 {
+    use HasSoftDelete;
+
     public $incrementing = false;
     public $timestamps = true;
 
@@ -20,6 +23,7 @@ class SystemSetting extends Model
     protected $casts = [
         'updated_at' => 'datetime',
         'created_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     protected static array $encryptedKeys = [

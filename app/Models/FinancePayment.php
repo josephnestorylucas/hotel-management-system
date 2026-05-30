@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FinancePayment extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $table = 'finance_payments';
 
@@ -28,6 +29,7 @@ class FinancePayment extends Model
         'amount_usd'    => 'decimal:2',
         'exchange_rate' => 'decimal:4',
         'paid_at'       => 'datetime',
+        'deleted_at'    => 'datetime',
     ];
 
     protected static function booted(): void

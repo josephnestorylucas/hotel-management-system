@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Organization extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'name',
@@ -35,6 +36,7 @@ class Organization extends Model
     protected $casts = [
         'verified_at' => 'datetime',
         'metadata' => 'array',
+        'deleted_at' => 'datetime',
     ];
 
     public function events(): HasMany

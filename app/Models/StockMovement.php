@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Services\NotificationService;
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class StockMovement extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     public $timestamps = false;
 
@@ -26,6 +27,7 @@ class StockMovement extends Model
         'quantity_after'  => 'decimal:3',
         'unit_cost'       => 'decimal:2',
         'created_at'      => 'datetime',
+        'deleted_at'      => 'datetime',
     ];
 
     /**

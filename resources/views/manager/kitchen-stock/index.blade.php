@@ -7,9 +7,20 @@
 <div class="max-w-5xl mx-auto">
     <div class="flex justify-between items-center mb-6">
         <p class="text-sm text-gray-500">Simple stock monitoring — no recipe tracking</p>
-        <a href="{{ route('manager.kitchen-stock.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
-            + Add Item
-        </a>
+        <div class="flex items-center gap-2">
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('manager'))
+            <a href="{{ route('manager.kitchen-stock.archived') }}"
+               class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+                View Archived
+            </a>
+            @endif
+            <a href="{{ route('manager.kitchen-stock.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+                + Add Item
+            </a>
+        </div>
     </div>
 
     @if($items->isEmpty())

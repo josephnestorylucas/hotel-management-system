@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class KitchenTicket extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'order_id', 'table_id', 'items', 'status', 'notes', 'printed_at',
@@ -16,6 +17,7 @@ class KitchenTicket extends Model
     protected $casts = [
         'items'      => 'array',
         'printed_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function order() { return $this->belongsTo(Order::class); }

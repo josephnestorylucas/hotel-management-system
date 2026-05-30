@@ -251,10 +251,22 @@ class ReservationController extends Controller
 
     public function destroy(Reservation $reservation)
     {
-        $reservation->delete();
+        $this->softDelete($reservation);
 
         return redirect()->route('reservations.index')
-            ->with('success', 'Reservation deleted successfully.');
+            ->with('success', 'Reservation archived successfully.');
+    }
+
+    public function archived()
+    {
+        $records = Reservation::onlyDeleted()->with(['guest', 'room'])->latest('deleted_at')->paginate(20);
+        return view('reservations.archived', compact('records'));
+    }
+
+    public function restore(Reservation $reservation)
+    {
+        $this->restoreModel($reservation);
+        return redirect()->route('reservations.index')->with('success', 'Reservation restored successfully.');
     }
 
     /**

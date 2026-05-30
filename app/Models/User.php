@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasUuid, Notifiable;
+    use HasFactory, HasUuid, Notifiable, HasSoftDelete;
 
     protected $fillable = ['name', 'email', 'password', 'phone'];
 
@@ -39,6 +40,7 @@ class User extends Authenticatable
             'must_change_password' => 'boolean',
             'password_reset_requested_at' => 'datetime',
             'password_reset_completed_at' => 'datetime',
+            'deleted_at' => 'datetime',
         ];
     }
 

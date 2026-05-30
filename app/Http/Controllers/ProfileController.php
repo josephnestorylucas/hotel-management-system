@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller {
@@ -64,5 +65,27 @@ class ProfileController extends Controller {
         $user->save();
 
         return redirect()->route('profile.edit')->with('password_success', 'Password changed successfully.');
+    }
+
+    public function destroy(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', 'current_password'],
+        ], [
+            'password.current_password' => 'The provided password is incorrect.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator, 'userDeletion');
+        }
+
+        $user = $request->user();
+        Auth::logout();
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }

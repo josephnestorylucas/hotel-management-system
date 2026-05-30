@@ -7,10 +7,19 @@
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Products</h1>
     @if(auth()->user()->hasRole('STORE_MANAGER'))
-    <a href="{{ route('store.products.create') }}"
-       class="bg-primary text-white px-4 py-2 rounded-xl hover:bg-blue-700 text-sm font-medium">
-        + New Product
-    </a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('store.products.create') }}"
+           class="bg-primary text-white px-4 py-2 rounded-xl hover:bg-blue-700 text-sm font-medium">
+            + New Product
+        </a>
+        <a href="{{ route('store.products.archived') }}"
+           class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
+            View Archived
+        </a>
+    </div>
     @endif
 </div>
 

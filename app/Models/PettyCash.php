@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 
 class PettyCash extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $table = 'petty_cash_expenses';
 
@@ -20,6 +21,7 @@ class PettyCash extends Model
     protected $casts = [
         'amount'      => 'decimal:2',
         'approved_at' => 'datetime',
+        'deleted_at'  => 'datetime',
     ];
 
     protected static function booted(): void

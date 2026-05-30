@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 
 class StockLevel extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     public $timestamps = false;
 
@@ -16,6 +17,7 @@ class StockLevel extends Model
     protected $casts = [
         'quantity'      => 'decimal:3',
         'reserved_qty'  => 'decimal:3',
+        'deleted_at'    => 'datetime',
     ];
 
     /**

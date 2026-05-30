@@ -4,13 +4,18 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = ['name', 'description'];
+
+    protected $casts = [
+        'deleted_at' => 'datetime',
+    ];
 
     // Existing roles
     public const ADMIN = 'admin';

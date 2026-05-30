@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Order extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'order_number', 'location_id', 'table_id', 'order_type',
@@ -32,6 +33,7 @@ class Order extends Model implements ReceiptPrintable
         'stock_reversed_at'           => 'datetime',
         'billed_to_folio_at'          => 'datetime',
         'guest_completed_at'          => 'datetime',
+        'deleted_at'                  => 'datetime',
     ];
 
     /**

@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class LocalPurchaseOrder extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'lpo_number',
@@ -40,6 +41,7 @@ class LocalPurchaseOrder extends Model implements ReceiptPrintable
         'subtotal' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted(): void

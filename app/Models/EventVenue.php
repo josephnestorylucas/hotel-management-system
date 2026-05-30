@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasSoftDelete;
 
 class EventVenue extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'event_id',
@@ -30,6 +31,7 @@ class EventVenue extends Model
         'expected_setup_end' => 'datetime',
         'teardown_start' => 'datetime',
         'teardown_end' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

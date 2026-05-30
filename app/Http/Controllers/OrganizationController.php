@@ -89,10 +89,22 @@ class OrganizationController extends Controller
 
     public function destroy(Organization $organization)
     {
-        $organization->delete();
+        $this->softDelete($organization);
 
         return redirect()->route('organizations.index')
-            ->with('success', 'Organization deleted successfully.');
+            ->with('success', 'Organization archived successfully.');
+    }
+
+    public function archived()
+    {
+        $records = Organization::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('organizations.archived', compact('records'));
+    }
+
+    public function restore(Organization $organization)
+    {
+        $this->restoreModel($organization);
+        return redirect()->route('organizations.index')->with('success', 'Organization restored successfully.');
     }
 
     public function verify(Organization $organization)

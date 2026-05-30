@@ -329,10 +329,10 @@ class GoodsReceivedNoteController extends Controller
         }
 
         $number = $goodsReceivedNote->grn_number;
-        $goodsReceivedNote->delete();
+        $this->softDelete($goodsReceivedNote);
 
         return redirect()
             ->route('procurement.grn.index')
-            ->with('success', "GRN {$number} deleted successfully.");
+            ->with('success', "GRN {$number} archived successfully.");
     }
 }

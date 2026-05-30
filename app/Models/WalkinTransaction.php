@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  */
 class WalkinTransaction extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $table = 'walkin_transactions';
 
@@ -46,6 +47,7 @@ class WalkinTransaction extends Model implements ReceiptPrintable
         'amount'       => 'decimal:2',
         'metadata'     => 'array',
         'completed_at' => 'datetime',
+        'deleted_at'   => 'datetime',
     ];
 
     /**

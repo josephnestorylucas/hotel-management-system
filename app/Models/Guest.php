@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Traits\HasSoftDelete;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Guest extends Model implements HasMedia
 {
-    use HasUuid, InteractsWithMedia;
+    use HasUuid, InteractsWithMedia, HasSoftDelete;
 
     protected $fillable = [
         'first_name',
@@ -43,6 +44,7 @@ class Guest extends Model implements HasMedia
         'tier_upgraded_at' => 'datetime',
         'event_preferences' => 'array',
         'communication_preferences' => 'array',
+        'deleted_at' => 'datetime',
     ];
 
     /**

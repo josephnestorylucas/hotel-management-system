@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class GoodsReceivedNote extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     public const STATUS_DRAFT = 'draft';
     public const STATUS_SUBMITTED = 'submitted';
@@ -55,6 +56,7 @@ class GoodsReceivedNote extends Model implements ReceiptPrintable
         'subtotal' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted(): void

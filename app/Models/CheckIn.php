@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasSoftDelete;
 
 class CheckIn extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'attendance_id',
@@ -20,6 +21,10 @@ class CheckIn extends Model
         'device_info',
         'location',
         'verification_notes',
+    ];
+
+    protected $casts = [
+        'deleted_at' => 'datetime',
     ];
 
     public function attendance(): BelongsTo

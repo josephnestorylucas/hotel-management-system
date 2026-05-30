@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class LaundryServiceItem extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = ['laundry_service_id', 'item_name', 'price', 'is_active'];
 
     protected $casts = [
         'price'     => 'decimal:2',
         'is_active' => 'boolean',
+        'deleted_at' => 'datetime',
     ];
 
     public function service()

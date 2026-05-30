@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use LogicException;
 
 class SupplierPayable extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'supplier_id',
@@ -34,6 +35,7 @@ class SupplierPayable extends Model
         'amount_total' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'balance' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted(): void

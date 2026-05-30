@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,7 +19,7 @@ use Illuminate\Support\Str;
  * No billing or service charges attach here — only an estimated_amount quote.
  */
 class Reservation extends Model {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'reservation_number', 'room_id', 'guest_id', 'booking_id', 'guest_name', 'guest_phone', 'guest_email',
@@ -28,7 +29,8 @@ class Reservation extends Model {
     protected $casts = [
         'check_in_date' => 'date',
         'check_out_date' => 'date',
-        'estimated_amount' => 'decimal:2'
+        'estimated_amount' => 'decimal:2',
+        'deleted_at'    => 'datetime',
     ];
 
     // ─── Valid Statuses ────────────────────────────────────────────

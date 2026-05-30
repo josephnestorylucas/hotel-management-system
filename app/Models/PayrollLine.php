@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class PayrollLine extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $fillable = [
         'payroll_run_id', 'user_id', 'staff_name', 'role',
@@ -25,6 +26,7 @@ class PayrollLine extends Model
         'paye'             => 'decimal:2',
         'other_deductions' => 'decimal:2',
         'net_salary'       => 'decimal:2',
+        'deleted_at'       => 'datetime',
     ];
 
     public function payrollRun() { return $this->belongsTo(PayrollRun::class); }

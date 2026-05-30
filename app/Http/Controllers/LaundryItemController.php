@@ -59,9 +59,21 @@ class LaundryItemController extends Controller
 
     public function destroy(LaundryItem $laundryItem)
     {
-        $laundryItem->delete();
+        $this->softDelete($laundryItem);
 
         return redirect()->route('laundry-items.index')
-            ->with('success', 'Laundry item deleted successfully.');
+            ->with('success', 'Laundry item archived successfully.');
+    }
+
+    public function archived()
+    {
+        $records = LaundryItem::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('laundry-items.archived', compact('records'));
+    }
+
+    public function restore(LaundryItem $laundryItem)
+    {
+        $this->restoreModel($laundryItem);
+        return redirect()->route('laundry-items.index')->with('success', 'Laundry item restored successfully.');
     }
 }

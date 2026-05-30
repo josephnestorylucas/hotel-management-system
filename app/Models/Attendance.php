@@ -6,11 +6,12 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasSoftDelete;
 use Illuminate\Support\Str;
 
 class Attendance extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'event_id',
@@ -48,6 +49,7 @@ class Attendance extends Model
         'guest_metadata' => 'array',
         'data_shared_consent' => 'boolean',
         'total_check_ins' => 'integer',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function boot()

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class PayrollRun extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $fillable = [
         'reference_no', 'period_month', 'pay_date',
@@ -21,6 +22,7 @@ class PayrollRun extends Model
         'approved_at'  => 'datetime',
         'total_gross'  => 'decimal:2',
         'total_net'    => 'decimal:2',
+        'deleted_at'   => 'datetime',
     ];
 
     protected static function booted(): void

@@ -131,10 +131,10 @@ class ConferenceBookingController extends Controller
 
     public function destroy(ConferenceBooking $conferenceBooking)
     {
-        $conferenceBooking->delete();
+        $this->softDelete($conferenceBooking);
 
         return redirect()->route('conference-bookings.index')
-            ->with('success', 'Conference booking deleted successfully.');
+            ->with('success', 'Conference booking archived successfully.');
     }
 
     public function confirm(ConferenceBooking $conferenceBooking)
@@ -208,5 +208,17 @@ class ConferenceBookingController extends Controller
         );
 
         return response()->json(['available' => $available]);
+    }
+
+    public function archived()
+    {
+        $records = ConferenceBooking::onlyDeleted()->with(['conferenceHall', 'guest'])->latest('deleted_at')->paginate(20);
+        return view('conference-bookings.archived', compact('records'));
+    }
+
+    public function restore(ConferenceBooking $conferenceBooking)
+    {
+        $this->restoreModel($conferenceBooking);
+        return redirect()->route('conference-bookings.index')->with('success', 'Conference booking restored successfully.');
     }
 }

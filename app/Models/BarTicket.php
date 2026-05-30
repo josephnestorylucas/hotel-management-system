@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 
 class BarTicket extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'order_id', 'table_id', 'items', 'status', 'notes', 'printed_at',
@@ -16,6 +17,7 @@ class BarTicket extends Model
     protected $casts = [
         'items'      => 'array',
         'printed_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function order() { return $this->belongsTo(Order::class); }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Helpers\CurrencyHelper;
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
@@ -12,12 +13,13 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class RoomType extends Model implements HasMedia
 {
-    use HasUuid, InteractsWithMedia;
+    use HasUuid, HasSoftDelete, InteractsWithMedia;
 
     protected $fillable = ['name', 'code', 'base_rate', 'currency', 'max_occupancy', 'description'];
     
     protected $casts = [
-        'base_rate' => 'decimal:2',
+        'base_rate'  => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     protected $appends = ['price_per_night', 'formatted_rate'];

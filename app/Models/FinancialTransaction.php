@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class FinancialTransaction extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     public $timestamps = false;
 
@@ -23,6 +24,7 @@ class FinancialTransaction extends Model
         'amount_usd'    => 'decimal:2',
         'exchange_rate' => 'decimal:4',
         'created_at'    => 'datetime',
+        'deleted_at'    => 'datetime',
     ];
 
     /**

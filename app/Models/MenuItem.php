@@ -6,11 +6,12 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Traits\HasSoftDelete;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MenuItem extends Model implements HasMedia
 {
-    use HasUuid, InteractsWithMedia;
+    use HasUuid, HasSoftDelete, InteractsWithMedia;
 
     protected $fillable = [
         'category_id', 'name', 'description',
@@ -25,6 +26,7 @@ class MenuItem extends Model implements HasMedia
         'is_active'     => 'boolean',
         'is_buffet'     => 'boolean',
         'varieties'     => 'array',
+        'deleted_at'    => 'datetime',
     ];
 
     public function registerMediaCollections(): void

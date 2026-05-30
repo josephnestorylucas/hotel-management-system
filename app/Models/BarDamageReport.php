@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BarDamageReport extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'product_id',
@@ -24,6 +25,7 @@ class BarDamageReport extends Model
     protected $casts = [
         'quantity' => 'decimal:3',
         'reported_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function product(): BelongsTo

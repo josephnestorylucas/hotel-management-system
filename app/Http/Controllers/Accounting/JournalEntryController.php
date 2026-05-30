@@ -262,7 +262,7 @@ class JournalEntryController extends Controller
 
     private function syncLines(JournalEntry $journalEntry, array $lines): void
     {
-        $journalEntry->lines()->delete();
+        $journalEntry->lines->each(fn($line) => $this->softDelete($line));
 
         foreach ($lines as $line) {
             $journalEntry->lines()->create([

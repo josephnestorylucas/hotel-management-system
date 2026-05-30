@@ -229,16 +229,18 @@ class ProductController extends Controller
     {
         DB::transaction(function () use ($product) {
             $product->update(['is_active' => false]);
+            $this->softDelete($product);
 
             $menuItem = $product->menuItem;
             if ($menuItem) {
                 $menuItem->update(['is_active' => false]);
+                $this->softDelete($menuItem);
             }
         });
 
         return redirect()
             ->route('store.products.index')
-            ->with('success', "Product '{$product->name}' deactivated.");
+            ->with('success', "Product '{$product->name}' archived.");
     }
 
     protected function parseVarieties(?string $json): ?array
@@ -254,6 +256,20 @@ class ProductController extends Controller
         }
 
         return array_values(array_filter($decoded, fn ($v) => !empty($v['label'])));
+    }
+
+    public function archived()
+    {
+        $products = Product::onlyDeleted()->with('stockLevels.location')->latest('deleted_at')->paginate(20);
+
+        return view('store.products.archived', compact('products'));
+    }
+
+    public function restore(Product $product)
+    {
+        $this->restoreModel($product);
+
+        return redirect()->route('store.products.index')->with('success', 'Product restored successfully.');
     }
 
     public function lookupByBarcode(Request $request)

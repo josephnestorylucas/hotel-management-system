@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class MenuOptionValue extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'menu_option_group_id',
@@ -21,6 +22,7 @@ class MenuOptionValue extends Model
         'price_delta' => 'decimal:2',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'deleted_at' => 'datetime',
     ];
 
     public function group()

@@ -129,7 +129,7 @@ class MenuOptionGroupController extends Controller
 
             $toDelete = array_diff($existingIds, $submittedIds);
             if (!empty($toDelete)) {
-                MenuOptionValue::whereIn('id', $toDelete)->delete();
+                MenuOptionValue::whereIn('id', $toDelete)->get()->each(fn($v) => $this->softDelete($v));
             }
 
             $attach = [];
@@ -145,9 +145,10 @@ class MenuOptionGroupController extends Controller
     public function destroy(MenuOptionGroup $menuOptionGroup): RedirectResponse
     {
         $menuOptionGroup->update(['is_active' => false]);
-        $menuOptionGroup->values()->update(['is_active' => false]);
+        $this->softDelete($menuOptionGroup);
+        $menuOptionGroup->values->each(fn($v) => $this->softDelete($v));
 
-        return back()->with('success', __('general.restaurant.messages.option_group_deactivated'));
+        return back()->with('success', __('general.restaurant.messages.option_group_archived'));
     }
 }
 

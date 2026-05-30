@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class BuffetSale extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'sale_number',
@@ -37,6 +38,7 @@ class BuffetSale extends Model implements ReceiptPrintable
         'child_price_snapshot' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'settled_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted(): void

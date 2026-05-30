@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Traits\HasSoftDelete;
 
 class ConferenceBooking extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'booking_number',
@@ -33,6 +34,7 @@ class ConferenceBooking extends Model
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
         'total_cost' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function boot()

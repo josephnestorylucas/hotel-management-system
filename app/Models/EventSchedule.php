@@ -6,10 +6,11 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasSoftDelete;
 
 class EventSchedule extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'event_id',
@@ -28,6 +29,7 @@ class EventSchedule extends Model
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

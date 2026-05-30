@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 
 class Invoice extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $fillable = [
         'invoice_no', 'invoice_type', 'guest_id', 'guest_name',
@@ -22,6 +23,7 @@ class Invoice extends Model
         'discount'     => 'decimal:2',
         'tax_amount'   => 'decimal:2',
         'total'        => 'decimal:2',
+        'deleted_at'   => 'datetime',
     ];
 
     protected static function booted(): void

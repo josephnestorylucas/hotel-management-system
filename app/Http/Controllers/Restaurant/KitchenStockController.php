@@ -74,9 +74,23 @@ class KitchenStockController extends Controller
     public function destroy(KitchenStockItem $item): RedirectResponse
     {
         $item->update(['is_active' => false]);
+        $this->softDelete($item);
 
         return redirect()->route('manager.kitchen-stock.index')
-            ->with('success', 'Stock item deactivated.');
+            ->with('success', 'Stock item archived.');
+    }
+
+    public function archived(): View
+    {
+        $records = KitchenStockItem::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('manager.kitchen-stock.archived', compact('records'));
+    }
+
+    public function restore(KitchenStockItem $item): RedirectResponse
+    {
+        $item->update(['is_active' => true]);
+        $this->restoreModel($item);
+        return redirect()->route('manager.kitchen-stock.index')->with('success', 'Stock item restored successfully.');
     }
 
     public function recordMovement(Request $request, KitchenStockItem $item): RedirectResponse

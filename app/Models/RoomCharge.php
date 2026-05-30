@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 
 class RoomCharge extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'booking_id', 'order_id', 'description', 'amount', 'charged_at',
@@ -16,6 +17,7 @@ class RoomCharge extends Model
     protected $casts = [
         'amount'     => 'decimal:2',
         'charged_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function booking() { return $this->belongsTo(Booking::class); }

@@ -158,10 +158,10 @@ class LaundryTaskController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $laundryTask->delete();
+        $this->softDelete($laundryTask);
 
         return redirect()->route('laundry.index')
-            ->with('success', 'Laundry task deleted successfully.');
+            ->with('success', 'Laundry task archived successfully.');
     }
 
     public function markAsInProgress(LaundryTask $laundryTask)

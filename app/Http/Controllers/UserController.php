@@ -128,7 +128,21 @@ class UserController extends Controller {
     }
 
     public function destroy(User $user) {
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        $this->softDelete($user);
+        return redirect()->route('users.index')->with('success', 'User archived successfully.');
+    }
+
+    public function archived()
+    {
+        $users = User::onlyDeleted()->with('role')->latest('deleted_at')->paginate(20);
+
+        return view('users.archived', compact('users'));
+    }
+
+    public function restore(User $user)
+    {
+        $this->restoreModel($user);
+
+        return redirect()->route('users.index')->with('success', 'User restored successfully.');
     }
 }

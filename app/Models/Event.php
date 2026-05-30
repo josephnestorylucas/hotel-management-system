@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
+use App\Traits\HasSoftDelete;
 
 class Event extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'organization_id',
@@ -52,6 +53,7 @@ class Event extends Model
         'subtotal' => 'decimal:2',
         'grand_total' => 'decimal:2',
         'metadata' => 'array',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function boot()

@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 use App\Models\JournalLine;
 
 class JournalEntry extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $fillable = [
         'entry_no', 'entry_date', 'reference', 'source', 'source_id', 'supplier_id',
@@ -21,6 +22,7 @@ class JournalEntry extends Model
         'posted_at'   => 'datetime',
         'total_debit' => 'decimal:2',
         'total_credit'=> 'decimal:2',
+        'deleted_at'  => 'datetime',
     ];
 
     protected static function booted(): void

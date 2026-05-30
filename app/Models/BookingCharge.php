@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookingCharge extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'booking_id',
@@ -28,6 +29,7 @@ class BookingCharge extends Model
     protected $casts = [
         'amount'     => 'decimal:2',
         'amount_tzs' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     // ── Relationships ────────────────────────────────────────────────────────

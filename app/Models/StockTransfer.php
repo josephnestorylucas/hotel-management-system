@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class StockTransfer extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'from_location_id', 'to_location_id', 'product_id', 'quantity',
@@ -22,6 +23,7 @@ class StockTransfer extends Model implements ReceiptPrintable
         'approved_at'  => 'datetime',
         'rejected_at'  => 'datetime',
         'completed_at' => 'datetime',
+        'deleted_at'   => 'datetime',
     ];
 
     public function product()

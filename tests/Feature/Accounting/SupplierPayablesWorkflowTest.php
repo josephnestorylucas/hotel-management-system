@@ -372,7 +372,7 @@ class SupplierPayablesWorkflowTest extends TestCase
             ->delete(route('accountant.payments.destroy', $payment))
             ->assertRedirect(route('accountant.payables.dashboard'));
 
-        $this->assertDatabaseMissing('supplier_payments', ['id' => $payment->id]);
+        $this->assertSoftDeleted('supplier_payments', ['id' => $payment->id]);
         $this->assertDatabaseMissing('supplier_payment_allocations', ['supplier_payment_id' => $payment->id]);
 
         $payable->refresh();
@@ -441,7 +441,7 @@ class SupplierPayablesWorkflowTest extends TestCase
         SupplierPayable::query()
             ->where('source_module', 'procurement')
             ->where('source_reference_id', $grn->id)
-            ->delete();
+            ->forceDelete();
 
         $created = app(SupplierPayablesService::class)->syncApprovedGrnPayables($manager->id, $supplier->id);
 

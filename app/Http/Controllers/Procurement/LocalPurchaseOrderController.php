@@ -153,7 +153,7 @@ class LocalPurchaseOrderController extends Controller
             ]);
 
             // Delete old items and create new ones
-            $localPurchaseOrder->items()->delete();
+            $localPurchaseOrder->items->each(fn($item) => $this->softDelete($item));
 
             foreach ($validated['items'] as $item) {
                 LocalPurchaseOrderItem::create([
@@ -241,10 +241,10 @@ class LocalPurchaseOrderController extends Controller
         }
 
         $number = $localPurchaseOrder->lpo_number;
-        $localPurchaseOrder->delete();
+        $this->softDelete($localPurchaseOrder);
 
         return redirect()
             ->route('procurement.lpo.index')
-            ->with('success', "LPO {$number} deleted successfully.");
+            ->with('success', "LPO {$number} archived successfully.");
     }
 }

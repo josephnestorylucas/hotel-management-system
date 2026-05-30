@@ -22,8 +22,8 @@ class PettyCashTest extends TestCase
         Artisan::call('db:seed', ['class' => 'RoleSeeder']);
         Artisan::call('db:seed', ['class' => 'ChartOfAccountsSeeder']);
 
-        // Get admin role (or store_manager)
-        $role = Role::where('name', 'admin')->firstOrFail();
+        // Get store_manager role (required for petty cash approval route)
+        $role = Role::where('name', 'store_manager')->firstOrFail();
 
         // Create a user with admin role
         $user = User::factory()->create([

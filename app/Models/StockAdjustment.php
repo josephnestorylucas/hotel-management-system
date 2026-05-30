@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class StockAdjustment extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'product_id', 'location_id', 'previous_qty', 'new_qty',
@@ -21,6 +22,7 @@ class StockAdjustment extends Model implements ReceiptPrintable
         'previous_qty'      => 'decimal:3',
         'new_qty'           => 'decimal:3',
         'difference'        => 'decimal:3',
+        'deleted_at'        => 'datetime',
     ];
 
     public function product()

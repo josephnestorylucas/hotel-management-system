@@ -193,7 +193,7 @@ class MenuItemController extends Controller
 
             // Replace ingredients entirely if provided
             if (isset($data['ingredients'])) {
-                $menuItem->ingredients()->delete();
+                $menuItem->ingredients->each(fn($ing) => $this->softDelete($ing));
                 foreach ($data['ingredients'] as $ing) {
                     MenuItemIngredient::create([
                         'menu_item_id' => $menuItem->id,
@@ -225,10 +225,11 @@ class MenuItemController extends Controller
     public function destroy(MenuItem $menuItem): RedirectResponse
     {
         $menuItem->update(['is_active' => false]);
+        $this->softDelete($menuItem);
 
         return redirect()
             ->route('restaurant.menu.index')
-            ->with('success', 'Menu item removed from menu.');
+            ->with('success', 'Menu item archived.');
     }
 
     /**
@@ -265,6 +266,24 @@ class MenuItemController extends Controller
             'base_price' => (float) $menuItem->selling_price,
             'options'   => $options,
         ]);
+    }
+
+    /**
+     * GET /restaurant/menu/archived
+     */
+    public function archived()
+    {
+        $records = MenuItem::onlyDeleted()->latest('deleted_at')->paginate(20);
+        return view('restaurant.menu.archived', compact('records'));
+    }
+
+    /**
+     * PATCH /restaurant/menu/{menuItem}/restore
+     */
+    public function restore(MenuItem $menuItem)
+    {
+        $this->restoreModel($menuItem);
+        return redirect()->route('restaurant.menu.index')->with('success', 'Menu item restored successfully.');
     }
 
     /**

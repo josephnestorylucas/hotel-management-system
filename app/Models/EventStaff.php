@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasSoftDelete;
 
 class EventStaff extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'event_id',
@@ -27,6 +28,7 @@ class EventStaff extends Model
         'permissions' => 'array',
         'assigned_at' => 'datetime',
         'removed_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

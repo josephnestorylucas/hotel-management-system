@@ -51,7 +51,17 @@ class FloorController extends Controller {
                 ->with('error', 'Cannot delete "' . $floor->name . '" because it has assigned rooms. Remove the rooms first.');
         }
 
-        $floor->delete();
-        return redirect()->route('floors.index')->with('success', 'Floor deleted successfully.');
+        $this->softDelete($floor);
+        return redirect()->route('floors.index')->with('success', 'Floor archived successfully.');
+    }
+
+    public function archived() {
+        $records = Floor::onlyDeleted()->with('building')->latest('deleted_at')->paginate(20);
+        return view('floors.archived', compact('records'));
+    }
+
+    public function restore(Floor $floor) {
+        $this->restoreModel($floor);
+        return redirect()->route('floors.index')->with('success', 'Floor restored successfully.');
     }
 }

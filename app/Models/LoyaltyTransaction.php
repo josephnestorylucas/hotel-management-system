@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class LoyaltyTransaction extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     public $timestamps = false;
 
@@ -18,6 +19,7 @@ class LoyaltyTransaction extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function guest()

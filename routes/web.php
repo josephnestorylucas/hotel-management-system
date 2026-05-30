@@ -166,6 +166,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Reservations, Bookings — restricted to authorized roles (NO admin - admin is system only)
     Route::middleware(['role:front_desk,manager'])->group(function () {
@@ -818,9 +819,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('grn', [GoodsReceivedNoteController::class, 'index'])->name('grn.index')
              ->middleware('role:store_manager,store_keeper,manager');
         Route::get('grn/create', [GoodsReceivedNoteController::class, 'create'])->name('grn.create')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::post('grn', [GoodsReceivedNoteController::class, 'store'])->name('grn.store')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::get('grn/{goodsReceivedNote}/edit', [GoodsReceivedNoteController::class, 'edit'])->name('grn.edit')
              ->middleware('role:store_manager,store_keeper');
         Route::put('grn/{goodsReceivedNote}', [GoodsReceivedNoteController::class, 'update'])->name('grn.update')
@@ -834,9 +835,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('grn/{goodsReceivedNote}/receipt', [GoodsReceivedNoteController::class, 'uploadReceipt'])->name('grn.upload-receipt')
              ->middleware('role:store_manager');
         Route::post('grn/{goodsReceivedNote}/submit', [GoodsReceivedNoteController::class, 'submitForConfirmation'])->name('grn.submit')
-             ->middleware('role:store_manager,store_keeper');
+             ->middleware('role:store_keeper');
         Route::post('grn/{goodsReceivedNote}/confirm', [GoodsReceivedNoteController::class, 'confirm'])->name('grn.confirm')
-             ->middleware('role:manager');
+             ->middleware('role:manager,store_keeper');
         Route::post('grn/{goodsReceivedNote}/approve', [GoodsReceivedNoteController::class, 'approve'])->name('grn.approve')
              ->middleware('role:manager');
         Route::post('grn/{goodsReceivedNote}/reject', [GoodsReceivedNoteController::class, 'reject'])->name('grn.reject')
@@ -1006,5 +1007,77 @@ Route::middleware(['auth'])->group(function () {
         Route::get('reports/trial-balance',       [AccountingReportController::class, 'trialBalance'])->name('reports.trial-balance');
         Route::get('reports/vat',                 [AccountingReportController::class, 'vatReport'])->name('reports.vat');
         Route::get('reports/supplier-payables',   [AccountingReportController::class, 'supplierPayables'])->name('reports.supplier-payables');
+    });
+
+    // ═══ ARCHIVED RECORDS — Admin/Manager Recovery UI ═══
+    Route::middleware(['role:admin,manager'])->group(function () {
+
+        // Store — Products
+        Route::get('store/products/archived', [ProductController::class, 'archived'])->name('store.products.archived');
+        Route::patch('store/products/{product}/restore', [ProductController::class, 'restore'])->name('store.products.restore');
+
+        // Guests
+        Route::get('guests/archived', [GuestController::class, 'archived'])->name('guests.archived');
+        Route::patch('guests/{guest}/restore', [GuestController::class, 'restore'])->name('guests.restore');
+
+        // Rooms
+        Route::get('rooms/archived', [RoomController::class, 'archived'])->name('rooms.archived');
+        Route::patch('rooms/{room}/restore', [RoomController::class, 'restore'])->name('rooms.restore');
+
+        // Bookings
+        Route::get('bookings/archived', [BookingController::class, 'archived'])->name('bookings.archived');
+        Route::patch('bookings/{booking}/restore', [BookingController::class, 'restore'])->name('bookings.restore');
+
+        // Users / Employees
+        Route::get('users/archived', [UserController::class, 'archived'])->name('users.archived');
+        Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
+
+        // Suppliers
+        Route::get('procurement/suppliers/archived', [SupplierController::class, 'archived'])->name('procurement.suppliers.archived');
+        Route::patch('procurement/suppliers/{supplier}/restore', [SupplierController::class, 'restore'])->name('procurement.suppliers.restore');
+
+        // Menu Items
+        Route::get('restaurant/menu/archived', [MenuItemController::class, 'archived'])->name('restaurant.menu.archived');
+        Route::patch('restaurant/menu/{menuItem}/restore', [MenuItemController::class, 'restore'])->name('restaurant.menu.restore');
+
+        // Conference Halls
+        Route::get('conference-halls/archived', [ConferenceHallController::class, 'archived'])->name('conference-halls.archived');
+        Route::patch('conference-halls/{conferenceHall}/restore', [ConferenceHallController::class, 'restore'])->name('conference-halls.restore');
+
+        // Conference Bookings
+        Route::get('conference-bookings/archived', [ConferenceBookingController::class, 'archived'])->name('conference-bookings.archived');
+        Route::patch('conference-bookings/{conferenceBooking}/restore', [ConferenceBookingController::class, 'restore'])->name('conference-bookings.restore');
+
+        // Buildings
+        Route::get('buildings/archived', [BuildingController::class, 'archived'])->name('buildings.archived');
+        Route::patch('buildings/{building}/restore', [BuildingController::class, 'restore'])->name('buildings.restore');
+
+        // Floors
+        Route::get('floors/archived', [FloorController::class, 'archived'])->name('floors.archived');
+        Route::patch('floors/{floor}/restore', [FloorController::class, 'restore'])->name('floors.restore');
+
+        // Room Types
+        Route::get('room-types/archived', [RoomTypeController::class, 'archived'])->name('room-types.archived');
+        Route::patch('room-types/{room_type}/restore', [RoomTypeController::class, 'restore'])->name('room-types.restore');
+
+        // Reservations
+        Route::get('reservations/archived', [ReservationController::class, 'archived'])->name('reservations.archived');
+        Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore');
+
+        // Organizations
+        Route::get('organizations/archived', [OrganizationController::class, 'archived'])->name('organizations.archived');
+        Route::patch('organizations/{organization}/restore', [OrganizationController::class, 'restore'])->name('organizations.restore');
+
+        // Institutions
+        Route::get('institutions/archived', [InstitutionController::class, 'archived'])->name('institutions.archived');
+        Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore');
+
+        // Laundry Items
+        Route::get('laundry-items/archived', [\App\Http\Controllers\LaundryItemController::class, 'archived'])->name('laundry-items.archived');
+        Route::patch('laundry-items/{laundryItem}/restore', [\App\Http\Controllers\LaundryItemController::class, 'restore'])->name('laundry-items.restore');
+
+        // Kitchen Stock
+        Route::get('manager/kitchen-stock/archived', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'archived'])->name('manager.kitchen-stock.archived');
+        Route::patch('manager/kitchen-stock/{item}/restore', [\App\Http\Controllers\Restaurant\KitchenStockController::class, 'restore'])->name('manager.kitchen-stock.restore');
     });
 });

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'order_id', 'menu_item_id', 'item_name_snapshot',
@@ -23,6 +24,7 @@ class OrderItem extends Model
         'subtotal'   => 'decimal:2',
         'quantity'   => 'integer',
         'selected_options_snapshot' => 'array',
+        'deleted_at'                => 'datetime',
     ];
 
     public function order()    { return $this->belongsTo(Order::class); }

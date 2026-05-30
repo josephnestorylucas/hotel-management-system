@@ -6,13 +6,14 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasSoftDelete;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class BuffetPackage extends Model implements HasMedia
 {
-    use HasUuid, InteractsWithMedia;
+    use HasUuid, HasSoftDelete, InteractsWithMedia;
 
     protected $fillable = [
         'name',
@@ -30,6 +31,7 @@ class BuffetPackage extends Model implements HasMedia
         'child_price' => 'decimal:2',
         'available_days' => 'array',
         'is_active' => 'boolean',
+        'deleted_at' => 'datetime',
     ];
 
     public function registerMediaCollections(): void

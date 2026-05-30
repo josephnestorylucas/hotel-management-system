@@ -75,8 +75,8 @@ class EventScheduleController extends Controller
 
     public function destroy(Organization $organization, Event $event, EventSchedule $schedule)
     {
-        $schedule->delete();
+        $this->softDelete($schedule);
 
-        return back()->with('success', 'Session removed.');
+        return back()->with('success', 'Session archived.');
     }
 }

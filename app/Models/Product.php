@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -10,7 +11,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
 {
-    use HasUuid, InteractsWithMedia;
+    use HasUuid, HasSoftDelete, InteractsWithMedia;
 
     protected $fillable = [
         'name', 'barcode', 'sku', 'description', 'category', 'product_type', 'unit',
@@ -24,6 +25,7 @@ class Product extends Model implements HasMedia
         'reorder_level' => 'integer',
         'varieties'     => 'array',
         'product_type'  => 'string',
+        'deleted_at'    => 'datetime',
     ];
 
     public function registerMediaCollections(): void

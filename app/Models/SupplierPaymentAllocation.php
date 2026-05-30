@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SupplierPaymentAllocation extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'supplier_payment_id',
@@ -19,6 +20,7 @@ class SupplierPaymentAllocation extends Model
 
     protected $casts = [
         'allocated_amount' => 'decimal:2',
+        'deleted_at'       => 'datetime',
     ];
 
     public function payment(): BelongsTo

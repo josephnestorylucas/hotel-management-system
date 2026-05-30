@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use LogicException;
 
 class SupplierPayment extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'supplier_id',
@@ -39,6 +40,7 @@ class SupplierPayment extends Model implements ReceiptPrintable
         'posted_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'amount' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted(): void

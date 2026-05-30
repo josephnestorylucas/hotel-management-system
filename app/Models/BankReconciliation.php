@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 
 class BankReconciliation extends Model
 {
-    use HasUuids;
+    use HasUuids, HasSoftDelete;
 
     protected $fillable = [
         'reference_no', 'account_id', 'period_month', 'statement_date',
@@ -23,6 +24,7 @@ class BankReconciliation extends Model
         'system_opening_balance'   => 'decimal:2',
         'system_closing_balance'   => 'decimal:2',
         'difference'               => 'decimal:2',
+        'deleted_at'               => 'datetime',
     ];
 
     protected static function booted(): void

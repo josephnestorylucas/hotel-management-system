@@ -85,6 +85,20 @@ class SupplierController extends Controller
             ->with('success', "Supplier '{$supplier->name}' updated successfully.");
     }
 
+    public function archived(): View
+    {
+        $suppliers = Supplier::onlyDeleted()->latest('deleted_at')->paginate(20);
+
+        return view('procurement.suppliers.archived', compact('suppliers'));
+    }
+
+    public function restore(Supplier $supplier): RedirectResponse
+    {
+        $this->restoreModel($supplier);
+
+        return redirect()->route('procurement.suppliers.index')->with('success', 'Supplier restored successfully.');
+    }
+
     public function destroy(Supplier $supplier): RedirectResponse
     {
         if ($supplier->purchaseOrders()->count() > 0) {
@@ -92,10 +106,10 @@ class SupplierController extends Controller
         }
 
         $name = $supplier->name;
-        $supplier->delete();
+        $this->softDelete($supplier);
 
         return redirect()
             ->route('procurement.suppliers.index')
-            ->with('success', "Supplier '{$name}' deleted successfully.");
+            ->with('success', "Supplier '{$name}' archived successfully.");
     }
 }

@@ -78,9 +78,9 @@ class EventPassController extends Controller
             return back()->with('error', 'Cannot delete pass type with existing registrations.');
         }
 
-        $pass->delete();
+        $this->softDelete($pass);
 
-        return back()->with('success', 'Pass type deleted.');
+        return back()->with('success', 'Pass type archived.');
     }
 
     public function activate(Organization $organization, Event $event, EventPass $pass)

@@ -67,8 +67,9 @@ class MenuCategoryController extends Controller
     public function destroy(MenuCategory $menuCategory): RedirectResponse
     {
         $menuCategory->update(['is_active' => false]);
+        $this->softDelete($menuCategory);
 
-        return back()->with('success', __('general.restaurant.messages.category_deactivated'));
+        return back()->with('success', __('general.restaurant.messages.category_archived'));
     }
 }
 

@@ -188,10 +188,24 @@ class GuestController extends Controller
         }
 
         // Media files are automatically deleted by Spatie Media Library
-        $guest->delete();
+        $this->softDelete($guest);
 
         return redirect()->route('guests.index')
-            ->with('success', 'Guest deleted successfully.');
+            ->with('success', 'Guest archived successfully.');
+    }
+
+    public function archived()
+    {
+        $guests = Guest::onlyDeleted()->latest('deleted_at')->paginate(20);
+
+        return view('guests.archived', compact('guests'));
+    }
+
+    public function restore(Guest $guest)
+    {
+        $this->restoreModel($guest);
+
+        return redirect()->route('guests.index')->with('success', 'Guest restored successfully.');
     }
 
     /**

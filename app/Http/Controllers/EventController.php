@@ -162,10 +162,10 @@ class EventController extends Controller
             return back()->with('error', 'Only draft events can be deleted.');
         }
 
-        $event->delete();
+        $this->softDelete($event);
 
         return redirect()->route('organizations.events-list', $organization)
-            ->with('success', 'Event deleted successfully.');
+            ->with('success', 'Event archived successfully.');
     }
 
     public function publish(Organization $organization, Event $event)

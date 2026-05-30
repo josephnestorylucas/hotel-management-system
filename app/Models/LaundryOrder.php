@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class LaundryOrder extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'order_number', 'customer_type',
@@ -35,6 +36,7 @@ class LaundryOrder extends Model implements ReceiptPrintable
         'collected_at'      => 'datetime',
         'settled_at'        => 'datetime',
         'confirmed_at'      => 'datetime',
+        'deleted_at'        => 'datetime',
     ];
 
     // Auto-generate order number

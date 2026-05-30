@@ -455,10 +455,24 @@ class BookingController extends Controller
             return back()->with('error', 'Only checked-out or cancelled bookings can be deleted.');
         }
 
-        $booking->delete();
+        $this->softDelete($booking);
 
         return redirect()->route('bookings.index')
-            ->with('success', 'Booking deleted successfully.');
+            ->with('success', 'Booking archived successfully.');
+    }
+
+    public function archived()
+    {
+        $bookings = Booking::onlyDeleted()->with(['guest', 'room'])->latest('deleted_at')->paginate(20);
+
+        return view('bookings.archived', compact('bookings'));
+    }
+
+    public function restore(Booking $booking)
+    {
+        $this->restoreModel($booking);
+
+        return redirect()->route('bookings.index')->with('success', 'Booking restored successfully.');
     }
 
     // ═══════════════════════════════════════════════════════════════

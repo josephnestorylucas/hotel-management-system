@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Contracts\ReceiptPrintable;
+use App\Traits\HasSoftDelete;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class InternalUsageRequest extends Model implements ReceiptPrintable
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'department', 'product_id', 'quantity', 'status', 'reason',
@@ -21,6 +22,7 @@ class InternalUsageRequest extends Model implements ReceiptPrintable
         'quantity'     => 'decimal:3',
         'approved_at'  => 'datetime',
         'fulfilled_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function product()

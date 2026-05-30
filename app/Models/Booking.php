@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use App\Traits\HasSoftDelete;
 use Illuminate\Support\Str;
 
 /**
@@ -21,7 +22,7 @@ use Illuminate\Support\Str;
  */
 class Booking extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'booking_number',
@@ -51,6 +52,7 @@ class Booking extends Model
         'total_amount' => 'decimal:2',
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**

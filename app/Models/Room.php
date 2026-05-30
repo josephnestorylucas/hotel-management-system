@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use App\Traits\HasSoftDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Room extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     const STATUS_AVAILABLE = 'available';
     const STATUS_NEEDS_CLEANING = 'dirty';
@@ -31,6 +32,7 @@ class Room extends Model
         'cleaning_completed_at'  => 'datetime',
         'cleaning_confirmed_at'  => 'datetime',
         'out_of_order_set_at'    => 'datetime',
+        'deleted_at'             => 'datetime',
     ];
 
     public function floor(): BelongsTo

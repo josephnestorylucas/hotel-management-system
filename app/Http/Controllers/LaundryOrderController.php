@@ -166,7 +166,7 @@ class LaundryOrderController extends Controller
         ]);
 
         // Replace items
-        $laundryOrder->items()->delete();
+        $laundryOrder->items->each(fn($item) => $this->softDelete($item));
 
         $totalAmount = 0;
         foreach ($validated['items'] as $itemData) {
@@ -197,11 +197,11 @@ class LaundryOrderController extends Controller
             return back()->with('error', 'Only pending orders can be deleted.');
         }
 
-        $laundryOrder->items()->delete();
-        $laundryOrder->delete();
+        $laundryOrder->items->each(fn($item) => $this->softDelete($item));
+        $this->softDelete($laundryOrder);
 
         return redirect()->route('laundry-orders.index')
-            ->with('success', 'Laundry order deleted successfully.');
+            ->with('success', 'Laundry order archived successfully.');
     }
 
     // Status transitions

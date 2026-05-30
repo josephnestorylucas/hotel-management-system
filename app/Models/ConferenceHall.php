@@ -8,10 +8,11 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasSoftDelete;
 
 class ConferenceHall extends Model
 {
-    use HasUuid;
+    use HasUuid, HasSoftDelete;
 
     protected $fillable = [
         'name',
@@ -27,6 +28,7 @@ class ConferenceHall extends Model
     protected $casts = [
         'hourly_rate' => 'decimal:2',
         'amenities' => 'array',
+        'deleted_at' => 'datetime',
     ];
 
     public function building(): BelongsTo

@@ -1,15 +1,15 @@
 {{-- resources/views/laundry-items/archived.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Archived Laundry Items')
-@section('page-title', 'Archived Laundry Items')
+@section('title', 'Deleted Laundry Items')
+@section('page-title', 'Deleted Laundry Items')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Archived Laundry Items</h2>
+            <h2 class="text-2xl font-extrabold text-secondary">Deleted Laundry Items</h2>
             <p class="text-sm text-gray-500 mt-1">View and restore soft-deleted laundry items.</p>
         </div>
         <a href="{{ route('laundry-items.index') }}"
@@ -65,7 +65,7 @@
                 @empty
                 <tr>
                     <td colspan="5" class="px-6 py-12 text-center">
-                        <div class="text-gray-400 text-sm">No archived records found.</div>
+                        <div class="text-gray-400 text-sm">No deleted records found.</div>
                     </td>
                 </tr>
                 @endforelse

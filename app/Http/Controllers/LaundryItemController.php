@@ -62,7 +62,7 @@ class LaundryItemController extends Controller
         $this->softDelete($laundryItem);
 
         return redirect()->route('laundry-items.index')
-            ->with('success', 'Laundry item archived successfully.');
+            ->with('success', 'Laundry item deleted successfully.');
     }
 
     public function archived()

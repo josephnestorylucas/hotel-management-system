@@ -333,6 +333,6 @@ class GoodsReceivedNoteController extends Controller
 
         return redirect()
             ->route('procurement.grn.index')
-            ->with('success', "GRN {$number} archived successfully.");
+            ->with('success', "GRN {$number} deleted successfully.");
     }
 }

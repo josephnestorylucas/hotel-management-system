@@ -77,7 +77,7 @@ class KitchenStockController extends Controller
         $this->softDelete($item);
 
         return redirect()->route('manager.kitchen-stock.index')
-            ->with('success', 'Stock item archived.');
+            ->with('success', 'Stock item deleted.');
     }
 
     public function archived(): View

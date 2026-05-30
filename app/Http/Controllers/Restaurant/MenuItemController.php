@@ -229,7 +229,7 @@ class MenuItemController extends Controller
 
         return redirect()
             ->route('restaurant.menu.index')
-            ->with('success', 'Menu item archived.');
+            ->with('success', 'Menu item deleted.');
     }
 
     /**

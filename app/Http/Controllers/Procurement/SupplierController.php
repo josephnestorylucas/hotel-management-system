@@ -110,6 +110,6 @@ class SupplierController extends Controller
 
         return redirect()
             ->route('procurement.suppliers.index')
-            ->with('success', "Supplier '{$name}' archived successfully.");
+            ->with('success', "Supplier '{$name}' deleted successfully.");
     }
 }

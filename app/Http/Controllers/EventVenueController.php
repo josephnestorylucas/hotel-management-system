@@ -88,6 +88,6 @@ class EventVenueController extends Controller
     {
         $this->softDelete($venue);
 
-        return back()->with('success', 'Venue archived from event.');
+        return back()->with('success', 'Venue deleted from event.');
     }
 }

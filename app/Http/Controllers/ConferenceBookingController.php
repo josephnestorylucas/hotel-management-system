@@ -134,7 +134,7 @@ class ConferenceBookingController extends Controller
         $this->softDelete($conferenceBooking);
 
         return redirect()->route('conference-bookings.index')
-            ->with('success', 'Conference booking archived successfully.');
+            ->with('success', 'Conference booking deleted successfully.');
     }
 
     public function confirm(ConferenceBooking $conferenceBooking)

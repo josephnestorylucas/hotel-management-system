@@ -81,7 +81,7 @@ class InstitutionController extends Controller
         $this->softDelete($institution);
 
         return redirect()->route('institutions.index')
-            ->with('success', 'Institution archived successfully.');
+            ->with('success', 'Institution deleted successfully.');
     }
 
     public function archived()

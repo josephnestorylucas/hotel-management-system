@@ -1,15 +1,15 @@
 {{-- resources/views/institutions/archived.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Archived Institutions')
-@section('page-title', 'Archived Institutions')
+@section('title', 'Deleted Institutions')
+@section('page-title', 'Deleted Institutions')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Archived Institutions</h2>
+            <h2 class="text-2xl font-extrabold text-secondary">Deleted Institutions</h2>
             <p class="text-sm text-gray-500 mt-1">View and restore soft-deleted institutions.</p>
         </div>
         <a href="{{ route('institutions.index') }}"
@@ -69,7 +69,7 @@
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-12 text-center">
-                        <div class="text-gray-400 text-sm">No archived records found.</div>
+                        <div class="text-gray-400 text-sm">No deleted records found.</div>
                     </td>
                 </tr>
                 @endforelse

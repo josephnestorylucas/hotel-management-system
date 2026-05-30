@@ -148,7 +148,7 @@ class MenuOptionGroupController extends Controller
         $this->softDelete($menuOptionGroup);
         $menuOptionGroup->values->each(fn($v) => $this->softDelete($v));
 
-        return back()->with('success', __('general.restaurant.messages.option_group_archived'));
+        return back()->with('success', __('general.restaurant.messages.option_group_deactivated'));
     }
 }
 

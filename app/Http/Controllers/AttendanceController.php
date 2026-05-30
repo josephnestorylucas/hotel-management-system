@@ -157,7 +157,7 @@ class AttendanceController extends Controller
     {
         $this->softDelete($attendance);
 
-        return back()->with('success', 'Attendee archived.');
+        return back()->with('success', 'Attendee deleted.');
     }
 
     public function bulkUpload(Organization $organization, Event $event)

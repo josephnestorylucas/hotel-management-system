@@ -115,7 +115,7 @@ class RoomTypeController extends Controller {
     public function destroy(RoomType $roomType) {
         // Media files are automatically deleted by Spatie Media Library
         $this->softDelete($roomType);
-        return redirect()->route('room-types.index')->with('success', 'Room type archived successfully.');
+        return redirect()->route('room-types.index')->with('success', 'Room type deleted successfully.');
     }
 
     public function archived() {

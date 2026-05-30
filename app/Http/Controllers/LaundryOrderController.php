@@ -201,7 +201,7 @@ class LaundryOrderController extends Controller
         $this->softDelete($laundryOrder);
 
         return redirect()->route('laundry-orders.index')
-            ->with('success', 'Laundry order archived successfully.');
+            ->with('success', 'Laundry order deleted successfully.');
     }
 
     // Status transitions

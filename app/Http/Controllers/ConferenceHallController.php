@@ -87,7 +87,7 @@ class ConferenceHallController extends Controller
         $this->softDelete($conferenceHall);
 
         return redirect()->route('conference-halls.index')
-            ->with('success', 'Conference hall archived successfully.');
+            ->with('success', 'Conference hall deleted successfully.');
     }
 
     public function archived()

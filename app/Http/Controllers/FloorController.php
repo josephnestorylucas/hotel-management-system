@@ -52,7 +52,7 @@ class FloorController extends Controller {
         }
 
         $this->softDelete($floor);
-        return redirect()->route('floors.index')->with('success', 'Floor archived successfully.');
+        return redirect()->route('floors.index')->with('success', 'Floor deleted successfully.');
     }
 
     public function archived() {

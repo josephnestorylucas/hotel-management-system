@@ -92,7 +92,7 @@ class OrganizationController extends Controller
         $this->softDelete($organization);
 
         return redirect()->route('organizations.index')
-            ->with('success', 'Organization archived successfully.');
+            ->with('success', 'Organization deleted successfully.');
     }
 
     public function archived()

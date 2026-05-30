@@ -77,6 +77,6 @@ class EventScheduleController extends Controller
     {
         $this->softDelete($schedule);
 
-        return back()->with('success', 'Session archived.');
+        return back()->with('success', 'Session deleted.');
     }
 }

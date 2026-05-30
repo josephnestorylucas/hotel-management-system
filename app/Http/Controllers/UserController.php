@@ -129,7 +129,7 @@ class UserController extends Controller {
 
     public function destroy(User $user) {
         $this->softDelete($user);
-        return redirect()->route('users.index')->with('success', 'User archived successfully.');
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 
     public function archived()

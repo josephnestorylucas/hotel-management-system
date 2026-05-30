@@ -80,7 +80,7 @@ class EventPassController extends Controller
 
         $this->softDelete($pass);
 
-        return back()->with('success', 'Pass type archived.');
+        return back()->with('success', 'Pass type deleted.');
     }
 
     public function activate(Organization $organization, Event $event, EventPass $pass)
@@ -92,6 +92,6 @@ class EventPassController extends Controller
     public function archive(Organization $organization, Event $event, EventPass $pass)
     {
         $pass->update(['status' => 'archived']);
-        return back()->with('success', 'Pass type archived.');
+        return back()->with('success', 'Pass type deleted.');
     }
 }

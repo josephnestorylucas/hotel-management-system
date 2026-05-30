@@ -191,7 +191,7 @@ class GuestController extends Controller
         $this->softDelete($guest);
 
         return redirect()->route('guests.index')
-            ->with('success', 'Guest archived successfully.');
+            ->with('success', 'Guest deleted successfully.');
     }
 
     public function archived()

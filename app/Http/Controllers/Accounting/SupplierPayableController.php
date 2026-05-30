@@ -250,7 +250,7 @@ class SupplierPayableController extends Controller
 
         return redirect()
             ->route('accountant.payables.dashboard')
-            ->with('success', __('accountant.messages.payment_archived'));
+            ->with('success', __('accountant.messages.payment_deleted'));
     }
 
     public function applyPayment(SupplierPayment $supplierPayment): View

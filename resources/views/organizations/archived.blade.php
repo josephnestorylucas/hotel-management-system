@@ -1,15 +1,15 @@
 {{-- resources/views/organizations/archived.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Archived Organizations')
-@section('page-title', 'Archived Organizations')
+@section('title', 'Deleted Organizations')
+@section('page-title', 'Deleted Organizations')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Archived Organizations</h2>
+            <h2 class="text-2xl font-extrabold text-secondary">Deleted Organizations</h2>
             <p class="text-sm text-gray-500 mt-1">View and restore soft-deleted organizations.</p>
         </div>
         <a href="{{ route('organizations.index') }}"
@@ -69,7 +69,7 @@
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-12 text-center">
-                        <div class="text-gray-400 text-sm">No archived records found.</div>
+                        <div class="text-gray-400 text-sm">No deleted records found.</div>
                     </td>
                 </tr>
                 @endforelse

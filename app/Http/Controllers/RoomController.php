@@ -63,7 +63,7 @@ class RoomController extends Controller {
 
     public function destroy(Room $room) {
         $this->softDelete($room);
-        return redirect()->route('rooms.index')->with('success', 'Room archived successfully.');
+        return redirect()->route('rooms.index')->with('success', 'Room deleted successfully.');
     }
 
     public function archived()

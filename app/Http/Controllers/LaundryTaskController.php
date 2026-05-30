@@ -161,7 +161,7 @@ class LaundryTaskController extends Controller
         $this->softDelete($laundryTask);
 
         return redirect()->route('laundry.index')
-            ->with('success', 'Laundry task archived successfully.');
+            ->with('success', 'Laundry task deleted successfully.');
     }
 
     public function markAsInProgress(LaundryTask $laundryTask)

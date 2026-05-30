@@ -50,7 +50,7 @@ class BuildingController extends Controller {
         }
 
         $this->softDelete($building);
-        return redirect()->route('buildings.index')->with('success', 'Building archived successfully.');
+        return redirect()->route('buildings.index')->with('success', 'Building deleted successfully.');
     }
 
     public function archived() {

@@ -93,7 +93,7 @@ class BugReportController extends Controller
 
         $this->softDelete($bugReport);
 
-        return back()->with('success', 'Bug report archived.');
+        return back()->with('success', 'Bug report deleted.');
     }
 
     public function fetchRemote(Request $request)

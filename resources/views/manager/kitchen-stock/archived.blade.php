@@ -1,15 +1,15 @@
 {{-- resources/views/manager/kitchen-stock/archived.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Archived Kitchen Stock Items')
-@section('page-title', 'Archived Kitchen Stock Items')
+@section('title', 'Deleted Kitchen Stock Items')
+@section('page-title', 'Deleted Kitchen Stock Items')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-extrabold text-secondary">Archived Kitchen Stock Items</h2>
+            <h2 class="text-2xl font-extrabold text-secondary">Deleted Kitchen Stock Items</h2>
             <p class="text-sm text-gray-500 mt-1">View and restore soft-deleted stock items.</p>
         </div>
         <a href="{{ route('manager.kitchen-stock.index') }}"
@@ -65,7 +65,7 @@
                 @empty
                 <tr>
                     <td colspan="5" class="px-6 py-12 text-center">
-                        <div class="text-gray-400 text-sm">No archived records found.</div>
+                        <div class="text-gray-400 text-sm">No deleted records found.</div>
                     </td>
                 </tr>
                 @endforelse

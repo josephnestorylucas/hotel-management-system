@@ -245,6 +245,6 @@ class LocalPurchaseOrderController extends Controller
 
         return redirect()
             ->route('procurement.lpo.index')
-            ->with('success', "LPO {$number} archived successfully.");
+            ->with('success', "LPO {$number} deleted successfully.");
     }
 }

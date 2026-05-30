@@ -69,7 +69,7 @@ class MenuCategoryController extends Controller
         $menuCategory->update(['is_active' => false]);
         $this->softDelete($menuCategory);
 
-        return back()->with('success', __('general.restaurant.messages.category_archived'));
+        return back()->with('success', __('general.restaurant.messages.category_deactivated'));
     }
 }
 

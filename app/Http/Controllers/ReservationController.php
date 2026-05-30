@@ -254,7 +254,7 @@ class ReservationController extends Controller
         $this->softDelete($reservation);
 
         return redirect()->route('reservations.index')
-            ->with('success', 'Reservation archived successfully.');
+            ->with('success', 'Reservation deleted successfully.');
     }
 
     public function archived()

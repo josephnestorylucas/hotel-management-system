@@ -240,7 +240,7 @@ class ProductController extends Controller
 
         return redirect()
             ->route('store.products.index')
-            ->with('success', "Product '{$product->name}' archived.");
+            ->with('success', "Product '{$product->name}' deleted.");
     }
 
     protected function parseVarieties(?string $json): ?array

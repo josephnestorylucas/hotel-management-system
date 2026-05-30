@@ -3,14 +3,14 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Archived Suppliers</h1>
+        <h1>Deleted Suppliers</h1>
         <a href="{{ route('procurement.suppliers.index') }}" class="btn btn-secondary">
             &larr; Back to Suppliers
         </a>
     </div>
 
     @if($suppliers->isEmpty())
-        <div class="alert alert-info">No archived records found.</div>
+        <div class="alert alert-info">No deleted records found.</div>
     @else
         <div class="table-responsive">
             <table class="table table-striped">

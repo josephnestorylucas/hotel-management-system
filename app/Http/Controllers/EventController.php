@@ -165,7 +165,7 @@ class EventController extends Controller
         $this->softDelete($event);
 
         return redirect()->route('organizations.events-list', $organization)
-            ->with('success', 'Event archived successfully.');
+            ->with('success', 'Event deleted successfully.');
     }
 
     public function publish(Organization $organization, Event $event)

@@ -28,8 +28,16 @@
                     <select name="product_id" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
                         <option value="">Select product...</option>
                         @foreach($products as $product)
-                        <option value="{{ $product->id }}" {{ old('product_id') === $product->id ? 'selected' : '' }}>
+                        <option value="{{ $product->id }}"
+                                data-stock="{{ $product->available_quantity }}"
+                                {{ old('product_id') === $product->id ? 'selected' : '' }}
+                                @if($product->available_quantity <= 0) disabled @endif>
                             {{ $product->name }} ({{ $product->unit }})
+                            @if($product->available_quantity > 0)
+                                — In stock: {{ number_format($product->available_quantity, 2) }}
+                            @else
+                                — Out of stock
+                            @endif
                         </option>
                         @endforeach
                     </select>

@@ -84,35 +84,15 @@
                 </svg>
                 <span class="font-semibold text-blue-800">Product Found Online</span>
             </div>
-            <form id="online-product-form" onsubmit="return false;">
-                <input type="hidden" id="online-barcode" name="barcode" value="">
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Product Name</label>
-                        <input type="text" id="online-name" name="name"
-                               class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Brand</label>
-                        <input type="text" id="online-brand" readonly
-                               class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-gray-50">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Cost Price *</label>
-                        <input type="number" id="online-cost" name="cost_price" step="0.01" min="0.01"
-                               class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">Selling Price *</label>
-                        <input type="number" id="online-selling" name="selling_price" step="0.01" min="0.01"
-                               class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm" required>
-                    </div>
-                </div>
-                <button type="button" onclick="saveOnlineProduct()"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-blue-700 font-medium">
-                    Save &amp; Use
-                </button>
-            </form>
+            <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+                <div><span class="text-gray-500">Name:</span> <span id="online-name" class="font-medium"></span></div>
+                <div><span class="text-gray-500">Brand:</span> <span id="online-brand" class="font-medium"></span></div>
+                <div><span class="text-gray-500">Barcode:</span> <span id="online-barcode-display" class="font-mono font-medium"></span></div>
+            </div>
+            <button type="button" onclick="saveOnlineProduct()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-blue-700 font-medium">
+                Use This &amp; Fill Form
+            </button>
         </div>
 
         {{-- Unknown Barcode --}}
@@ -427,10 +407,15 @@ async function processBarcode(barcode) {
             document.getElementById('local-stock').textContent = data.product.stock;
             document.getElementById('local-product-id').value = data.product.id;
             resultLocal.classList.remove('hidden');
+
+            // Also fill barcode in main form for reference
+            document.getElementById('form-barcode').value = barcode;
         } else if (data.found && data.source === 'openfoodfacts') {
-            document.getElementById('online-name').value = data.product.name;
-            document.getElementById('online-brand').value = data.product.brand;
-            document.getElementById('online-barcode').value = data.product.barcode;
+            document.getElementById('online-name').textContent = data.product.name;
+            document.getElementById('online-brand').textContent = data.product.brand;
+            document.getElementById('online-barcode-display').textContent = data.product.barcode;
+            // Store data for the button handler
+            document.getElementById('scan-result-online').dataset.productJson = JSON.stringify(data.product);
             resultOnline.classList.remove('hidden');
         } else {
             document.getElementById('unknown-barcode-display').textContent = barcode;
@@ -453,37 +438,21 @@ function useLocalProduct() {
 }
 
 async function saveOnlineProduct() {
-    const form = document.getElementById('online-product-form');
-    const name = document.getElementById('online-name').value.trim();
-    const barcode = document.getElementById('online-barcode').value.trim();
-    const costPrice = document.getElementById('online-cost').value;
-    const sellingPrice = document.getElementById('online-selling').value;
+    const container = document.getElementById('scan-result-online');
+    const product = JSON.parse(container.dataset.productJson || '{}');
 
-    if (!name || !barcode || !costPrice || !sellingPrice) {
-        alert('Please fill in all required fields.');
+    if (!product.name || !product.barcode) {
+        alert('Product data is missing.');
         return;
     }
 
-    try {
-        const response = await fetch('/store/products/store-scanned', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({ name, barcode, cost_price: costPrice, selling_price: sellingPrice }),
-        });
+    // Fill main form fields
+    document.getElementById('form-product-name').value = product.name;
+    document.getElementById('form-barcode').value = product.barcode;
 
-        const data = await response.json();
-        if (data.success) {
-            window.location.href = `/store/products/${data.product.id}`;
-        } else {
-            alert('Error saving product. Please try again.');
-        }
-    } catch (err) {
-        alert('Error saving product. Please try again.');
-    }
+    // Scroll to main form so user can fill remaining fields (unit, category, etc.)
+    document.getElementById('form-product-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('form-product-name').focus();
 }
 
 function showManualForm() {

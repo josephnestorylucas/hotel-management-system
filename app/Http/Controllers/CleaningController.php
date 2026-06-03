@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class CleaningController extends Controller
 {
-    const ATTENTION_STATUSES = ['dirty', 'out_of_order'];
+    const ATTENTION_STATUSES = ['dirty', 'out_of_order', 'occupied'];
 
     /**
      * Supervisor: list rooms needing cleaning or maintenance.
@@ -65,14 +65,18 @@ class CleaningController extends Controller
         abort_unless(in_array($room->status, self::ATTENTION_STATUSES), 422, 'Only rooms needing attention can be confirmed.');
         abort_if(!$room->cleaning_completed_at, 422, 'House help must mark the task as done before confirmation.');
 
+        // Occupied rooms stay occupied — guest is still in the room
+        $newStatus = $room->status === 'occupied' ? 'occupied' : 'available';
+
         $room->update([
-            'status' => 'available',
+            'status' => $newStatus,
             'cleaning_confirmed_by' => (string) Auth::id(),
             'cleaning_confirmed_at' => now(),
         ]);
 
+        $statusText = $newStatus === 'available' ? 'returned to available' : 'confirmed (guest still in room)';
         return redirect()->route('cleaning.index')
-            ->with('success', "Room {$room->room_number} confirmed and returned to available.");
+            ->with('success', "Room {$room->room_number} {$statusText}.");
     }
 
     /**

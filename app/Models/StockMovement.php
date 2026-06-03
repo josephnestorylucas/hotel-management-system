@@ -41,10 +41,15 @@ class StockMovement extends Model
     {
         return DB::transaction(function () use ($params, $actorId) {
 
-            $level = StockLevel::where('product_id', $params['product_id'])
-                               ->where('location_id', $params['location_id'])
-                               ->lockForUpdate()
-                               ->firstOrFail();
+            // Use firstOrCreate so we never 404 when a StockLevel row is missing
+            // (e.g. product created before the location existed, or row was removed).
+            $level = StockLevel::firstOrCreate(
+                ['product_id' => $params['product_id'], 'location_id' => $params['location_id']],
+                ['quantity' => 0, 'reserved_qty' => 0]
+            );
+
+            // Re-fetch with a row lock after ensuring the row exists.
+            $level = StockLevel::where('id', $level->id)->lockForUpdate()->first();
 
             $before = (float) $level->quantity;
 

@@ -58,7 +58,7 @@ class GoodsReceivedNoteController extends Controller
             'items.*.item_name' => 'required|string|max:200',
             'items.*.unit' => 'required|string|max:50',
             'items.*.quantity_ordered' => 'required|numeric|min:0',
-            'items.*.quantity_received' => 'required|numeric|min:0.001',
+            'items.*.quantity_received' => 'required|numeric|min:0',
             'items.*.unit_price' => 'required|numeric|min:0.01',
             'items.*.notes' => 'nullable|string',
         ]);
@@ -173,7 +173,7 @@ class GoodsReceivedNoteController extends Controller
             'receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|uuid|exists:goods_received_note_items,id',
-            'items.*.quantity_received' => 'required|numeric|min:0.001',
+            'items.*.quantity_received' => 'required|numeric|min:0',
             'items.*.unit_price' => 'required|numeric|min:0.01',
             'items.*.notes' => 'nullable|string',
         ]);
@@ -282,15 +282,19 @@ class GoodsReceivedNoteController extends Controller
     {
         abort_unless(auth()->user()?->hasRole(Role::MANAGER), 403);
 
-        if ($goodsReceivedNote->status === GoodsReceivedNote::STATUS_CONFIRMED_BY_STOREKEEPER) {
-            $goodsReceivedNote->update(['status' => GoodsReceivedNote::STATUS_PENDING_MANAGER_APPROVAL]);
-            $goodsReceivedNote->refresh();
-        }
+        // NOTE: Do NOT pre-transition status here — the service handles the full
+        // confirmed_by_storekeeper → pending_manager_approval → approved flow
+        // inside a single DB transaction so that stock movements, accounting,
+        // and status changes all commit or roll back atomically.
 
         try {
             app(ProcurementIntegrationService::class)->approveGrn($goodsReceivedNote, (string) auth()->id());
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
+        } catch (\Throwable $e) {
+            return back()->withErrors([
+                'approval' => 'GRN approval failed: ' . $e->getMessage(),
+            ])->withInput();
         }
 
         return back()->with('success', "GRN {$goodsReceivedNote->grn_number} approved. Stock and accounting updates completed.");

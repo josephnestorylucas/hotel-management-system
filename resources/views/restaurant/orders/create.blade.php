@@ -27,8 +27,8 @@
                     <select name="table_id" class="w-full border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="">{{ __('general.restaurant.placeholders.no_table_takeaway') }}</option>
                         @foreach($tables as $table)
-                            <option value="{{ $table->id }}" {{ $table->status !== 'available' ? 'disabled' : '' }}>
-                                {{ __('general.nav.tables') }} {{ $table->table_number }} ({{ $table->capacity }})
+                            <option value="{{ $table->id }}">
+                                {{ __('general.nav.tables') }} {{ $table->table_number }} ({{ $table->capacity }}){{ $table->status !== 'available' ? ' — ' . ucfirst($table->status) : '' }}
                             </option>
                         @endforeach
                     </select>

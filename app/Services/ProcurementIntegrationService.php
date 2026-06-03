@@ -80,11 +80,21 @@ class ProcurementIntegrationService
                         continue;
                     }
 
+                    $incoming = (float) $item->quantity_received;
+
+                    if ($incoming <= 0) {
+                        if ($lpoItem = $item->lpoItem) {
+                            $lpoItem->update([
+                                'received_quantity' => round(((float) $lpoItem->received_quantity) + $incoming, 3),
+                            ]);
+                        }
+                        continue;
+                    }
+
                     $lpoItem = $item->lpoItem;
                     if ($lpoItem) {
                         $alreadyReceived = (float) $lpoItem->received_quantity;
                         $ordered = (float) $lpoItem->quantity;
-                        $incoming = (float) $item->quantity_received;
 
                         if (($alreadyReceived + $incoming) > $ordered + 0.0001) {
                             throw ValidationException::withMessages([

@@ -138,6 +138,11 @@
                             Please select an LPO to load items
                         </div>
                     </div>
+
+                    <p class="mt-3 text-xs text-gray-500">
+                        <span class="font-semibold text-amber-600">Short delivery?</span>
+                        Enter <code class="px-1 py-0.5 bg-gray-100 rounded">0</code> in the Received field for any items the supplier did not deliver. They will be recorded in the GRN as a shortage but will not add to stock.
+                    </p>
                 </div>
 
                 <!-- Total Summary -->
@@ -219,7 +224,7 @@ function addItemRow(lpoItem) {
             <input type="hidden" name="items[${itemIndex}][unit]" value="${lpoItem.unit}">
             <input type="hidden" name="items[${itemIndex}][quantity_ordered]" value="${lpoItem.quantity}">
             <input type="hidden" name="items[${itemIndex}][unit_price]" value="${lpoItem.unit_price}">
-            
+
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                 <div class="md:col-span-4">
                     <div class="text-sm font-semibold text-secondary">${lpoItem.item_name}</div>
@@ -235,15 +240,16 @@ function addItemRow(lpoItem) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs text-gray-500 mb-1">Received *</label>
-                    <input 
-                        type="number" 
-                        name="items[${itemIndex}][quantity_received]" 
+                    <input
+                        type="number"
+                        name="items[${itemIndex}][quantity_received]"
                         step="0.001"
                         required
                         min="0"
                         value="${lpoItem.quantity}"
+                        placeholder="0 for short"
                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary item-received"
-                        onchange="calculateGrandTotal()">
+                        onchange="calculateGrandTotal(); markShortDelivery(this);">
                 </div>
                 <div class="md:col-span-2">
                     <div class="text-xs text-gray-500 mb-1">Unit Price</div>
@@ -265,19 +271,31 @@ function addItemRow(lpoItem) {
 
 function calculateGrandTotal() {
     let subtotal = 0;
-    
+
     document.querySelectorAll('[data-index]').forEach((row, idx) => {
         const qtyReceived = parseFloat(row.querySelector('.item-received').value) || 0;
         const unitPrice = parseFloat(row.querySelector('input[name*="[unit_price]"]').value) || 0;
         subtotal += qtyReceived * unitPrice;
     });
-    
+
     const tax = subtotal * 0.18;
     const total = subtotal + tax;
-    
+
     document.getElementById('subtotal-display').textContent = formatMoney(subtotal);
     document.getElementById('tax-display').textContent = formatMoney(tax);
     document.getElementById('total-display').textContent = formatMoney(total);
+}
+
+function markShortDelivery(input) {
+    const row = input.closest('[data-index]');
+    const isShort = parseFloat(input.value) === 0;
+    if (isShort) {
+        row.classList.add('border-amber-400', 'bg-amber-50');
+        row.classList.remove('border-gray-200', 'bg-gray-50');
+    } else {
+        row.classList.remove('border-amber-400', 'bg-amber-50');
+        row.classList.add('border-gray-200', 'bg-gray-50');
+    }
 }
 
 // Auto-load if LPO is pre-selected

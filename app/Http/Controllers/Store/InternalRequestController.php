@@ -38,7 +38,17 @@ class InternalRequestController extends Controller
     // GET /store/internal-requests/create
     public function create(): View
     {
-        $products = Product::where('is_active', true)->orderBy('name')->get();
+        $mainStoreId = StockLocation::mainStore()->id;
+
+        $products = Product::where('is_active', true)
+            ->with(['stockLevels' => fn ($q) => $q->where('location_id', $mainStoreId)])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($product) use ($mainStoreId) {
+                $level = $product->stockLevels->firstWhere('location_id', $mainStoreId);
+                $product->available_quantity = (float) ($level?->quantity ?? 0);
+                return $product;
+            });
 
         return view('store.internal-requests.create', compact('products'));
     }

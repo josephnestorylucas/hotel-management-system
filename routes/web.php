@@ -66,6 +66,7 @@ use App\Http\Controllers\Accounting\PayrollController;
 use App\Http\Controllers\Accounting\BankReconciliationController;
 use App\Http\Controllers\Accounting\SupplierPayableController;
 use App\Http\Controllers\Accounting\ReceiptManagementController;
+use App\Http\Controllers\Manager\AccommodationReportController;
 use App\Http\Controllers\Manager\OversightController;
 use App\Http\Controllers\Finance\PettyCashController;
 use App\Http\Controllers\Bartender\BartenderController;
@@ -474,17 +475,21 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('role:store_manager');
         Route::post('products',                 [ProductController::class, 'store'])->name('products.store')
              ->middleware('role:store_manager');
-        Route::get('products/{product}',        [ProductController::class, 'show'])->name('products.show')
-             ->middleware('role:store_manager,store_keeper,restaurant_manager,supervisor,manager');
-        Route::get('products/{product}/edit',   [ProductController::class, 'edit'])->name('products.edit')
-             ->middleware('role:store_manager');
-        Route::put('products/{product}',        [ProductController::class, 'update'])->name('products.update')
-             ->middleware('role:store_manager');
-        Route::delete('products/{product}',     [ProductController::class, 'destroy'])->name('products.destroy')
-             ->middleware('role:store_manager');
         Route::get('products/lookup',           [ProductController::class, 'lookupByBarcode'])->name('products.lookup')
              ->middleware('role:store_manager,store_keeper,restaurant_manager,supervisor,manager');
         Route::post('products/store-scanned',   [ProductController::class, 'storeScanned'])->name('products.store_scanned')
+             ->middleware('role:store_manager');
+        Route::get('products/{product}',        [ProductController::class, 'show'])->name('products.show')
+             ->where('product', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+             ->middleware('role:store_manager,store_keeper,restaurant_manager,supervisor,manager');
+        Route::get('products/{product}/edit',   [ProductController::class, 'edit'])->name('products.edit')
+             ->where('product', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+             ->middleware('role:store_manager');
+        Route::put('products/{product}',        [ProductController::class, 'update'])->name('products.update')
+             ->where('product', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+             ->middleware('role:store_manager');
+        Route::delete('products/{product}',     [ProductController::class, 'destroy'])->name('products.destroy')
+             ->where('product', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
              ->middleware('role:store_manager');
 
         // ── Stock ─────────────────────────────────────────────────────────
@@ -853,6 +858,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('accounting/journal/{journalEntry}/post', [JournalEntryController::class, 'post'])->name('accounting.journal.post');
         Route::post('accounting/journal/{journalEntry}/reverse', [JournalEntryController::class, 'reverse'])->name('accounting.journal.reverse');
         Route::get('accounting/reports/supplier-payables', [AccountingReportController::class, 'supplierPayables'])->name('accounting.reports.supplier-payables');
+        Route::get('reports/accommodation', [AccommodationReportController::class, 'index'])->name('reports.accommodation');
         
         // Kitchen Stock Management
         Route::prefix('kitchen-stock')->name('kitchen-stock.')->group(function () {

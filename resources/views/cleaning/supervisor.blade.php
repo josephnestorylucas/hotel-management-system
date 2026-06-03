@@ -45,6 +45,8 @@
                             @if($room->status === 'out_of_order')
                                 <span class="text-red-600">{{ $room->out_of_order_reason }}</span>
                                 <div class="text-xs text-gray-400">by {{ $room->outOfOrderBy?->name ?? '—' }} {{ $room->out_of_order_set_at?->diffForHumans() }}</div>
+                            @elseif($room->status === 'occupied')
+                                <span class="text-blue-600">Guest in room — needs cleaning</span>
                             @else
                                 <span class="text-gray-400">—</span>
                             @endif

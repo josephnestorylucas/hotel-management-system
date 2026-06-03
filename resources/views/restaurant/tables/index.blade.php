@@ -52,7 +52,8 @@
            class="block text-xs text-primary hover:underline mb-2">
             {{ $table->activeOrder->order_number }}
         </a>
-        @elseif($table->status === 'available')
+        @endif
+        @if($table->status === 'available' || $table->status === 'occupied')
         <a href="{{ route('restaurant.orders.create', ['location_id' => $table->location_id, 'table_id' => $table->id]) }}"
            class="block text-xs bg-primary text-white rounded py-1 hover:opacity-90 mb-2">
             New Order

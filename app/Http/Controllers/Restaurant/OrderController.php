@@ -129,14 +129,17 @@ class OrderController extends Controller
             }
         }
 
-        $buffetPackages = BuffetPackage::where('is_active', true)->orderBy('name')->get();
-
         $recentOrders = Order::with(['items.menuItem', 'table', 'location', 'creator'])
             ->where('status', 'served')
             ->latest()
             ->get();
 
-        return view('restaurant.pos', compact('categories', 'stockMap', 'imageMap', 'buffetPackages', 'recentOrders'));
+        $activeBookings = \App\Models\Booking::with('guest')
+            ->where('status', 'checked_in')
+            ->orderBy('guest_name')
+            ->get(['id', 'booking_number', 'guest_name', 'room_id']);
+
+        return view('restaurant.pos', compact('categories', 'stockMap', 'imageMap', 'recentOrders', 'activeBookings'));
     }
 
     /**
@@ -283,43 +286,49 @@ class OrderController extends Controller
 
                 app(ReceiptService::class)->getOrCreateReceipt($order ?? $buffetSales[0] ?? null);
             } else {
-                // Walk-in — settled immediately
+                // Walk-in — cash settled immediately, mobile/card pending
                 $paymentMethod = $data['payment_method'] === 'mobile' ? 'mobile_money' : $data['payment_method'];
+                $isCashPayment = $paymentMethod === 'cash';
+                $paymentStatus = $isCashPayment ? 'completed' : 'pending';
                 $totalAmount = 0;
 
                 if ($order) {
                     $totalAmount += (float) $order->total;
-                    $order->update([
-                        'status'         => 'settled',
-                        'payment_method' => $paymentMethod,
-                        'settled_by'     => (string) Auth::id(),
-                        'settled_at'     => now(),
-                    ]);
+                    if ($isCashPayment) {
+                        $order->update([
+                            'status'         => 'settled',
+                            'payment_method' => $paymentMethod,
+                            'settled_by'     => (string) Auth::id(),
+                            'settled_at'     => now(),
+                        ]);
+                    } else {
+                        $order->update([
+                            'payment_method' => $paymentMethod,
+                        ]);
+                    }
                 }
 
                 foreach ($buffetSales as $sale) {
                     $totalAmount += (float) $sale->total_amount;
-                    $sale->update([
-                        'status'           => 'settled',
-                        'payment_method'   => $paymentMethod,
-                        'settled_by'       => (string) Auth::id(),
-                        'settled_at'       => now(),
-                    ]);
+                    if ($isCashPayment) {
+                        $sale->update([
+                            'status'           => 'settled',
+                            'payment_method'   => $paymentMethod,
+                            'settled_by'       => (string) Auth::id(),
+                            'settled_at'       => now(),
+                        ]);
+                    } else {
+                        $sale->update([
+                            'payment_method' => $paymentMethod,
+                        ]);
+                    }
                 }
 
                 if ($totalAmount > 0) {
-                    app(AccountingService::class)->postRestaurantSettlement(
-                        orderNo: $order?->order_number ?? $buffetSales[0]->sale_number,
-                        orderId: $order?->id ?? $buffetSales[0]->id,
-                        amount: $totalAmount,
-                        paymentMethod: $paymentMethod,
-                        actorId: (string) Auth::id()
-                    );
-
                     $exchangeRate = CurrencyHelper::getExchangeRate();
                     $amountUsd = FinancePayment::toUsd($totalAmount, 'TZS', $exchangeRate);
 
-                    FinancePayment::create([
+                    $financePayment = FinancePayment::create([
                         'payment_type'  => 'walkin',
                         'checkout_id'   => null,
                         'order_id'      => $order?->id,
@@ -328,23 +337,37 @@ class OrderController extends Controller
                         'currency'      => 'TZS',
                         'amount_usd'    => $amountUsd,
                         'exchange_rate' => $exchangeRate,
-                        'status'        => 'completed',
+                        'status'        => $paymentStatus,
                         'created_by'    => (string) Auth::id(),
-                        'paid_at'       => now(),
+                        'paid_at'       => $isCashPayment ? now() : null,
                     ]);
 
-                    \App\Models\FinancialTransaction::record([
-                        'type'            => 'payment',
-                        'source_module'   => 'restaurant',
-                        'payment_id'      => null,
-                        'order_id'        => $order?->id,
-                        'currency'        => 'TZS',
-                        'amount'          => $totalAmount,
-                        'amount_usd'      => $amountUsd,
-                        'exchange_rate'   => $exchangeRate,
-                        'payment_method'  => $paymentMethod,
-                        'description'     => 'POS sale with ' . count($buffetSales) . ' buffet(s)',
-                    ], (string) Auth::id());
+                    if ($isCashPayment) {
+                        app(AccountingService::class)->postRestaurantSettlement(
+                            orderNo: $order?->order_number ?? $buffetSales[0]->sale_number,
+                            orderId: $order?->id ?? $buffetSales[0]->id,
+                            amount: $totalAmount,
+                            paymentMethod: $paymentMethod,
+                            actorId: (string) Auth::id()
+                        );
+
+                        \App\Models\FinancialTransaction::record([
+                            'type'            => 'walkin_sale',
+                            'source_module'   => 'restaurant',
+                            'payment_id'      => $financePayment->id,
+                            'order_id'        => $order?->id,
+                            'currency'        => 'TZS',
+                            'amount'          => $totalAmount,
+                            'amount_usd'      => $amountUsd,
+                            'exchange_rate'   => $exchangeRate,
+                            'payment_method'  => $paymentMethod,
+                            'description'     => 'POS sale',
+                        ], (string) Auth::id());
+                    }
+
+                    if ($order) {
+                        $order->update(['payment_reference' => $financePayment->payment_number]);
+                    }
                 }
 
                 app(ReceiptService::class)->getOrCreateReceipt($order ?? $buffetSales[0] ?? null);
@@ -365,7 +388,8 @@ class OrderController extends Controller
             return $redirectRoute->with('success', trim($msg));
         }
 
-        $msg = 'Sale completed successfully.';
+        $isCashPayment = $order && $order->payment_method === 'cash';
+        $msg = $isCashPayment ? 'Sale completed successfully.' : 'Payment initiated. Awaiting confirmation.';
         if ($order) $msg = "Order {$order->order_number} " . $msg;
         if (count($buffetSales) > 0) {
             $msg .= ' ' . count($buffetSales) . ' buffet sale(s) created.';
@@ -407,26 +431,13 @@ class OrderController extends Controller
                 app(ModuleBillingService::class)->syncOrderCharge($order->fresh(), (string) Auth::id());
             } else {
                 $totalAmount = (float) $order->total;
-
-                $order->update([
-                    'status'         => 'settled',
-                    'payment_method' => $paymentMethod,
-                    'settled_by'     => (string) Auth::id(),
-                    'settled_at'     => now(),
-                ]);
-
-                app(AccountingService::class)->postRestaurantSettlement(
-                    orderNo: $order->order_number,
-                    orderId: $order->id,
-                    amount: $totalAmount,
-                    paymentMethod: $paymentMethod,
-                    actorId: (string) Auth::id()
-                );
+                $isCashPayment = $paymentMethod === 'cash';
+                $paymentStatus = $isCashPayment ? 'completed' : 'pending';
 
                 $exchangeRate = CurrencyHelper::getExchangeRate();
                 $amountUsd = FinancePayment::toUsd($totalAmount, 'TZS', $exchangeRate);
 
-                FinancePayment::create([
+                $financePayment = FinancePayment::create([
                     'payment_type'  => 'walkin',
                     'checkout_id'   => null,
                     'order_id'      => $order->id,
@@ -435,23 +446,45 @@ class OrderController extends Controller
                     'currency'      => 'TZS',
                     'amount_usd'    => $amountUsd,
                     'exchange_rate' => $exchangeRate,
-                    'status'        => 'completed',
+                    'status'        => $paymentStatus,
                     'created_by'    => (string) Auth::id(),
-                    'paid_at'       => now(),
+                    'paid_at'       => $isCashPayment ? now() : null,
                 ]);
 
-                \App\Models\FinancialTransaction::record([
-                    'type'            => 'walkin_sale',
-                    'source_module'   => 'restaurant',
-                    'payment_id'      => null,
-                    'order_id'        => $order->id,
-                    'currency'        => 'TZS',
-                    'amount'          => $totalAmount,
-                    'amount_usd'      => $amountUsd,
-                    'exchange_rate'   => $exchangeRate,
-                    'payment_method'  => $paymentMethod,
-                    'description'     => 'POS finalisation of order ' . $order->order_number,
-                ], (string) Auth::id());
+                if ($isCashPayment) {
+                    $order->update([
+                        'status'         => 'settled',
+                        'payment_method' => $paymentMethod,
+                        'settled_by'     => (string) Auth::id(),
+                        'settled_at'     => now(),
+                    ]);
+
+                    app(AccountingService::class)->postRestaurantSettlement(
+                        orderNo: $order->order_number,
+                        orderId: $order->id,
+                        amount: $totalAmount,
+                        paymentMethod: $paymentMethod,
+                        actorId: (string) Auth::id()
+                    );
+
+                    \App\Models\FinancialTransaction::record([
+                        'type'            => 'walkin_sale',
+                        'source_module'   => 'restaurant',
+                        'payment_id'      => $financePayment->id,
+                        'order_id'        => $order->id,
+                        'currency'        => 'TZS',
+                        'amount'          => $totalAmount,
+                        'amount_usd'      => $amountUsd,
+                        'exchange_rate'   => $exchangeRate,
+                        'payment_method'  => $paymentMethod,
+                        'description'     => 'POS finalisation of order ' . $order->order_number,
+                    ], (string) Auth::id());
+                } else {
+                    $order->update([
+                        'payment_method' => $paymentMethod,
+                        'payment_reference' => $financePayment->payment_number,
+                    ]);
+                }
             }
 
             app(ReceiptService::class)->getOrCreateReceipt($order);
@@ -462,8 +495,12 @@ class OrderController extends Controller
                 ->with('success', "Order {$order->order_number} charged to guest folio.");
         }
 
-        return redirect()->route('restaurant.pos')
-            ->with('success', "Order {$order->order_number} finalised successfully.");
+        $isCashPayment = in_array($order->payment_method, ['cash', null]);
+        $message = $isCashPayment
+            ? "Order {$order->order_number} finalised successfully."
+            : "Order {$order->order_number} payment initiated. Awaiting confirmation.";
+
+        return redirect()->route('restaurant.pos')->with('success', $message);
     }
 
     /**

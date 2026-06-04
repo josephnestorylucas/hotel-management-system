@@ -11,7 +11,7 @@ class BarOrderStockService
 {
     public function checkAvailability(Order $order): array
     {
-        $order->loadMissing('items.menuItem.ingredients.product');
+        $order->loadMissing('items.menuItem.ingredients.product', 'items.menuItem.category');
 
         $errors = [];
 
@@ -21,11 +21,12 @@ class BarOrderStockService
             }
 
             $menuItemName = $orderItem->item_name_snapshot ?? $orderItem->menuItem->name;
+            $itemLocationId = $orderItem->menuItem->category?->location_id ?? $order->location_id;
 
             foreach ($orderItem->menuItem->ingredients as $ingredient) {
                 $level = StockLevel::query()
                     ->where('product_id', $ingredient->product_id)
-                    ->where('location_id', $order->location_id)
+                    ->where('location_id', $itemLocationId)
                     ->first();
 
                 $required = (float) $ingredient->quantity * (int) $orderItem->quantity;
@@ -58,7 +59,7 @@ class BarOrderStockService
                 return false;
             }
 
-            $locked->load('items.menuItem.ingredients');
+            $locked->load('items.menuItem.ingredients', 'items.menuItem.category');
 
             $availability = $this->checkAvailability($locked);
             if (!$availability['ok']) {
@@ -71,11 +72,12 @@ class BarOrderStockService
                 }
 
                 $menuItemName = $orderItem->item_name_snapshot ?? $orderItem->menuItem->name;
+                $itemLocationId = $orderItem->menuItem->category?->location_id ?? $locked->location_id;
 
                 foreach ($orderItem->menuItem->ingredients as $ingredient) {
                     StockMovement::record([
                         'product_id' => $ingredient->product_id,
-                        'location_id' => $locked->location_id,
+                        'location_id' => $itemLocationId,
                         'type' => 'recipe_use',
                         'quantity' => $ingredient->quantity * $orderItem->quantity,
                         'reference_type' => 'order',
@@ -102,7 +104,7 @@ class BarOrderStockService
                 return false;
             }
 
-            $locked->load('items.menuItem.ingredients');
+            $locked->load('items.menuItem.ingredients', 'items.menuItem.category');
 
             foreach ($locked->items as $orderItem) {
                 if ($orderItem->status === 'cancelled') {
@@ -110,11 +112,12 @@ class BarOrderStockService
                 }
 
                 $menuItemName = $orderItem->item_name_snapshot ?? $orderItem->menuItem->name;
+                $itemLocationId = $orderItem->menuItem->category?->location_id ?? $locked->location_id;
 
                 foreach ($orderItem->menuItem->ingredients as $ingredient) {
                     StockMovement::record([
                         'product_id' => $ingredient->product_id,
-                        'location_id' => $locked->location_id,
+                        'location_id' => $itemLocationId,
                         'type' => 'restock',
                         'quantity' => $ingredient->quantity * $orderItem->quantity,
                         'reference_type' => 'order_reversal',

@@ -68,12 +68,9 @@ class BartenderController extends Controller
 
     public function inbox(Request $request): View
     {
-        $bar = StockLocation::bar();
-
-        $orders = Order::with(['items.menuItem', 'booking'])
-            ->where('location_id', $bar->id)
-            ->whereNotNull('order_source')
-            ->when($request->source, fn ($q) => $q->where('order_source', $request->source))
+        $orders = Order::with(['items.menuItem', 'booking', 'location'])
+            ->where('order_source', 'walkin')
+            ->whereNotNull('bartender_status')
             ->when($request->status, fn ($q) => $q->where('bartender_status', $request->status))
             ->latest()
             ->paginate(20);
@@ -83,10 +80,7 @@ class BartenderController extends Controller
 
     public function drinkInbox(Request $request): View
     {
-        $bar = StockLocation::bar();
-
         $orders = Order::with(['items.menuItem', 'booking.room'])
-            ->where('location_id', $bar->id)
             ->where('order_source', 'reception_drink')
             ->when($request->status, fn ($q) => $q->where('bartender_status', $request->status))
             ->latest()
@@ -97,9 +91,6 @@ class BartenderController extends Controller
 
     public function showOrder(Order $order): View
     {
-        $bar = StockLocation::bar();
-        abort_if($order->location_id !== $bar->id, 404);
-
         $order->load(['items.menuItem.ingredients.product', 'booking']);
         $availability = $this->barOrderStockService->checkAvailability($order);
 
@@ -343,11 +334,13 @@ class BartenderController extends Controller
             DB::transaction(function () use ($order) {
                 $this->barOrderStockService->deductForOrder($order, $this->actorId());
 
-                $order->update([
+                $updateData = [
                     'bartender_status' => 'served',
                     'bartender_status_updated_at' => now(),
                     'status' => 'served',
-                ]);
+                ];
+
+                $order->update($updateData);
 
                 if (in_array($order->order_source, ['room_service', 'reception_drink'])) {
                     $this->moduleBillingService->syncOrderCharge($order->fresh(), $this->actorId());

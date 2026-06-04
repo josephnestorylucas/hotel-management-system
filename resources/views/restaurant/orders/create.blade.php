@@ -14,15 +14,6 @@
             <h2 class="font-semibold text-gray-700 text-lg">{{ __('general.details') }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('general.restaurant.fields.section') }} *</label>
-                    <select name="location_id" x-model="locationId" @change="onLocationChanged" required class="w-full border-gray-300 rounded px-3 py-2 text-sm">
-                        <option value="">{{ __('general.restaurant.placeholders.select_section') }}</option>
-                        @foreach($locations as $loc)
-                            <option value="{{ $loc->id }}">{{ $loc->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('general.nav.tables') }}</label>
                     <select name="table_id" class="w-full border-gray-300 rounded px-3 py-2 text-sm">
                         <option value="">{{ __('general.restaurant.placeholders.no_table_takeaway') }}</option>
@@ -69,7 +60,7 @@
                                 <option value="">{{ __('general.restaurant.placeholders.select_item') }}</option>
                                 @foreach($categories as $cat)
                                     @if($cat->menuItems->count())
-                                    <optgroup label="{{ $cat->name }}" data-location-id="{{ $cat->location_id }}" x-show="!locationId || locationId === '{{ $cat->location_id }}'">
+                                    <optgroup label="{{ $cat->name }}">
                                         @foreach($cat->menuItems as $mi)
                                             <option value="{{ $mi->id }}" {{ !$mi->is_available ? 'disabled' : '' }}>
                                                 {{ $mi->name }} — {{ number_format($mi->selling_price) }}{{ !$mi->is_available ? ' (' . __('general.restaurant.status.unavailable') . ')' : '' }}
@@ -133,27 +124,14 @@
 <script>
 function orderForm(categories) {
     return {
-        locationId: '{{ request('location_id') }}',
         orderType: 'walkin',
         allCategories: categories,
         items: [{ menu_item_id: '', quantity: 1, notes: '', option_groups: [], selected_option_value_ids: [] }],
         money(amount) { return Number(amount || 0).toLocaleString(); },
-        get filteredCategories() {
-            if (!this.locationId) return this.allCategories;
-            return this.allCategories.filter(c => c.location_id === this.locationId);
-        },
         addItem() {
             this.items.push({ menu_item_id: '', quantity: 1, notes: '', option_groups: [], selected_option_value_ids: [] });
         },
         removeItem(idx) { this.items.splice(idx, 1); },
-        onLocationChanged() {
-            this.items = this.items.map(item => ({
-                ...item,
-                menu_item_id: '',
-                option_groups: [],
-                selected_option_value_ids: [],
-            }));
-        },
         onMenuItemChanged(idx) {
             const item = this.items[idx];
             item.selected_option_value_ids = [];

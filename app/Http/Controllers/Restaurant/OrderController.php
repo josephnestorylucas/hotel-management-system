@@ -51,9 +51,9 @@ class OrderController extends Controller
      */
     public function create(Request $request): View
     {
-        $locations  = StockLocation::whereIn('code', ['bar', 'kitchen'])->get();
+        $kitchen = StockLocation::kitchen();
         $tables     = Table::where('is_active', true)
-                          ->when($request->location_id, fn($q) => $q->where('location_id', $request->location_id))
+                          ->when($kitchen, fn($q) => $q->where('location_id', $kitchen->id))
                           ->get();
         $categories = MenuCategory::with(['menuItems' => fn($q) => $q->where('is_active', true)->with([
             'optionGroups' => fn($g) => $g->where('is_active', true)->with([
@@ -61,12 +61,11 @@ class OrderController extends Controller
             ]),
         ])])
                           ->where('is_active', true)
-                          ->when($request->location_id, fn($q) => $q->where('location_id', $request->location_id))
                           ->orderBy('sort_order')
                           ->orderBy('name')
                           ->get();
 
-        return view('restaurant.orders.create', compact('locations', 'tables', 'categories'));
+        return view('restaurant.orders.create', compact('kitchen', 'tables', 'categories'));
     }
 
     /**
@@ -372,7 +371,6 @@ class OrderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'location_id'          => 'required|uuid|exists:stock_locations,id',
             'table_id'             => 'nullable|uuid|exists:tables,id',
             'order_type'           => 'required|in:guest,walkin,dine_in,room_service,bar_tab,takeaway',
             'booking_id'           => 'required_if:order_type,guest,room_service|nullable|uuid',
@@ -386,17 +384,16 @@ class OrderController extends Controller
             'items.*.selected_option_value_ids.*' => 'uuid|exists:menu_option_values,id',
         ]);
 
-        $order = DB::transaction(function () use ($data) {
-            $location = StockLocation::findOrFail($data['location_id']);
-            $isBarOrder = strtolower($location->code ?? '') === 'bar';
+$order = DB::transaction(function () use ($data) {
+            $kitchen = StockLocation::kitchen();
 
             $order = Order::create([
-                'location_id'   => $data['location_id'],
+                'location_id'   => $kitchen?->id ?? $data['location_id'] ?? null,
                 'table_id'      => $data['table_id'] ?? null,
                 'order_type'    => $data['order_type'],
-                'order_source'  => $isBarOrder ? 'restaurant' : null,
-                'bartender_status' => $isBarOrder ? 'pending' : null,
-                'bartender_status_updated_at' => $isBarOrder ? now() : null,
+                'order_source'  => null,
+                'bartender_status' => null,
+                'bartender_status_updated_at' => null,
                 'booking_id'    => $data['booking_id'] ?? null,
                 'customer_name' => $data['customer_name'] ?? null,
                 'status'        => 'open',
@@ -435,7 +432,6 @@ class OrderController extends Controller
             ]),
         ])])
             ->where('is_active', true)
-            ->where('location_id', $order->location_id)
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
@@ -467,7 +463,6 @@ class OrderController extends Controller
      */
     public function ready(Order $order): RedirectResponse
     {
-        abort_if($this->isBartenderManagedBarOrder($order), 422, 'Bar drink orders are prepared from the bartender desk.');
         abort_if($order->status !== 'sent', 422, 'Order must be sent before marking ready.');
 
         $order->update(['status' => 'ready']);
@@ -482,7 +477,6 @@ class OrderController extends Controller
      */
     public function serve(Order $order): RedirectResponse
     {
-        abort_if($this->isBartenderManagedBarOrder($order), 422, 'Bar drink orders are served from the bartender desk.');
         abort_if($order->status !== 'ready', 422, 'Order must be ready before serving.');
 
         DB::transaction(function () use ($order) {
@@ -517,7 +511,7 @@ class OrderController extends Controller
         // Walk-in direct payments are handled by WalkinPaymentController
         if ($order->order_type === 'guest') {
             if ($this->isBartenderManagedBarOrder($order)) {
-                abort_if($order->bartender_status !== 'served', 422, 'Bartender must mark the drink order as served before billing it to the guest folio.');
+                abort_if($order->bartender_status !== 'served', 422, 'Bar items must be served by the bartender before billing to the guest folio.');
             }
 
             $request->validate([
@@ -675,8 +669,8 @@ class OrderController extends Controller
 
     protected function isBartenderManagedBarOrder(Order $order): bool
     {
-        return $order->order_source === 'restaurant'
-            && str_contains(strtolower($order->location?->code ?? ''), 'bar');
+        return in_array($order->order_source, ['walkin'])
+            && $order->bartender_status !== null;
     }
 
     protected function buildOrderItemPayload(Order $order, array $item): array
@@ -689,7 +683,6 @@ class OrderController extends Controller
         ])->where('is_active', true)->findOrFail($item['menu_item_id']);
 
         abort_if(!$menuItem->is_available, 422, __('general.restaurant.messages.item_unavailable'));
-        abort_if((string) $menuItem->category?->location_id !== (string) $order->location_id, 422, __('general.restaurant.messages.item_wrong_section'));
 
         $selectedIds = collect($item['selected_option_value_ids'] ?? [])->filter()->unique()->values();
         $selectedValues = MenuOptionValue::with('group')

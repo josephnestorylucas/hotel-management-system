@@ -62,7 +62,6 @@
         <thead class="bg-gray-50 text-left">
             <tr>
                 <th class="px-4 py-3 font-medium text-gray-600">Order #</th>
-                <th class="px-4 py-3 font-medium text-gray-600">Section</th>
                 <th class="px-4 py-3 font-medium text-gray-600">Table</th>
                 <th class="px-4 py-3 font-medium text-gray-600">Type</th>
                 <th class="px-4 py-3 font-medium text-gray-600">Items</th>
@@ -75,8 +74,9 @@
         <tbody class="divide-y">
             @forelse($orders as $order)
             <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 font-mono text-xs">{{ $order->order_number }}</td>
-                <td class="px-4 py-3">{{ $order->location->name ?? '—' }}</td>
+                <td class="px-4 py-3 font-mono text-xs">
+                    <a href="{{ route('restaurant.orders.show', $order) }}" class="text-primary hover:underline">{{ $order->order_number }}</a>
+                </td>
                 <td class="px-4 py-3">{{ $order->table->table_number ?? '—' }}</td>
                 <td class="px-4 py-3">
                     <span class="text-xs px-2 py-0.5 rounded-full {{ $order->order_type === 'guest' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
@@ -108,7 +108,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="9" class="px-4 py-8 text-center text-gray-400">No orders found.</td>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No orders found.</td>
             </tr>
             @endforelse
         </tbody>

@@ -46,13 +46,62 @@
                     class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                     🍽️ Buffet Sale
                 </button>
+                <div class="border-t border-gray-100 my-1"></div>
+                <button @click="showFinalisePanel = !showFinalisePanel"
+                    :class="showFinalisePanel ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-emerald-600 hover:bg-emerald-50'"
+                    class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                    💳 Finalise
+                </button>
             </div>
 
-            <!-- Products Grid -->
+            <!-- Products / Recent Orders Grid -->
             <div class="flex-1 bg-white rounded-xl border border-gray-100 shadow-sm p-3 overflow-y-auto">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                <!-- Orders to Finalise Panel -->
+                <div x-show="showFinalisePanel" x-transition class="mb-4">
+                    <h3 class="text-sm font-bold text-gray-700 mb-3">Orders to Finalise</h3>
+                    @if($recentOrders->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-gray-500">
+                                    <th class="text-left py-2 px-2 font-medium">Order #</th>
+                                    <th class="text-right py-2 px-2 font-medium">Total</th>
+                                    <th class="text-center py-2 px-2 font-medium">When</th>
+                                    <th class="text-center py-2 px-2 font-medium">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($recentOrders as $order)
+                                <tr class="border-b border-gray-50 hover:bg-gray-50">
+                                    <td class="py-2 px-2 font-mono font-medium text-primary">{{ $order->order_number }}</td>
+                                    <td class="py-2 px-2 text-right font-semibold">@currency($order->total, 'TZS')</td>
+                                    <td class="py-2 px-2 text-center text-gray-500">{{ $order->created_at->format('H:i') }}</td>
+                                    <td class="py-2 px-2 text-center">
+                                        <button @click="loadOrderForFinalise(servedOrders.find(o => o.id === '{{ $order->id }}'))"
+                                            class="inline-block bg-emerald-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-emerald-700 cursor-pointer">
+                                            Finalise
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <p class="text-sm text-gray-400 text-center py-4">No orders to finalise.</p>
+                    @endif
+                </div>
+
+                <!-- Menu Items Grid -->
+                <div x-show="!showFinalisePanel || selectedOrderId" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    <template x-if="selectedOrderId">
+                        <div class="col-span-full text-center py-12 text-gray-400">
+                            <p class="text-sm font-medium">Finalising order: <span class="text-primary" x-text="selectedOrderNumber"></span></p>
+                            <p class="text-xs mt-1">Select payment method and click Finalise Payment.</p>
+                        </div>
+                    </template>
                     {{-- Menu Items --}}
-                    <template x-if="activeCategory !== 'buffet'">
+                    <template x-if="activeCategory !== 'buffet' && !selectedOrderId">
                     @foreach($categories as $cat)
                         @foreach($cat->menuItems as $item)
                         @php
@@ -81,7 +130,7 @@
                     @endforeach
                     </template>
                     {{-- Buffet Packages --}}
-                    <template x-if="activeCategory === 'buffet'">
+                    <template x-if="activeCategory === 'buffet' && !selectedOrderId">
                         @foreach($buffetPackages as $pkg)
                         <div @click="selectBuffetPackage('{{ $pkg->id }}', '{{ addslashes($pkg->name) }}', {{ $pkg->adult_price }}, {{ $pkg->child_price }})"
                             class="cursor-pointer hover:border-amber-300 hover:bg-amber-50/50 active:scale-95 p-3 rounded-lg border border-amber-200 transition-all relative bg-amber-50/30">
@@ -112,8 +161,11 @@
     <div class="w-96 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col flex-shrink-0">
         <div class="p-4 border-b border-gray-100">
             <div class="flex items-center justify-between">
-                <h3 class="font-bold text-gray-800">Current Order</h3>
-                <span class="text-xs text-gray-500" x-text="cart.length + ' items'"></span>
+                <div>
+                    <h3 class="font-bold text-gray-800" x-text="selectedOrderId ? 'Finalising: ' + selectedOrderNumber : 'Current Order'"></h3>
+                    <span class="text-xs text-gray-500" x-text="cart.length + ' items'"></span>
+                </div>
+                <button x-show="selectedOrderId" @click="clearCart()" class="text-xs text-red-500 hover:text-red-700 font-medium">Cancel</button>
             </div>
         </div>
 
@@ -132,23 +184,26 @@
                             </template>
                         </div>
                     </div>
-                    <div class="flex items-center gap-1">
-                        <template x-if="item._type !== 'buffet'">
+                    <template x-if="!selectedOrderId">
+                        <div class="flex items-center gap-1">
                             <button @click="decrementQty(idx)" class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-bold transition-colors">−</button>
-                        </template>
-                        <input type="number" x-model.number="item.quantity" @input="updateQty(idx)" min="1" max="999"
-                            :disabled="item._type === 'buffet'"
-                            class="w-14 text-center border border-gray-200 rounded-lg text-sm py-1">
-                        <template x-if="item._type !== 'buffet'">
+                            <input type="number" x-model.number="item.quantity" @input="updateQty(idx)" min="1" max="999"
+                                :disabled="item._type === 'buffet'"
+                                class="w-14 text-center border border-gray-200 rounded-lg text-sm py-1">
                             <button @click="incrementQty(idx)" class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-bold transition-colors">+</button>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
+                    <template x-if="selectedOrderId">
+                        <span class="text-sm font-bold text-gray-700 w-8 text-center" x-text="item.quantity"></span>
+                    </template>
                     <div class="text-sm font-bold text-gray-800 w-20 text-right" x-text="formatCurrency(lineSubtotal(item))"></div>
-                    <button @click="removeFromCart(idx)" class="text-red-400 hover:text-red-600 px-1">✕</button>
+                    <template x-if="!selectedOrderId">
+                        <button @click="removeFromCart(idx)" class="text-red-400 hover:text-red-600 px-1">✕</button>
+                    </template>
                 </div>
             </template>
             <div x-show="cart.length === 0" class="text-center py-8 text-gray-400 text-sm">
-                Tap items from the menu to build the order.
+                <span x-text="selectedOrderId ? 'No items in this order.' : 'Tap items from the menu to build the order.'"></span>
             </div>
         </div>
 
@@ -200,13 +255,18 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-2">
-                <button @click="clearCart()"
+                <button x-show="!selectedOrderId" @click="clearCart()"
                     class="px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                     Clear
                 </button>
+                <button x-show="selectedOrderId" @click="clearCart()"
+                    class="px-4 py-2.5 rounded-lg border border-red-300 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                    Cancel
+                </button>
                 <button @click="saveOrder()" :disabled="cart.length === 0"
-                    class="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                    Create Order
+                    class="px-4 py-2.5 rounded-lg text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    :class="selectedOrderId ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'"
+                    x-text="selectedOrderId ? 'Finalise Payment' : 'Create Order'">
                 </button>
             </div>
         </div>
@@ -354,6 +414,25 @@ $menuOptionsJson = collect($categories)
         ])->values()->all(),
     ])->values()->all()])
     ->toJson();
+
+$servedOrdersJson = $recentOrders->map(fn($order) => [
+    'id' => $order->id,
+    'order_number' => $order->order_number,
+    'order_type' => $order->order_type,
+    'customer_name' => $order->customer_name,
+    'customer_phone' => $order->customer_phone,
+    'total' => (float) $order->total,
+    'notes' => $order->notes,
+    'booking_id' => $order->booking_id,
+    'items' => $order->items->map(fn($item) => [
+        'menu_item_id' => $item->menu_item_id,
+        'name' => $item->item_name_snapshot ?? $item->menuItem?->name ?? 'Item',
+        'quantity' => $item->quantity,
+        'unit_price' => (float) $item->unit_price,
+        'subtotal' => (float) $item->subtotal,
+        'selected_options_snapshot' => $item->selected_options_snapshot,
+    ])->all(),
+])->toJson();
 @endphp
 <script>
 function restaurantPos() {
@@ -361,6 +440,7 @@ function restaurantPos() {
     const menuVarieties = JSON.parse({!! json_encode($menuVarietiesJson) !!});
     const menuStock = JSON.parse({!! json_encode($menuStockJson) !!});
     const menuOptions = JSON.parse({!! json_encode($menuOptionsJson) !!});
+    const servedOrders = {!! $servedOrdersJson !!};
 
     return {
         // Customer
@@ -382,6 +462,13 @@ function restaurantPos() {
         // Cart
         cart: [],
         orderNotes: '',
+
+        // Finalise existing order
+        showFinalisePanel: true,
+        selectedOrderId: null,
+        selectedOrderNumber: '',
+        selectedOrderType: '',
+        servedOrders: servedOrders,
 
         // Buffet
         showBuffetModal: false,
@@ -563,10 +650,41 @@ function restaurantPos() {
             if (!qty || qty < 1) { this.cart[idx].quantity = 1; }
         },
         clearCart() {
-            if (this.cart.length > 0 && confirm('Clear current order? All items will be removed.')) {
+            if (this.selectedOrderId) {
+                this.selectedOrderId = null;
+                this.selectedOrderNumber = '';
+                this.selectedOrderType = '';
+                this.cart = [];
+                this.orderNotes = '';
+                this.customerName = '';
+                this.customerPhone = '';
+                this.paymentMethod = '';
+                this.chargeToBooking = false;
+                this.bookingId = '';
+                this.showFinalisePanel = true;
+            } else if (this.cart.length > 0 && confirm('Clear current order? All items will be removed.')) {
                 this.cart = [];
                 this.orderNotes = '';
             }
+        },
+
+        loadOrderForFinalise(order) {
+            if (!order) return;
+            this.selectedOrderId = order.id;
+            this.selectedOrderNumber = order.order_number;
+            this.selectedOrderType = order.order_type;
+            this.customerName = order.customer_name || '';
+            this.customerPhone = order.customer_phone || '';
+            this.orderNotes = order.notes || '';
+            this.showFinalisePanel = false;
+            this.cart = order.items.map(item => ({
+                menu_item_id: item.menu_item_id,
+                name: item.name,
+                unit_price: item.unit_price,
+                quantity: item.quantity,
+                selected_options: item.selected_options_snapshot || [],
+            }));
+            this.activeCategory = null;
         },
 
         lineSubtotal(item) {
@@ -628,6 +746,14 @@ function restaurantPos() {
             csrf.name = '_token';
             csrf.value = '{{ csrf_token() }}';
             form.appendChild(csrf);
+
+            if (this.selectedOrderId) {
+                const existingInput = document.createElement('input');
+                existingInput.type = 'hidden';
+                existingInput.name = 'existing_order_id';
+                existingInput.value = this.selectedOrderId;
+                form.appendChild(existingInput);
+            }
 
             const customerNameInput = document.createElement('input');
             customerNameInput.type = 'hidden';

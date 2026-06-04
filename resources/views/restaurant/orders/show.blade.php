@@ -270,15 +270,9 @@
 
                 {{-- Settlement/Checkout --}}
                 @if($order->order_type === 'walkin')
-                    {{-- Walk-in: Use unified payment modal (direct payment allowed) --}}
-                    <x-walkin-payment-modal 
-                        :amount="$order->total" 
-                        :order-id="$order->id"
-                        :order-number="$order->order_number"
-                        module="restaurant"
-                        :customer-name="$order->customer_name ?? ''"
-                        :customer-phone="$order->customer_phone ?? ''"
-                    />
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-700">
+                        Payment is processed through the POS. Go to <a href="{{ route('restaurant.pos') }}" class="underline font-medium">Regular POS</a> to finalise this order.
+                    </div>
                 @else
                     {{-- Guest: Charge to Booking and Proceed to Checkout --}}
                     <div x-data="{ showCharge: false }">

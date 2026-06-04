@@ -35,9 +35,9 @@ class OrderController extends Controller
     public function index(Request $request): View
     {
         $orders = Order::with(['table', 'location', 'items', 'creator'])
-            ->when($request->status,      fn($q) => $q->where('status', $request->status))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->location_id, fn($q) => $q->where('location_id', $request->location_id))
-            ->when($request->date,        fn($q) => $q->whereDate('created_at', $request->date))
+            ->when($request->date, fn($q) => $q->whereDate('created_at', $request->date))
             ->latest()
             ->paginate(30);
 
@@ -131,7 +131,12 @@ class OrderController extends Controller
 
         $buffetPackages = BuffetPackage::where('is_active', true)->orderBy('name')->get();
 
-        return view('restaurant.pos', compact('categories', 'stockMap', 'imageMap', 'buffetPackages'));
+        $recentOrders = Order::with(['items.menuItem', 'table', 'location', 'creator'])
+            ->where('status', 'served')
+            ->latest()
+            ->get();
+
+        return view('restaurant.pos', compact('categories', 'stockMap', 'imageMap', 'buffetPackages', 'recentOrders'));
     }
 
     /**
@@ -144,6 +149,7 @@ class OrderController extends Controller
         abort_if(!$kitchen, 500, 'Kitchen stock location not configured.');
 
         $data = $request->validate([
+            'existing_order_id' => 'nullable|uuid|exists:orders,id',
             'customer_name'  => 'nullable|string|max:150',
             'customer_phone' => 'nullable|string|max:30',
             'payment_method' => 'required|in:cash,mobile,card,charge_to_booking',
@@ -157,6 +163,11 @@ class OrderController extends Controller
             'buffet_items.*.adults'            => 'required|integer|min:1',
             'buffet_items.*.children'          => 'nullable|integer|min:0',
         ]);
+
+        // Finalise existing served order
+        if (!empty($data['existing_order_id'])) {
+            return $this->finaliseExistingOrder($data);
+        }
 
         $hasItems = !empty($data['items']);
         $hasBuffet = !empty($data['buffet_items']);
@@ -363,6 +374,96 @@ class OrderController extends Controller
             ? redirect()->route('restaurant.orders.show', $order)
             : redirect()->route('restaurant.buffet.show', $buffetSales[0]);
         return $redirectRoute->with('success', trim($msg));
+    }
+
+    /**
+     * Finalise an existing served order — process payment and settle.
+     */
+    protected function finaliseExistingOrder(array $data): RedirectResponse
+    {
+        $order = Order::with('items.menuItem')->findOrFail($data['existing_order_id']);
+
+        abort_if(!in_array($order->status, ['served', 'ready', 'sent', 'open']), 422, 'Order cannot be finalised. Status must be served.');
+        abort_if(in_array($order->status, ['settled', 'charged', 'cancelled']), 422, 'Order already settled or cancelled.');
+
+        $isChargeToBooking = $data['payment_method'] === 'charge_to_booking';
+
+        if ($isChargeToBooking) {
+            $booking = \App\Models\Booking::findOrFail($data['booking_id']);
+            abort_if($booking->status !== 'checked_in', 422, 'Can only charge to a checked-in booking.');
+        }
+
+        DB::transaction(function () use ($order, $data, $isChargeToBooking) {
+            $paymentMethod = $isChargeToBooking ? 'charge_to_booking' : ($data['payment_method'] === 'mobile' ? 'mobile_money' : $data['payment_method']);
+
+            if ($isChargeToBooking) {
+                $order->update([
+                    'status'             => 'charged',
+                    'payment_method'     => 'charge_to_booking',
+                    'booking_id'         => $data['booking_id'],
+                    'billed_to_folio_at' => now(),
+                    'settled_by'         => (string) Auth::id(),
+                ]);
+                app(ModuleBillingService::class)->syncOrderCharge($order->fresh(), (string) Auth::id());
+            } else {
+                $totalAmount = (float) $order->total;
+
+                $order->update([
+                    'status'         => 'settled',
+                    'payment_method' => $paymentMethod,
+                    'settled_by'     => (string) Auth::id(),
+                    'settled_at'     => now(),
+                ]);
+
+                app(AccountingService::class)->postRestaurantSettlement(
+                    orderNo: $order->order_number,
+                    orderId: $order->id,
+                    amount: $totalAmount,
+                    paymentMethod: $paymentMethod,
+                    actorId: (string) Auth::id()
+                );
+
+                $exchangeRate = CurrencyHelper::getExchangeRate();
+                $amountUsd = FinancePayment::toUsd($totalAmount, 'TZS', $exchangeRate);
+
+                FinancePayment::create([
+                    'payment_type'  => 'walkin',
+                    'checkout_id'   => null,
+                    'order_id'      => $order->id,
+                    'method'        => $paymentMethod,
+                    'amount'        => $totalAmount,
+                    'currency'      => 'TZS',
+                    'amount_usd'    => $amountUsd,
+                    'exchange_rate' => $exchangeRate,
+                    'status'        => 'completed',
+                    'created_by'    => (string) Auth::id(),
+                    'paid_at'       => now(),
+                ]);
+
+                \App\Models\FinancialTransaction::record([
+                    'type'            => 'walkin_sale',
+                    'source_module'   => 'restaurant',
+                    'payment_id'      => null,
+                    'order_id'        => $order->id,
+                    'currency'        => 'TZS',
+                    'amount'          => $totalAmount,
+                    'amount_usd'      => $amountUsd,
+                    'exchange_rate'   => $exchangeRate,
+                    'payment_method'  => $paymentMethod,
+                    'description'     => 'POS finalisation of order ' . $order->order_number,
+                ], (string) Auth::id());
+            }
+
+            app(ReceiptService::class)->getOrCreateReceipt($order);
+        });
+
+        if ($isChargeToBooking) {
+            return redirect()->route('restaurant.orders.show', $order)
+                ->with('success', "Order {$order->order_number} charged to guest folio.");
+        }
+
+        return redirect()->route('restaurant.pos')
+            ->with('success', "Order {$order->order_number} finalised successfully.");
     }
 
     /**

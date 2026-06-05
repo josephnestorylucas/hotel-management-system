@@ -13,7 +13,7 @@
                 @forelse($transactions as $transaction)
                     <tr class="border-b border-gray-50 last:border-0"><td class="py-3 font-semibold text-secondary">{{ $transaction->entry_no }}</td><td class="py-3 text-gray-600">{{ $transaction->entry_date?->format('M d, Y') }}</td><td class="py-3 text-gray-600">{{ $transaction->description }}</td><td class="py-3 text-gray-600">{{ ucfirst($transaction->status) }}</td><td class="py-3 text-right font-bold text-secondary"><x-money :amount="$transaction->total_debit" /></td></tr>
                 @empty
-                    <tr><td colspan="5" class="py-6 text-center text-gray-500">{{ __('general.no_data') }}</td></tr>
+                    <x-empty-state table colspan="5" title="No transactions found" message="Transactions will appear here once accounting entries are posted." />
                 @endforelse
             </tbody>
         </table>

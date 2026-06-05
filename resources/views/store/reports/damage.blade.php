@@ -65,7 +65,7 @@
                 <td class="px-4 py-3 text-gray-500 text-xs">{{ $d->actor->name ?? '—' }}</td>
             </tr>
             @empty
-            <tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">No damage records found.</td></tr>
+            <x-empty-state table colspan="8" title="No damage records found" message="There are no damage reports in the selected period." />
             @endforelse
         </tbody>
     </table>

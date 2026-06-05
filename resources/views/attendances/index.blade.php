@@ -99,7 +99,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" class="px-4 py-16 text-center text-gray-500">No attendees found.</td></tr>
+                <x-empty-state table colspan="7" title="No attendees found" message="No attendance records match the current view." />
                 @endforelse
             </tbody>
         </table>

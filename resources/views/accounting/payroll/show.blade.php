@@ -34,7 +34,7 @@
                         <td class="px-6 py-4 text-right font-semibold"><x-money :amount="$line->net_salary" /></td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="px-6 py-10 text-center text-gray-500">No payroll lines recorded.</td></tr>
+                    <x-empty-state table colspan="4" title="No payroll lines recorded" message="This payroll run does not yet include any staff lines." />
                 @endforelse
             </tbody>
         </table>

@@ -43,7 +43,7 @@
                             <td class="px-4 py-3 text-right font-semibold"><x-money :amount="$line->amount" /></td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="px-4 py-10 text-center text-gray-500">No ledger lines found for the selected filters.</td></tr>
+                        <x-empty-state table colspan="4" title="No ledger lines found" message="Adjust the filters to reveal ledger entries." />
                     @endforelse
                 </tbody>
             </table>

@@ -71,9 +71,7 @@
                 </td>
             </tr>
             @empty
-            <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-gray-400">No stock levels found.</td>
-            </tr>
+            <x-empty-state table colspan="6" title="No stock levels found" message="Stock levels will appear once products are assigned to locations." />
             @endforelse
         </tbody>
     </table>

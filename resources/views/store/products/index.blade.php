@@ -106,9 +106,7 @@
                 </td>
             </tr>
             @empty
-            <tr>
-                <td colspan="10" class="px-4 py-8 text-center text-gray-400">No products found.</td>
-            </tr>
+            <x-empty-state table colspan="10" title="No products found" message="Add a product or adjust the filters to see results here." />
             @endforelse
         </tbody>
     </table>

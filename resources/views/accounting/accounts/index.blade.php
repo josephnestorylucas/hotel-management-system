@@ -34,7 +34,7 @@
                         <td class="px-6 py-4 text-right"><a href="{{ route('accounting.accounts.edit', $account) }}" class="font-semibold text-indigo-600">Edit</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">No accounts available.</td></tr>
+                    <x-empty-state table colspan="5" title="No accounts available" message="Create the first account to begin structuring the chart of accounts." />
                 @endforelse
             </tbody>
         </table>

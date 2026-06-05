@@ -108,7 +108,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No orders found.</td>
+                <x-empty-state table colspan="8" title="No orders found" message="Restaurant orders will appear here once they are placed." />
             </tr>
             @endforelse
         </tbody>

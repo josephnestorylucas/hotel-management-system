@@ -140,7 +140,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="px-6 py-10 text-center text-gray-500">No bug reports found.</td>
+                        <x-empty-state table colspan="9" title="No bug reports found" message="Create the first bug report to start tracking issues." />
                     </tr>
                     @endforelse
                 </tbody>

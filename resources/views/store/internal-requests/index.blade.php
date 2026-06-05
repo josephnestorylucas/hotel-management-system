@@ -88,9 +88,7 @@
                 </td>
             </tr>
             @empty
-            <tr>
-                <td colspan="7" class="px-4 py-8 text-center text-gray-400">No requests found.</td>
-            </tr>
+            <x-empty-state table colspan="7" title="No requests found" message="Internal requests will appear here once they are submitted." />
             @endforelse
         </tbody>
     </table>

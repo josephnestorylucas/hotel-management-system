@@ -36,7 +36,7 @@
                             <td class="px-4 py-3 text-right font-semibold"><x-money :amount="$line->subtotal" /></td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">No line items recorded.</td></tr>
+                        <x-empty-state table colspan="4" title="No line items recorded" message="Invoice lines will appear once charges are added." />
                     @endforelse
                 </tbody>
             </table>

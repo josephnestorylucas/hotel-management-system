@@ -105,9 +105,7 @@
                 <td class="px-4 py-3 text-gray-400 text-xs">{{ $payment->created_at?->format('d M Y H:i') }}</td>
             </tr>
             @empty
-            <tr>
-                <td colspan="9" class="px-4 py-8 text-center text-gray-400">No payments found.</td>
-            </tr>
+            <x-empty-state table colspan="9" title="No payments found" message="Try a different date range or payment filter." />
             @endforelse
         </tbody>
     </table>

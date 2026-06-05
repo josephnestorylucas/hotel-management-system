@@ -18,7 +18,7 @@
                     @forelse($vatLines as $line)
                         <tr class="border-b border-gray-50 last:border-0"><td class="py-3 font-semibold">{{ $line->entry?->entry_no }}</td><td class="py-3">{{ $line->account?->name }}</td><td class="py-3">{{ $line->entry?->entry_date?->format('M d, Y') }}</td><td class="py-3 text-right"><x-money :amount="$line->amount" /></td></tr>
                     @empty
-                        <tr><td colspan="4" class="py-6 text-center text-gray-500">{{ __('general.no_data') }}</td></tr>
+                        <x-empty-state table colspan="4" title="No VAT entries found" message="VAT lines will appear here once journal entries are posted." />
                     @endforelse
                 </tbody>
             </table>

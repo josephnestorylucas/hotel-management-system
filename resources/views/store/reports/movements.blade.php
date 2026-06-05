@@ -94,7 +94,7 @@
                 <td class="px-4 py-3 text-gray-500 text-xs">{{ $m->actor->name ?? '—' }}</td>
             </tr>
             @empty
-            <tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">No movements found.</td></tr>
+            <x-empty-state table colspan="9" title="No movements found" message="No stock movements match the selected filters." />
             @endforelse
         </tbody>
     </table>

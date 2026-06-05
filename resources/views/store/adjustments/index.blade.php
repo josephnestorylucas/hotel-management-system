@@ -76,9 +76,7 @@
                 </td>
             </tr>
             @empty
-            <tr>
-                <td colspan="9" class="px-4 py-8 text-center text-gray-400">No adjustments found.</td>
-            </tr>
+            <x-empty-state table colspan="9" title="No adjustments found" message="Create a stock adjustment to see it listed here." />
             @endforelse
         </tbody>
     </table>

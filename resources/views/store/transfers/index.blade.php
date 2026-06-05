@@ -81,7 +81,7 @@
             </tr>
             @endif
             @empty
-            <tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">No transfers found.</td></tr>
+            <x-empty-state table colspan="8" title="No transfers found" message="Create a transfer to populate this list." />
             @endforelse
         </tbody>
     </table>

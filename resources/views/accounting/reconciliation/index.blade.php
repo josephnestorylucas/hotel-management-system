@@ -34,7 +34,7 @@
                         <td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{{ ucfirst($reconciliation->status) }}</span></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">No reconciliations available.</td></tr>
+                    <x-empty-state table colspan="5" title="No reconciliations available" message="Create the first bank reconciliation to start matching statements." />
                 @endforelse
             </tbody>
         </table>

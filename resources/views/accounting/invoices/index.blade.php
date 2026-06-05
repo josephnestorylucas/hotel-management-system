@@ -31,7 +31,7 @@
                         <td class="px-6 py-4 text-right font-semibold"><x-money :amount="$invoice->total" /></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">No invoices available.</td></tr>
+                    <x-empty-state table colspan="5" title="No invoices available" message="Issued invoices will appear here once they are created." />
                 @endforelse
             </tbody>
         </table>
